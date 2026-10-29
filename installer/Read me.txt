@@ -1,0 +1,23 @@
+CHORD LAB STUDIO 1.6 · INSTALLING ON A MAC
+
+1. Open Terminal (Spotlight: "Terminal").
+2. Type  bash  and a space. Drag the file
+   «Εγκατάσταση Chord Lab Studio.command» (Install Chord Lab Studio)
+   from this folder into the Terminal window. Press Return.
+3. When it asks about old versions: ν = move them to the Trash, ο = keep them.
+
+The app goes into the folder «Applications by AI» and opens by itself.
+Your projects stay; version 1.6 opens the last project of version 1.5.
+
+Why Terminal: the file has no Apple Developer signature, so a double-click
+may be blocked. Terminal runs it without that obstacle. The app is signed
+locally (ad hoc) on your Mac during installation.
+
+What is in this folder
+  app/            the source code (README.md, CHANGELOG-v1.6.md, tests)
+  app.asar        the app, ready for the Electron runtime of version 1.5
+  app.asar.sha256 the integrity hash of app.asar
+
+If Chord Lab Studio is not installed, the installer builds the app with npm
+(Node.js) or, if that is missing too, opens version 1.6 in a Google Chrome window.
+The installer's messages and the app's interface are in Greek.

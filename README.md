@@ -1,5 +1,41 @@
 # Chord Lab Studio 1.6
 
+[English](#english) · [Ελληνικά](#ελληνικά)
+
+## English
+
+An offline studio for composing with chords. The circle of fifths shows where you are, three suggestions show where you can go next, and the timeline at the bottom keeps what you wrote. The interface is in Greek.
+
+### Install
+
+Ready-made packages are in [Releases](../../releases).
+
+- **Mac (Apple Silicon)**: `Chord-Lab-Studio-1.6-mac.zip`. Unzip it, open Terminal, type `bash ` (with a space), drag «Εγκατάσταση Chord Lab Studio.command» (Install Chord Lab Studio) into the window and press Return. The app goes into the folder «Applications by AI», which is created if missing. If Chord Lab Studio 1.5 is installed, its Electron runtime is reused. Otherwise the app is built with npm or opens in a Google Chrome window. Old versions go to the Trash only if you answer «ν» (yes). See `Read me.txt`.
+- **Windows 10/11 (64-bit)**: `Chord-Lab-Studio-1.6.0-Setup.exe`. Installs for the current user, without administrator rights, into `%LOCALAPPDATA%\Programs\Chord Lab Studio`, with shortcuts in Start and on the Desktop. The file is not signed: on the SmartScreen warning click «More info» → «Run anyway». Uninstall from Settings → Apps.
+- **Browser**: open `index.html` in Chrome or Edge, with the whole folder next to it.
+
+Projects stay on your computer: `~/Library/Application Support/Chord Lab Studio` on Mac, `%APPDATA%\Chord Lab Studio` on Windows.
+
+### How it works
+
+1. **Centre, mode, style** at the top. The style (Takemitsu, Morricone, Stravinsky, Byzantine, Hadjidakis, Glass, jazz, ambient) shapes two of the three suggestions. The third is a plain move in the key, marked as such.
+2. **The circle** has three rings: major outside, relative minor in the middle, diminished inside. The seven chords of the key are lit, with their Roman numerals.
+3. **Click a chord on the circle to hear it.** It appears as a preview (triad, 7th, add9, sus2, sus4). Nothing is stored until you press Return.
+4. **Next**: three suggestions after the selected step. The intent (motion, suspension, shadow, tension, release, mystery) reorders them. Each card shows the chord symbol, the degree, why it works and which voice moves.
+5. **The timeline**: each step is as wide as its duration. Click to select and hear, double-click to edit notes, drag to reorder, Shift-click to select a section for looping.
+
+Keys: 1 · 2 · 3 hear a suggestion · Return add it · Space play/stop · ← → previous/next step · [ ] shorter/longer · L loop · E edit notes · ⌫ delete · ⌘D duplicate · ⌘Z / ⇧⌘Z undo/redo · ⌘S save.
+
+Exports: MIDI with the exact notes and durations, a PDF analysis for reMarkable (157×210 mm, Literata), project files as JSON. Projects from 1.4 and 1.5 open.
+
+The style suggestions are named, auditable heuristics for composing. They do not predict any composer's choices.
+
+Build: `npm ci`, `npm start`, `npm test`, `npm run test:browser`, `npm run build:mac`. The Windows installer is built without Wine; see the commands under «Ανάπτυξη» below.
+
+Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
+
+## Ελληνικά
+
 Ένας χώρος για άμεση σύνθεση: ο κύκλος των πεμπτών δείχνει πού είσαι, τρεις προτάσεις δείχνουν πού μπορείς να πας, η μπάρα κάτω κρατά ό,τι έγραψες.
 
 ## Εγκατάσταση
