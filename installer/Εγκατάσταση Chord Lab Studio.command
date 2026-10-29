@@ -1,15 +1,19 @@
 #!/bin/bash
-# Chord Lab Studio 1.6 · εγκατάσταση στον φάκελο «Applications by AI» (macOS).
+# Chord Lab Studio 1.6 · εγκατάσταση σε macOS.
 #
 # Τι κάνει:
-#  1. Βρίσκει τον φάκελο «Applications by AI» (ή «Apps by AI»).
+#  1. Διαλέγει φάκελο: αυτόν που δίνεις ως όρισμα, αλλιώς τον φάκελο όπου είναι ήδη
+#     εγκατεστημένο το Chord Lab Studio, αλλιώς το /Applications (ή ~/Applications).
 #  2. Φτιάχνει το «Chord Lab Studio.app» 1.6:
 #     α) με τον μηχανισμό Electron του Chord Lab Studio που ήδη έχεις, ή
-#     β) με npm (electron-builder), αν δεν βρεθεί εγκατεστημένο, ή
-#     γ) ως παράθυρο Google Chrome, αν δεν υπάρχει ούτε npm.
+#     β) με το επίσημο Electron, που κατεβαίνει από το GitHub με έλεγχο SHA256, ή
+#     γ) με npm (electron-builder), ή
+#     δ) ως παράθυρο Google Chrome, αν δεν γίνεται τίποτα από τα παραπάνω.
 #  3. Δείχνει τις παλιές εκδόσεις και, αν απαντήσεις «ν», τις μετακινεί στον Κάδο.
 #  4. Ανοίγει τη νέα εφαρμογή.
 # Τα έργα σου (Library/Application Support/Chord Lab Studio) δεν αγγίζονται.
+#
+# Χρήση: bash "Εγκατάσταση Chord Lab Studio.command" [φάκελος]
 
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -31,26 +35,24 @@ say ""
 [ -f "$SRC/index.html" ] && [ -f "$SRC/package.json" ] || fail "λείπει ο φάκελος app δίπλα σε αυτό το αρχείο. Αποσυμπίεσε ολόκληρο το zip."
 
 # 1. Ο φάκελος προορισμού -------------------------------------------------
-find_target(){
-  local d
-  for d in "$HOME/Applications/Applications by AI" "/Applications/Applications by AI" "$HOME/Applications by AI" \
-           "$HOME/Applications/Apps by AI" "/Applications/Apps by AI" "$HOME/Apps by AI" \
-           "$HOME/Desktop/Applications by AI" "$HOME/Documents/Applications by AI"; do
-    [ -d "$d" ] && { printf '%s' "$d"; return; }
-  done
-  d="$(mdfind 'kMDItemContentType == "public.folder" && (kMDItemFSName ==[c] "Applications by AI" || kMDItemFSName ==[c] "Apps by AI")' 2>/dev/null | head -n 1)"
-  [ -n "$d" ] && [ -d "$d" ] && { printf '%s' "$d"; return; }
-  d="$(find "$HOME" /Applications -maxdepth 3 -type d \( -iname 'Applications by AI' -o -iname 'Apps by AI' \) 2>/dev/null | head -n 1)"
-  printf '%s' "$d"
+# Όρισμα, αλλιώς εκεί όπου είναι ήδη εγκατεστημένο, αλλιώς Applications.
+installed_dir(){
+  local app
+  while IFS= read -r app; do
+    case "$app" in /Volumes/*|*/.Trash/*|"$HOME/Downloads"/*|"$HOME/Desktop"/*|"$WORK"/*) continue;; esac
+    [ -d "$app" ] && { dirname "$app"; return; }
+  done < <({ mdfind "kMDItemCFBundleIdentifier == 'com.chordlab.harmonicuniverse'" 2>/dev/null
+             find /Applications "$HOME/Applications" -maxdepth 3 -type d -name "Chord Lab Studio.app" 2>/dev/null; })
 }
-TARGET="$(find_target)"
-if [ -z "$TARGET" ]; then
-  TARGET="$HOME/Applications/Applications by AI"
-  mkdir -p "$TARGET" || fail "δεν δημιουργήθηκε ο φάκελος $TARGET"
-  say "Δεν βρέθηκε φάκελος «Applications by AI». Δημιουργήθηκε: $TARGET"
+if [ -n "${1:-}" ]; then
+  TARGET="$1"; mkdir -p "$TARGET" || fail "δεν δημιουργήθηκε ο φάκελος $TARGET"
 else
-  say "Φάκελος: $TARGET"
+  TARGET="$(installed_dir)"
+  if [ -z "$TARGET" ]; then
+    if [ -w /Applications ]; then TARGET="/Applications"; else TARGET="$HOME/Applications"; mkdir -p "$TARGET" || fail "δεν δημιουργήθηκε ο φάκελος $TARGET"; fi
+  fi
 fi
+say "Φάκελος: $TARGET"
 
 # 2. Υπάρχουσες εκδόσεις ---------------------------------------------------
 bundle_id(){ /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$1/Contents/Info.plist" 2>/dev/null; }
@@ -79,6 +81,34 @@ copy_source(){ # $1 = Resources/app
   ( cd "$SRC" && cp -R index.html package.json src legacy assets desktop "$1/" ) || return 1
 }
 
+# Επίσημο Electron από το GitHub, με έλεγχο SHA256 από το SHASUMS256.txt της έκδοσης.
+ELECTRON="39.8.10"
+download_electron(){ fetch_electron || { rm -rf "${NEW:?}"; return 1; }; }
+fetch_electron(){
+  local arch zip url sums want got
+  arch="$(uname -m)"; [ "$arch" = "x86_64" ] && arch="x64"
+  zip="electron-v$ELECTRON-darwin-$arch.zip"
+  url="https://github.com/electron/electron/releases/download/v$ELECTRON"
+  say "Κατέβασμα του Electron $ELECTRON ($arch, περίπου 110 MB)…"
+  curl -fL --retry 3 -o "$WORK/$zip" "$url/$zip" || { say "Το κατέβασμα απέτυχε."; return 1; }
+  sums="$(curl -fsSL --retry 3 "$url/SHASUMS256.txt")" || { say "Δεν βρέθηκε το SHASUMS256.txt."; return 1; }
+  want="$(printf '%s\n' "$sums" | awk -v f="*$zip" -v g="$zip" '$2==f||$2==g{print $1}')"
+  got="$(shasum -a 256 "$WORK/$zip" | awk '{print $1}')"
+  [ -n "$want" ] && [ "$want" = "$got" ] || { say "Το SHA256 του Electron δεν ταιριάζει. Δεν χρησιμοποιήθηκε."; return 1; }
+  mkdir -p "$WORK/electron" && ditto -x -k "$WORK/$zip" "$WORK/electron" || return 1
+  [ -d "$WORK/electron/Electron.app" ] || return 1
+  mv "$WORK/electron/Electron.app" "$NEW" || return 1
+  local res="$NEW/Contents/Resources" plist="$NEW/Contents/Info.plist"
+  rm -f "$res/default_app.asar"
+  cp "$ASAR" "$res/app.asar" || return 1
+  cp "$SRC/assets/icon.icns" "$res/electron.icns" 2>/dev/null || true
+  /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $BUNDLE_ID" -c "Set :CFBundleName \"$NAME\"" \
+    -c "Set :CFBundleShortVersionString $VERSION" -c "Set :CFBundleVersion $VERSION" "$plist" >/dev/null 2>&1 || return 1
+  /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName \"$NAME\"" "$plist" >/dev/null 2>&1 || \
+    /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string \"$NAME\"" "$plist" >/dev/null 2>&1 || true
+  return 0
+}
+
 if [ -n "$RUNTIME" ]; then
   say "Μηχανισμός Electron από: $RUNTIME ($(bundle_version "$RUNTIME"))"
   ditto "$RUNTIME" "$NEW" || fail "δεν αντιγράφηκε η υπάρχουσα εφαρμογή"
@@ -95,8 +125,10 @@ if [ -n "$RUNTIME" ]; then
   fi
   /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" -c "Set :CFBundleVersion $VERSION" "$NEW/Contents/Info.plist" >/dev/null 2>&1 || true
   METHOD="Electron (ο μηχανισμός της προηγούμενης εγκατάστασης)"
+elif [ -f "$ASAR" ] && [ -n "$ASAR_HASH" ] && command -v curl >/dev/null 2>&1 && download_electron; then
+  METHOD="Electron $ELECTRON (κατέβηκε από το GitHub, επαληθευμένο SHA256)"
 elif command -v npm >/dev/null 2>&1; then
-  say "Δεν βρέθηκε εγκατεστημένο Chord Lab Studio. Κατασκευή με npm (χρειάζεται δίκτυο, λίγα λεπτά)…"
+  say "Κατασκευή με npm (χρειάζεται δίκτυο, λίγα λεπτά)…"
   BUILD="$WORK/build"; mkdir -p "$BUILD"
   ( cd "$SRC" && cp -R . "$BUILD/" ) || fail "δεν αντιγράφηκαν τα αρχεία"
   ARCH="$(uname -m)"; [ "$ARCH" = "x86_64" ] && ARCH="x64"
@@ -129,7 +161,7 @@ LAUNCH
 PLIST
   METHOD="παράθυρο Google Chrome"
 else
-  fail "χρειάζεται είτε το Chord Lab Studio 1.5, είτε Node.js (npm), είτε Google Chrome."
+  fail "χρειάζεται σύνδεση στο διαδίκτυο (για το Electron), ή Node.js (npm), ή Google Chrome."
 fi
 
 xattr -cr "$NEW" 2>/dev/null || true
@@ -167,7 +199,7 @@ case "$answer" in ν|Ν|n|N|y|Y|ναι|Ναι|yes)
 *)
   # Η εφαρμογή στον φάκελο προορισμού αντικαθίσταται πάντα· η παλιά πάει στον Κάδο.
   [ -e "$TARGET/$NAME.app" ] && trash "$TARGET/$NAME.app" && say "Η προηγούμενη $NAME στον φάκελο πήγε στον Κάδο."
-  say "Οι υπόλοιπες παλιές εκδόσεις έμειναν στη θέση τους.";;
+  [ ${#OLD[@]} -gt 0 ] && say "Οι υπόλοιπες παλιές εκδόσεις έμειναν στη θέση τους.";;
 esac
 
 # 5. Εγκατάσταση -------------------------------------------------------------

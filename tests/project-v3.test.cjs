@@ -16,7 +16,7 @@ assert.equal(PS.normalize(v3).settings.intent,'motion');
 for(const beats of [0,17,2.5,'4'])assert.throws(()=>PS.normalize({...v3,sequence:[{...v3.sequence[0],beats}]}),/διάρκεια/);
 assert.throws(()=>PS.normalize({...v3,version:4}),/Μη υποστηριζόμενο/);
 
-// Analysis and the reMarkable report follow the real durations.
+// Analysis and the PDF report follow the real durations.
 const m=A.model(v3);assert.equal(m.totalBeats,10);
 assert.match(A.html(v3),/<td>8<\/td>/);
 assert.match(A.html(v3),/ΑΝΑΛΥΣΗ/);

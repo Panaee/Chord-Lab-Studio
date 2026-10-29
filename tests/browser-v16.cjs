@@ -68,7 +68,7 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   await page.selectOption('#style','takemitsu');
   await page.screenshot({path:path.join(out,'compose.png')});
 
-  // Analysis follows the durations; the PDF page is the reMarkable page.
+  // Analysis follows the durations; the PDF page is 157×210 mm.
   await page.click('#viewAnalysis');assert.match(await page.locator('#analysisBody').innerText(),/ΑΝΑΛΥΣΗ/);
   const total=(await S()).steps.reduce((t,x)=>t+x.beats,0);
   assert.match(await page.locator('.analysis-summary').innerText(),new RegExp(String(total)));
@@ -107,5 +107,5 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
 
   assert.deepEqual(errors,[]);
   await browser.close();
-  console.log('Browser: start, wheel preview without storing, proposals after the selected step, durations, undo/redo, editor and Drop 2, drag, playback, 10 styles, analysis, reMarkable PDF with Literata, MIDI, theme, persistence, v1.5 migration, 1024 px passed · '+out);
+  console.log('Browser: start, wheel preview without storing, proposals after the selected step, durations, undo/redo, editor and Drop 2, drag, playback, 10 styles, analysis, PDF with Literata, MIDI, theme, persistence, v1.5 migration, 1024 px passed · '+out);
 })().catch(e=>{console.error(e);process.exit(1);});

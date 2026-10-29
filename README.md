@@ -10,7 +10,7 @@ An offline studio for composing with chords. The circle of fifths shows where yo
 
 Ready-made packages are in [Releases](../../releases).
 
-- **Mac (Apple Silicon)**: `Chord-Lab-Studio-1.6-mac.zip`. Unzip it, open Terminal, type `bash ` (with a space), drag «Εγκατάσταση Chord Lab Studio.command» (Install Chord Lab Studio) into the window and press Return. The app goes into the folder «Applications by AI», which is created if missing. If Chord Lab Studio 1.5 is installed, its Electron runtime is reused. Otherwise the app is built with npm or opens in a Google Chrome window. Old versions go to the Trash only if you answer «ν» (yes). See `Read me.txt`.
+- **Mac (Apple Silicon)**: `Chord-Lab-Studio-1.6-mac.zip`. Unzip it, open Terminal, type `bash ` (with a space), drag «Εγκατάσταση Chord Lab Studio.command» (Install Chord Lab Studio) into the window and press Return. The app goes into Applications, or into the folder where an earlier Chord Lab Studio is installed; to choose another folder, add its path after the file name. If Chord Lab Studio 1.5 is installed, its Electron runtime is reused. Otherwise the installer downloads the official Electron runtime from GitHub and checks it against its published SHA256; without internet it falls back to npm or a Google Chrome window. Old versions go to the Trash only if you answer «ν» (yes). See `Read me.txt`.
 - **Windows 10/11 (64-bit)**: `Chord-Lab-Studio-1.6.0-Setup.exe`. Installs for the current user, without administrator rights, into `%LOCALAPPDATA%\Programs\Chord Lab Studio`, with shortcuts in Start and on the Desktop. The file is not signed: on the SmartScreen warning click «More info» → «Run anyway». Uninstall from Settings → Apps.
 - **Browser**: open `index.html` in Chrome or Edge, with the whole folder next to it.
 
@@ -26,7 +26,7 @@ Projects stay on your computer: `~/Library/Application Support/Chord Lab Studio`
 
 Keys: 1 · 2 · 3 hear a suggestion · Return add it · Space play/stop · ← → previous/next step · [ ] shorter/longer · L loop · E edit notes · ⌫ delete · ⌘D duplicate · ⌘Z / ⇧⌘Z undo/redo · ⌘S save.
 
-Exports: MIDI with the exact notes and durations, a PDF analysis for reMarkable (157×210 mm, Literata), project files as JSON. Projects from 1.4 and 1.5 open.
+Exports: MIDI with the exact notes and durations, a PDF analysis sized for tablets and e-readers (157×210 mm, Literata), project files as JSON. Projects from 1.4 and 1.5 open.
 
 The style suggestions are named, auditable heuristics for composing. They do not predict any composer's choices.
 
@@ -42,7 +42,7 @@ Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
 
 Τα έτοιμα πακέτα είναι στα [Releases](../../releases).
 
-- **Mac (Apple Silicon)**: `Chord-Lab-Studio-1.6-mac.zip`. Αποσυμπίεσε και στο Terminal γράψε `bash ` και σύρε μέσα το «Εγκατάσταση Chord Lab Studio.command». Η εφαρμογή μπαίνει στον φάκελο «Applications by AI». Οδηγίες στο «Διάβασέ με.txt».
+- **Mac (Apple Silicon)**: `Chord-Lab-Studio-1.6-mac.zip`. Αποσυμπίεσε και στο Terminal γράψε `bash ` και σύρε μέσα το «Εγκατάσταση Chord Lab Studio.command». Η εφαρμογή μπαίνει στο Applications ή στον φάκελο όπου είναι ήδη εγκατεστημένη προηγούμενη έκδοση. Για άλλο φάκελο, γράψε τη διαδρομή του μετά το όνομα του αρχείου. Οδηγίες στο «Διάβασέ με.txt».
 - **Windows 10/11 (64-bit)**: `Chord-Lab-Studio-1.6.0-Setup.exe`. Εγκαθίσταται για τον χρήστη, χωρίς δικαιώματα διαχειριστή, στο `%LOCALAPPDATA%\Programs\Chord Lab Studio`, με συντόμευση στο Start και στην Επιφάνεια Εργασίας. Δεν έχει υπογραφή: στο μήνυμα του SmartScreen πάτα «Περισσότερες πληροφορίες» → «Εκτέλεση οπωσδήποτε». Κατάργηση από Ρυθμίσεις → Εφαρμογές.
 - **Browser**: άνοιξε το `index.html` σε Chrome ή Edge, με ολόκληρο τον φάκελο δίπλα του.
 
@@ -85,7 +85,7 @@ Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
 ## Εξαγωγές
 
 - **MIDI**: ένα κομμάτι (type 0), οι αποθηκευμένες νότες και οκτάβες, η διάρκεια κάθε βήματος, το tempo και 4/4.
-- **PDF για reMarkable**: 157×210 mm, Literata 420 στα 11,5 pt, μόνο μαύρο. Οι γραμματοσειρές είναι στατικά instances (fontTools) και ενσωματώνονται ως TrueType. Τα σύμβολα ♯ ♭ → δεν υπάρχουν στη Literata και παίρνουν σύμβολα του συστήματος.
+- **PDF ανάλυσης** σε μέγεθος για tablet και e-reader: 157×210 mm, Literata 420 στα 11,5 pt, μόνο μαύρο. Οι γραμματοσειρές είναι στατικά instances (fontTools) και ενσωματώνονται ως TrueType. Τα σύμβολα ♯ ♭ → δεν υπάρχουν στη Literata και παίρνουν σύμβολα του συστήματος.
 - **Έργο JSON** (version 3, με διάρκειες). Ανοίγει και αρχεία των 1.4/1.5. Τα παλιά ονόματα χρωμάτων («Ελάσσων ανοιχτή») γίνονται σύμβολα συγχορδιών.
 
 ## Δεδομένα

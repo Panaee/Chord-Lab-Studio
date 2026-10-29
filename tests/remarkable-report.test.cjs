@@ -18,4 +18,4 @@ const injection=structuredClone(init);injection.sequence[1].label='<script>alert
 assert(!R.makeHTML(injection).includes('<script>alert(1)</script>'));
 const mess=structuredClone(init);mess.settings={...mess.settings,scaleFamily:'messiaen',messiaenMode:2,messiaenTrans:1};
 assert.match(R.makeHTML(mess),/M2 · T2/);
-console.log('reMarkable report: 157×210 mm, embedded Literata 420, live progression facts, optional Messiaen, escaped labels passed');
+console.log('PDF report: 157×210 mm, embedded Literata 420, live progression facts, optional Messiaen, escaped labels passed');

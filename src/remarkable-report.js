@@ -1,4 +1,4 @@
-/* reMarkable reading report (157×210 mm, Literata) from the saved composition, shared with Analysis. */
+/* Reading report as PDF (157×210 mm, tablet and e-reader size, Literata) from the saved composition, shared with Analysis. */
 (function(root,factory){
  const node=typeof module==='object'&&module.exports;
  const api=factory(node?require('./studio-analysis.js'):root.StudioAnalysis,node?require('./report-fonts.js'):root.ReportFonts);
@@ -15,7 +15,7 @@
   const rows=m.chords.map(x=>A.stepHTML(x)
    .replace('class="analysis-step"',`class="analysis-step step${x.chord.notes.length>8?' long-step':''}"`)
    .replace('</article>','<div class="notes-caption">Δικές μου σημειώσεις / ακρόαση</div><div class="ruled"></div></article>')).join('');
-  return `<!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chord Lab · Ανάλυση για reMarkable</title><style>
+  return `<!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chord Lab · Ανάλυση</title><style>
  ${Fonts?Fonts.css:''}
  @page{size:157mm 210mm;margin:14mm 16mm 15mm 16mm}
  *{box-sizing:border-box}html,body{margin:0;padding:0}
@@ -40,7 +40,7 @@
  .ending{border-top:.8pt solid #000;margin-top:6mm;padding-top:3mm;break-inside:avoid}.small{font-size:10pt}.end-lines{height:32mm;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 7.6mm,#000 7.6mm,#000 7.9mm)}
  @media print{.toolbar{display:none!important}.document{max-width:none;margin:0;padding:0}}
  @media screen and (max-width:700px){.document{padding:0 16px}.step{break-inside:auto}}
- </style></head><body><div class="toolbar"><span>reMarkable · 157×210 mm · Literata</span><button onclick="window.print()">Εκτύπωση / Αποθήκευση PDF</button></div><main class="document"><div class="overline">CHORD LAB STUDIO 1.6</div><h1>${esc(project.name||'Η αρμονική αλυσίδα μου')}</h1><div class="meta"><p><b>Αναφορά:</b> ${esc(m.keyName)}${m.mess?' · συμμετρική συλλογή Messiaen':''}</p><p><b>Συνθετική λογική:</b> ${esc(m.style)} · <b>Πρόθεση:</b> ${esc(m.goal)}</p><p><b>Σύνθεση:</b> ${count} βήματα · ${m.bpm} BPM · ${m.totalBeats} χτύποι · ${m.chromaticCount} βήματα εκτός αναφοράς</p></div><div class="intro"><b>Ακολουθία:</b> ${m.chords.map(x=>esc(x.name)).join(' → ')}<p class="small">${esc(m.goalIntro)}</p></div><h2>Πίνακας σύνθεσης</h2>${A.summaryTable(m)}${rows}<section class="ending"><h2>Τι έμαθα από αυτή την αλυσίδα;</h2><p class="small">Ποιες αλλαγές ακούγονται πειστικές; Ποια φωνή θα κρατήσεις και ποια θα μετακινήσεις;</p><div class="end-lines"></div><p class="small">Μεθοδολογία: βαθμίδες ως προς την ενεργή αναφορά κατά την εξαγωγή. Οι νότες και οκτάβες είναι τα πραγματικά αποθηκευμένα MIDI δεδομένα. Η κίνηση φωνών είναι ελάχιστη αντιστοίχιση χωρίς διασταύρωση· οι επιπλέον φωνές δηλώνονται ως προσθήκες ή αποχωρήσεις. Κοινές συγχορδίες και μεμονωμένες πτώσεις δεν αποδεικνύουν μετατροπία. Οι κρίσεις του συνθετικού ύφους είναι δημιουργικές ευρετικές και δηλώνονται χωριστά από τα θεωρητικά δεδομένα.</p></section></main></body></html>`;
+ </style></head><body><div class="toolbar"><span>PDF · 157×210 mm · Literata</span><button onclick="window.print()">Εκτύπωση / Αποθήκευση PDF</button></div><main class="document"><div class="overline">CHORD LAB STUDIO 1.6</div><h1>${esc(project.name||'Η αρμονική αλυσίδα μου')}</h1><div class="meta"><p><b>Αναφορά:</b> ${esc(m.keyName)}${m.mess?' · συμμετρική συλλογή Messiaen':''}</p><p><b>Συνθετική λογική:</b> ${esc(m.style)} · <b>Πρόθεση:</b> ${esc(m.goal)}</p><p><b>Σύνθεση:</b> ${count} βήματα · ${m.bpm} BPM · ${m.totalBeats} χτύποι · ${m.chromaticCount} βήματα εκτός αναφοράς</p></div><div class="intro"><b>Ακολουθία:</b> ${m.chords.map(x=>esc(x.name)).join(' → ')}<p class="small">${esc(m.goalIntro)}</p></div><h2>Πίνακας σύνθεσης</h2>${A.summaryTable(m)}${rows}<section class="ending"><h2>Τι έμαθα από αυτή την αλυσίδα;</h2><p class="small">Ποιες αλλαγές ακούγονται πειστικές; Ποια φωνή θα κρατήσεις και ποια θα μετακινήσεις;</p><div class="end-lines"></div><p class="small">Μεθοδολογία: βαθμίδες ως προς την ενεργή αναφορά κατά την εξαγωγή. Οι νότες και οκτάβες είναι τα πραγματικά αποθηκευμένα MIDI δεδομένα. Η κίνηση φωνών είναι ελάχιστη αντιστοίχιση χωρίς διασταύρωση· οι επιπλέον φωνές δηλώνονται ως προσθήκες ή αποχωρήσεις. Κοινές συγχορδίες και μεμονωμένες πτώσεις δεν αποδεικνύουν μετατροπία. Οι κρίσεις του συνθετικού ύφους είναι δημιουργικές ευρετικές και δηλώνονται χωριστά από τα θεωρητικά δεδομένα.</p></section></main></body></html>`;
  }
  return {reportModel,makeHTML};
 });

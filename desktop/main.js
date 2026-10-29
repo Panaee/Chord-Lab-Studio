@@ -34,7 +34,7 @@ function buildMenu(){
       item('Ρυθμίσεις…','settings','Cmd+,'),{type:'separator'},{role:'hide',label:'Απόκρυψη'},{role:'hideOthers',label:'Απόκρυψη άλλων'},{role:'unhide'},{type:'separator'},{role:'quit',label:'Τερματισμός'}]}]:[]),
     {label:'Αρχείο',submenu:[item('Νέα σύνθεση','new','CmdOrCtrl+N'),item('Άνοιγμα JSON…','open','CmdOrCtrl+O'),{type:'separator'},
       item('Αποθήκευση στη βιβλιοθήκη','save','CmdOrCtrl+S'),item('Αντίγραφο JSON…','save-json','Shift+CmdOrCtrl+S'),{type:'separator'},
-      item('Εξαγωγή MIDI…','export-midi','CmdOrCtrl+E'),item('PDF για reMarkable…','export-pdf','CmdOrCtrl+P'),
+      item('Εξαγωγή MIDI…','export-midi','CmdOrCtrl+E'),item('Εξαγωγή PDF…','export-pdf','CmdOrCtrl+P'),
       ...(mac?[]:[{type:'separator'},{role:'quit',label:'Έξοδος'}])]},
     {label:'Επεξεργασία',submenu:[item('Αναίρεση','undo','CmdOrCtrl+Z'),item('Επαναφορά','redo','Shift+CmdOrCtrl+Z'),{type:'separator'},
       {role:'cut',label:'Αποκοπή'},{role:'copy',label:'Αντιγραφή'},{role:'paste',label:'Επικόλληση'},{role:'selectAll',label:'Επιλογή όλων'},{type:'separator'},
@@ -51,7 +51,7 @@ const safeName=name=>{const base=String(name||'').replace(/[^a-z0-9.\-]/gi,'').s
 ipcMain.handle('studio:export-pdf',async(event,html,name)=>{
   if(!studio||event.sender!==studio.webContents||event.senderFrame!==studio.webContents.mainFrame)throw Error('Μη εξουσιοδοτημένη εξαγωγή.');
   if(typeof html!=='string'||html.length>4000000||!html.startsWith('<!doctype html>'))throw Error('Μη έγκυρη αναφορά.');
-  const choice=await dialog.showSaveDialog(studio,{title:'PDF για reMarkable',defaultPath:path.join(app.getPath('documents'),safeName(name)),filters:[{name:'PDF',extensions:['pdf']}]});
+  const choice=await dialog.showSaveDialog(studio,{title:'Εξαγωγή PDF',defaultPath:path.join(app.getPath('documents'),safeName(name)),filters:[{name:'PDF',extensions:['pdf']}]});
   if(choice.canceled||!choice.filePath)return {canceled:true};
   const report=new BrowserWindow({show:false,webPreferences:{nodeIntegration:false,contextIsolation:true,sandbox:true,javascript:false}});
   report.webContents.setWindowOpenHandler(()=>({action:'deny'}));

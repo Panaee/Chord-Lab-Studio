@@ -1,4 +1,4 @@
-/* Literata (SIL OFL 1.1, assets/fonts/LITERATA-LICENSE.txt) for the reMarkable PDF.
+/* Literata (SIL OFL 1.1, assets/fonts/LITERATA-LICENSE.txt) for the PDF report.
    Static instances (wght 420 · 700 · 800, italic 420) made with fontTools from the
    variable fonts in assets/fonts, so the PDF embeds TrueType outlines. Generated. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.ReportFonts=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){

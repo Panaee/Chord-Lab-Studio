@@ -446,7 +446,7 @@ function exportMidi(){if(!state.steps.length){status('Πρόσθεσε πρώτ�
 async function exportPdf(){
   if(!state.steps.length){status('Πρόσθεσε πρώτα συγχορδίες.');return;}
   const html=R.makeHTML(projectData()),name=`${slug(state.projectName)}-${today()}.pdf`;
-  if(desktop?.exportPdf){try{const r=await desktop.exportPdf(html,name);status(r?.canceled?'Η εξαγωγή PDF ακυρώθηκε.':'PDF για reMarkable: '+(r?.path||name));}catch(e){status('Δεν δημιουργήθηκε PDF: '+e.message);}return;}
+  if(desktop?.exportPdf){try{const r=await desktop.exportPdf(html,name);status(r?.canceled?'Η εξαγωγή PDF ακυρώθηκε.':'Αποθηκεύτηκε το PDF: '+(r?.path||name));}catch(e){status('Δεν δημιουργήθηκε PDF: '+e.message);}return;}
   const w=window.open('','_blank');if(!w){status('Επίτρεψε τα αναδυόμενα παράθυρα για το PDF.');return;}
   w.document.open();w.document.write(html);w.document.close();w.focus();status('Άνοιξε η ανάλυση: Εκτύπωση → Αποθήκευση ως PDF.');
 }
