@@ -28,11 +28,15 @@ WORK="$(mktemp -d "${TMPDIR:-/tmp}/chordlab.XXXXXX")" || { echo "Δεν δημι
 trap 'rm -rf "$WORK"' EXIT
 
 say(){ printf '%s\n' "$*"; }
-fail(){ say ""; say "Η εγκατάσταση σταμάτησε: $*"; say "Τίποτα δεν διαγράφηκε."; read -r -p "Πάτα ⏎ για κλείσιμο." _; exit 1; }
+# Messages in Greek on a Greek Mac, otherwise in English.
+UILANG=en
+case "$(defaults read -g AppleLanguages 2>/dev/null | tr -d ' "\n' | cut -d, -f1 | tr -d '(')" in el*) UILANG=el;; esac
+t(){ if [ "$UILANG" = el ]; then printf '%s' "$1"; else printf '%s' "$2"; fi; }
+fail(){ say ""; say "$(t 'Η εγκατάσταση σταμάτησε' 'Installation stopped'): $*"; say "$(t 'Τίποτα δεν διαγράφηκε.' 'Nothing was deleted.')"; read -r -p "$(t 'Πάτα ⏎ για κλείσιμο.' 'Press Return to close.')" _; exit 1; }
 
-say "Chord Lab Studio $VERSION · εγκατάσταση"
+say "Chord Lab Studio $VERSION · $(t 'εγκατάσταση' 'installation')"
 say ""
-[ -f "$SRC/index.html" ] && [ -f "$SRC/package.json" ] || fail "λείπει ο φάκελος app δίπλα σε αυτό το αρχείο. Αποσυμπίεσε ολόκληρο το zip."
+[ -f "$SRC/index.html" ] && [ -f "$SRC/package.json" ] || fail "$(t 'λείπει ο φάκελος app δίπλα σε αυτό το αρχείο. Αποσυμπίεσε ολόκληρο το zip.' 'the app folder next to this file is missing. Unzip the whole archive.')"
 
 # 1. Ο φάκελος προορισμού -------------------------------------------------
 # Όρισμα, αλλιώς εκεί όπου είναι ήδη εγκατεστημένο, αλλιώς Applications.
@@ -45,14 +49,14 @@ installed_dir(){
              find /Applications "$HOME/Applications" -maxdepth 3 -type d -name "Chord Lab Studio.app" 2>/dev/null; })
 }
 if [ -n "${1:-}" ]; then
-  TARGET="$1"; mkdir -p "$TARGET" || fail "δεν δημιουργήθηκε ο φάκελος $TARGET"
+  TARGET="$1"; mkdir -p "$TARGET" || fail "$(t 'δεν δημιουργήθηκε ο φάκελος' 'could not create the folder') $TARGET"
 else
   TARGET="$(installed_dir)"
   if [ -z "$TARGET" ]; then
-    if [ -w /Applications ]; then TARGET="/Applications"; else TARGET="$HOME/Applications"; mkdir -p "$TARGET" || fail "δεν δημιουργήθηκε ο φάκελος $TARGET"; fi
+    if [ -w /Applications ]; then TARGET="/Applications"; else TARGET="$HOME/Applications"; mkdir -p "$TARGET" || fail "$(t 'δεν δημιουργήθηκε ο φάκελος' 'could not create the folder') $TARGET"; fi
   fi
 fi
-say "Φάκελος: $TARGET"
+say "$(t 'Φάκελος' 'Folder'): $TARGET"
 
 # 2. Υπάρχουσες εκδόσεις ---------------------------------------------------
 bundle_id(){ /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$1/Contents/Info.plist" 2>/dev/null; }
@@ -89,12 +93,12 @@ fetch_electron(){
   arch="$(uname -m)"; [ "$arch" = "x86_64" ] && arch="x64"
   zip="electron-v$ELECTRON-darwin-$arch.zip"
   url="https://github.com/electron/electron/releases/download/v$ELECTRON"
-  say "Κατέβασμα του Electron $ELECTRON ($arch, περίπου 110 MB)…"
-  curl -fL --retry 3 -o "$WORK/$zip" "$url/$zip" || { say "Το κατέβασμα απέτυχε."; return 1; }
-  sums="$(curl -fsSL --retry 3 "$url/SHASUMS256.txt")" || { say "Δεν βρέθηκε το SHASUMS256.txt."; return 1; }
+  say "$(t 'Κατέβασμα του Electron' 'Downloading Electron') $ELECTRON ($arch, $(t 'περίπου 110 MB' 'about 110 MB'))…"
+  curl -fL --retry 3 -o "$WORK/$zip" "$url/$zip" || { say "$(t 'Το κατέβασμα απέτυχε.' 'The download failed.')"; return 1; }
+  sums="$(curl -fsSL --retry 3 "$url/SHASUMS256.txt")" || { say "$(t 'Δεν βρέθηκε το SHASUMS256.txt.' 'SHASUMS256.txt was not found.')"; return 1; }
   want="$(printf '%s\n' "$sums" | awk -v f="*$zip" -v g="$zip" '$2==f||$2==g{print $1}')"
   got="$(shasum -a 256 "$WORK/$zip" | awk '{print $1}')"
-  [ -n "$want" ] && [ "$want" = "$got" ] || { say "Το SHA256 του Electron δεν ταιριάζει. Δεν χρησιμοποιήθηκε."; return 1; }
+  [ -n "$want" ] && [ "$want" = "$got" ] || { say "$(t 'Το SHA256 του Electron δεν ταιριάζει. Δεν χρησιμοποιήθηκε.' 'The SHA256 of Electron does not match. It was not used.')"; return 1; }
   mkdir -p "$WORK/electron" && ditto -x -k "$WORK/$zip" "$WORK/electron" || return 1
   [ -d "$WORK/electron/Electron.app" ] || return 1
   mv "$WORK/electron/Electron.app" "$NEW" || return 1
@@ -110,37 +114,37 @@ fetch_electron(){
 }
 
 if [ -n "$RUNTIME" ]; then
-  say "Μηχανισμός Electron από: $RUNTIME ($(bundle_version "$RUNTIME"))"
-  ditto "$RUNTIME" "$NEW" || fail "δεν αντιγράφηκε η υπάρχουσα εφαρμογή"
+  say "$(t 'Μηχανισμός Electron από' 'Electron runtime from'): $RUNTIME ($(bundle_version "$RUNTIME"))"
+  ditto "$RUNTIME" "$NEW" || fail "$(t 'δεν αντιγράφηκε η υπάρχουσα εφαρμογή' 'could not copy the installed app')"
   RES="$NEW/Contents/Resources"
   rm -rf "$RES/app.asar" "$RES/app.asar.unpacked" "$RES/app"
   if [ -f "$ASAR" ] && [ -n "$ASAR_HASH" ]; then
-    cp "$ASAR" "$RES/app.asar" || fail "δεν αντιγράφηκε το app.asar"
+    cp "$ASAR" "$RES/app.asar" || fail "$(t 'δεν αντιγράφηκε το app.asar' 'could not copy app.asar')"
     # Αν το Electron ελέγχει την ακεραιότητα του asar, το hash της κεφαλίδας πρέπει να ταιριάζει.
     if /usr/libexec/PlistBuddy -c "Print :ElectronAsarIntegrity" "$NEW/Contents/Info.plist" >/dev/null 2>&1; then
-      /usr/libexec/PlistBuddy -c "Set :ElectronAsarIntegrity:Resources/app.asar:hash $ASAR_HASH" "$NEW/Contents/Info.plist" >/dev/null 2>&1 || fail "δεν ενημερώθηκε το hash ακεραιότητας"
+      /usr/libexec/PlistBuddy -c "Set :ElectronAsarIntegrity:Resources/app.asar:hash $ASAR_HASH" "$NEW/Contents/Info.plist" >/dev/null 2>&1 || fail "$(t 'δεν ενημερώθηκε το hash ακεραιότητας' 'could not update the integrity hash')"
     fi
   else
-    copy_source "$RES/app" || fail "δεν αντιγράφηκαν τα αρχεία της 1.6"
+    copy_source "$RES/app" || fail "$(t 'δεν αντιγράφηκαν τα αρχεία της 1.6' 'could not copy the 1.6 files')"
   fi
   /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" -c "Set :CFBundleVersion $VERSION" "$NEW/Contents/Info.plist" >/dev/null 2>&1 || true
-  METHOD="Electron (ο μηχανισμός της προηγούμενης εγκατάστασης)"
+  METHOD="Electron ($(t 'ο μηχανισμός της προηγούμενης εγκατάστασης' 'the runtime of the earlier installation'))"
 elif [ -f "$ASAR" ] && [ -n "$ASAR_HASH" ] && command -v curl >/dev/null 2>&1 && download_electron; then
-  METHOD="Electron $ELECTRON (κατέβηκε από το GitHub, επαληθευμένο SHA256)"
+  METHOD="Electron $ELECTRON ($(t 'κατέβηκε από το GitHub, επαληθευμένο SHA256' 'downloaded from GitHub, SHA256 verified'))"
 elif command -v npm >/dev/null 2>&1; then
-  say "Κατασκευή με npm (χρειάζεται δίκτυο, λίγα λεπτά)…"
+  say "$(t 'Κατασκευή με npm (χρειάζεται δίκτυο, λίγα λεπτά)…' 'Building with npm (needs internet, a few minutes)…')"
   BUILD="$WORK/build"; mkdir -p "$BUILD"
-  ( cd "$SRC" && cp -R . "$BUILD/" ) || fail "δεν αντιγράφηκαν τα αρχεία"
+  ( cd "$SRC" && cp -R . "$BUILD/" ) || fail "$(t 'δεν αντιγράφηκαν τα αρχεία' 'could not copy the files')"
   ARCH="$(uname -m)"; [ "$ARCH" = "x86_64" ] && ARCH="x64"
-  ( cd "$BUILD" && npm ci --no-audit --no-fund && npx --no-install electron-builder --mac dir "--$ARCH" ) || fail "η κατασκευή με npm απέτυχε (δες τα μηνύματα παραπάνω)"
+  ( cd "$BUILD" && npm ci --no-audit --no-fund && npx --no-install electron-builder --mac dir "--$ARCH" ) || fail "$(t 'η κατασκευή με npm απέτυχε (δες τα μηνύματα παραπάνω)' 'the npm build failed (see the messages above)')"
   BUILT="$(find "$BUILD/dist" -maxdepth 2 -type d -name "$NAME.app" | head -n 1)"
-  [ -n "$BUILT" ] || fail "δεν βρέθηκε η εφαρμογή στο dist"
-  ditto "$BUILT" "$NEW" || fail "δεν αντιγράφηκε η εφαρμογή"
-  METHOD="Electron (κατασκευή με npm)"
+  [ -n "$BUILT" ] || fail "$(t 'δεν βρέθηκε η εφαρμογή στο dist' 'the app was not found in dist')"
+  ditto "$BUILT" "$NEW" || fail "$(t 'δεν αντιγράφηκε η εφαρμογή' 'could not copy the app')"
+  METHOD="Electron ($(t 'κατασκευή με npm' 'built with npm'))"
 elif [ -d "/Applications/Google Chrome.app" ] || [ -d "$HOME/Applications/Google Chrome.app" ]; then
-  say "Δεν βρέθηκε ούτε Chord Lab Studio ούτε npm. Η 1.6 θα ανοίγει σε παράθυρο Google Chrome."
+  say "$(t 'Δεν βρέθηκε ούτε Chord Lab Studio ούτε npm. Η 1.6 θα ανοίγει σε παράθυρο Google Chrome.' 'Neither Chord Lab Studio nor npm was found. Version 1.6 will open in a Google Chrome window.')"
   mkdir -p "$NEW/Contents/MacOS" "$NEW/Contents/Resources"
-  copy_source "$NEW/Contents/Resources/app" || fail "δεν αντιγράφηκαν τα αρχεία"
+  copy_source "$NEW/Contents/Resources/app" || fail "$(t 'δεν αντιγράφηκαν τα αρχεία' 'could not copy the files')"
   cp "$SRC/assets/icon.icns" "$NEW/Contents/Resources/icon.icns"
   cat > "$NEW/Contents/MacOS/chord-lab" <<'LAUNCH'
 #!/bin/bash
@@ -159,15 +163,15 @@ LAUNCH
 <key>LSMinimumSystemVersion</key><string>11.0</string>
 </dict></plist>
 PLIST
-  METHOD="παράθυρο Google Chrome"
+  METHOD="$(t 'παράθυρο Google Chrome' 'Google Chrome window')"
 else
-  fail "χρειάζεται σύνδεση στο διαδίκτυο (για το Electron), ή Node.js (npm), ή Google Chrome."
+  fail "$(t 'χρειάζεται σύνδεση στο διαδίκτυο (για το Electron), ή Node.js (npm), ή Google Chrome.' 'needs an internet connection (for Electron), or Node.js (npm), or Google Chrome.')"
 fi
 
 xattr -cr "$NEW" 2>/dev/null || true
-codesign --force --deep --sign - "$NEW" >/dev/null 2>&1 || fail "η τοπική υπογραφή (codesign) απέτυχε"
-codesign --verify --deep "$NEW" >/dev/null 2>&1 || fail "η τοπική υπογραφή δεν επαληθεύτηκε"
-[ -f "$NEW/Contents/Resources/app.asar" ] || [ -f "$NEW/Contents/Resources/app/index.html" ] || fail "η νέα εφαρμογή δεν περιέχει τα αρχεία της 1.6"
+codesign --force --deep --sign - "$NEW" >/dev/null 2>&1 || fail "$(t 'η τοπική υπογραφή (codesign) απέτυχε' 'local signing (codesign) failed')"
+codesign --verify --deep "$NEW" >/dev/null 2>&1 || fail "$(t 'η τοπική υπογραφή δεν επαληθεύτηκε' 'the local signature did not verify')"
+[ -f "$NEW/Contents/Resources/app.asar" ] || [ -f "$NEW/Contents/Resources/app/index.html" ] || fail "$(t 'η νέα εφαρμογή δεν περιέχει τα αρχεία της 1.6' 'the new app does not contain the 1.6 files')"
 
 # 4. Παλιές εκδόσεις --------------------------------------------------------
 OLD=()
@@ -183,10 +187,10 @@ while IFS= read -r p; do [ -n "$p" ] && add_old "$p"; done < <(
 
 say ""
 if [ ${#OLD[@]} -gt 0 ]; then
-  say "Παλιές εκδόσεις που βρέθηκαν:"
+  say "$(t 'Παλιές εκδόσεις που βρέθηκαν:' 'Old versions found:')"
   for p in "${OLD[@]}"; do v=""; [ -d "$p/Contents" ] && v=" ($(bundle_version "$p"))"; say "  • $p$v"; done
   say ""
-  read -r -p "Να μετακινηθούν στον Κάδο; [ν/Ο] " answer
+  read -r -p "$(t 'Να μετακινηθούν στον Κάδο; [ν/Ο] ' 'Move them to the Trash? [y/N] ')" answer
 else
   answer="ο"
 fi
@@ -194,20 +198,21 @@ trash(){ local p="$1" base dest; base="$(basename "$p")"; dest="$HOME/.Trash/$ba
   [ -e "$dest" ] && dest="$HOME/.Trash/${base%.*} $(date +%H%M%S)${base##"${base%.*}"}"
   mv "$p" "$dest"; }
 
-case "$answer" in ν|Ν|n|N|y|Y|ναι|Ναι|yes)
-  for p in "${OLD[@]}"; do trash "$p" && say "Στον Κάδο: $p" || say "Δεν μετακινήθηκε: $p"; done;;
+# Only an explicit yes moves anything: ν/ναι or y/yes. («n» means no in English.)
+case "$answer" in ν|Ν|ναι|Ναι|ΝΑΙ|y|Y|yes|Yes|YES)
+  for p in "${OLD[@]}"; do trash "$p" && say "$(t 'Στον Κάδο' 'In the Trash'): $p" || say "$(t 'Δεν μετακινήθηκε' 'Not moved'): $p"; done;;
 *)
   # Η εφαρμογή στον φάκελο προορισμού αντικαθίσταται πάντα· η παλιά πάει στον Κάδο.
-  [ -e "$TARGET/$NAME.app" ] && trash "$TARGET/$NAME.app" && say "Η προηγούμενη $NAME στον φάκελο πήγε στον Κάδο."
-  [ ${#OLD[@]} -gt 0 ] && say "Οι υπόλοιπες παλιές εκδόσεις έμειναν στη θέση τους.";;
+  [ -e "$TARGET/$NAME.app" ] && trash "$TARGET/$NAME.app" && say "$(t "Η προηγούμενη $NAME στον φάκελο πήγε στον Κάδο." "The earlier $NAME in the folder went to the Trash.")"
+  [ ${#OLD[@]} -gt 0 ] && say "$(t 'Οι υπόλοιπες παλιές εκδόσεις έμειναν στη θέση τους.' 'The other old versions stayed where they are.')";;
 esac
 
 # 5. Εγκατάσταση -------------------------------------------------------------
 [ -e "$TARGET/$NAME.app" ] && trash "$TARGET/$NAME.app"
-ditto "$NEW" "$TARGET/$NAME.app" || fail "δεν αντιγράφηκε στο $TARGET"
+ditto "$NEW" "$TARGET/$NAME.app" || fail "$(t 'δεν αντιγράφηκε στο' 'could not copy to') $TARGET"
 xattr -cr "$TARGET/$NAME.app" 2>/dev/null || true
 say ""
-say "Έτοιμο: $TARGET/$NAME.app ($VERSION · $METHOD)"
-say "Τα έργα σου μένουν εκεί που ήταν· η 1.6 ανοίγει αυτόματα το τελευταίο έργο της 1.5."
+say "$(t 'Έτοιμο' 'Done'): $TARGET/$NAME.app ($VERSION · $METHOD)"
+say "$(t 'Τα έργα σου μένουν εκεί που ήταν· η 1.6 ανοίγει αυτόματα το τελευταίο έργο της 1.5.' 'Your projects stay where they were; 1.6 opens the last project of 1.5 by itself.')"
 open "$TARGET/$NAME.app"
 sleep 1

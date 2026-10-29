@@ -4,7 +4,7 @@
 
 ## English
 
-An offline studio for composing with chords. The circle of fifths shows where you are, three suggestions show where you can go next, and the timeline at the bottom keeps what you wrote. The interface is in Greek.
+An offline studio for composing with chords. The circle of fifths shows where you are, three suggestions show where you can go next, and the timeline at the bottom keeps what you wrote. The interface is in English and Greek: it follows your system language and can be changed in Settings → Language. The theory lab (the earlier app) is in Greek only.
 
 ### Install
 
@@ -45,6 +45,8 @@ Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
 - **Mac (Apple Silicon)**: `Chord-Lab-Studio-1.6-mac.zip`. Αποσυμπίεσε και στο Terminal γράψε `bash ` και σύρε μέσα το «Εγκατάσταση Chord Lab Studio.command». Η εφαρμογή μπαίνει στο Applications ή στον φάκελο όπου είναι ήδη εγκατεστημένη προηγούμενη έκδοση. Για άλλο φάκελο, γράψε τη διαδρομή του μετά το όνομα του αρχείου. Οδηγίες στο «Διάβασέ με.txt».
 - **Windows 10/11 (64-bit)**: `Chord-Lab-Studio-1.6.0-Setup.exe`. Εγκαθίσταται για τον χρήστη, χωρίς δικαιώματα διαχειριστή, στο `%LOCALAPPDATA%\Programs\Chord Lab Studio`, με συντόμευση στο Start και στην Επιφάνεια Εργασίας. Δεν έχει υπογραφή: στο μήνυμα του SmartScreen πάτα «Περισσότερες πληροφορίες» → «Εκτέλεση οπωσδήποτε». Κατάργηση από Ρυθμίσεις → Εφαρμογές.
 - **Browser**: άνοιξε το `index.html` σε Chrome ή Edge, με ολόκληρο τον φάκελο δίπλα του.
+
+Η διεπαφή είναι στα ελληνικά και στα αγγλικά: ακολουθεί τη γλώσσα του υπολογιστή και αλλάζει από Ρυθμίσεις → Γλώσσα. Το Εργαστήριο θεωρίας είναι μόνο στα ελληνικά.
 
 Τα έργα μένουν τοπικά: στο Mac στο `~/Library/Application Support/Chord Lab Studio`, στα Windows στο `%APPDATA%\Chord Lab Studio`.
 
@@ -123,6 +125,7 @@ Electron 39.8.10, electron-builder 26.0.12. Η σελίδα (`index.html`) δο�
 
 - `src/next-engine.js`: οι τρεις προτάσεις, φωνοδήγηση, σύμβολα, βαθμίδες, κύκλος.
 - `src/studio.js`, `src/studio.css`: η διεπαφή, ένα αρχείο CSS με tokens και τρία θέματα.
+- `src/i18n.js`: ελληνικά και αγγλικά, με το ελληνικό κείμενο ως κλειδί. Φτιάχνεται από το `tools/make-i18n.cjs` (μεταφράσεις στα `tools/ui-en.tsv` και `tools/landscapes-en.txt`).
 - `src/studio-analysis.js`, `src/remarkable-report.js`, `src/report-fonts.js`: Ανάλυση και PDF.
 - `src/theory-map.js`, `fifths-engine.js`, `messiaen-engine.js`, `harmonic-context.js`, `modulation-engine.js`, `guitar-engine.js`, `project-store.js`: οι μουσικοί μηχανισμοί.
 - `legacy/`: τα τοπία, η αναγνώριση συγχορδιών και το Εργαστήριο θεωρίας.

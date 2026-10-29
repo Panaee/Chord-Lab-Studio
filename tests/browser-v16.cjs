@@ -10,11 +10,13 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
 
 (async()=>{
   const browser=await playwright.chromium.launch(process.env.CHORD_CHROME?{executablePath:process.env.CHORD_CHROME}:{});
-  const page=await browser.newPage({viewport:{width:1280,height:800}});
+  const page=await browser.newPage({viewport:{width:1280,height:800},locale:'el-GR'});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
   await page.goto(url);await page.waitForTimeout(300);
   const S=()=>page.evaluate(()=>{const s=ChordStudio.state;return {sel:s.sel,steps:s.steps.map(x=>({label:x.label,beats:x.beats,notes:x.notes})),preview:s.preview?.label||null,sugg:s.suggestions.map(x=>({label:x.label,notes:x.notes})),heard:s.heard};});
 
+  // A Greek system opens in Greek.
+  assert.equal(await page.evaluate(()=>ChordStudio.state.lang),'el');
   // Empty start: the tonic waits as a start, nothing is stored.
   let s=await S();assert.equal(s.steps.length,0);assert.equal(s.sugg.length,3);
   await page.keyboard.press('Enter');s=await S();assert.deepEqual(s.steps.map(x=>x.label),['C']);assert.equal(s.sel,0);
@@ -93,12 +95,30 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
 
   // A v1.5 project in storage opens, with colour names turned into symbols.
   // (A fresh profile, as on the first start of 1.6 after 1.5.)
-  const fresh=await browser.newContext({viewport:{width:1280,height:800}});
+  const fresh=await browser.newContext({viewport:{width:1280,height:800},locale:'el-GR'});
   await fresh.addInitScript(()=>{if(!localStorage.getItem('cl-v16-project'))localStorage.setItem('cl-v15-project',JSON.stringify({format:'chord-lab-project',version:2,name:'Παλιό',settings:{tonic:9,mode:'aeolian',style:'hadjidakis',goal:'nostalgia',bpm:72},sequence:[{root:9,quality:'custom',label:'Ελάσσων ανοιχτή',notes:[45,52,57,60]},{root:4,quality:'7',label:'E7 ✎',notes:[40,50,56,59]}]}));});
   const old=await fresh.newPage();old.on('pageerror',e=>errors.push(e.message));await old.goto(url);await old.waitForTimeout(300);
   const migrated=await old.evaluate(()=>({labels:ChordStudio.state.steps.map(x=>x.label),beats:ChordStudio.state.steps.map(x=>x.beats),tonic:ChordStudio.state.tonic,mode:ChordStudio.state.mode,intent:ChordStudio.state.intent,name:ChordStudio.state.projectName}));
   assert.deepEqual(migrated,{labels:['Am','E7'],beats:[4,4],tonic:9,mode:'aeolian',intent:'nostalgia',name:'Παλιό'});
   await fresh.close();
+
+  // English: no Greek letters anywhere visible, in labels or in options; back to Greek.
+  const greekLeft=()=>page.evaluate(()=>{const G=/[α-ωΑ-Ωά-ώ]/,out=[],ov=document.getElementById('oldOverlay');
+    const w=document.createTreeWalker(document.body,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);
+    for(let n=w.currentNode;n;n=w.nextNode()){const el=n.nodeType===3?n.parentElement:n;if(!el||ov.contains(el)||el.closest('#lang'))continue;
+      if(n.nodeType===3){if(G.test(n.nodeValue)&&el.offsetParent!==null)out.push(n.nodeValue.trim());}
+      else for(const a of ['title','aria-label'])if(G.test(n.getAttribute(a)||''))out.push(a+': '+n.getAttribute(a));}
+    for(const o of document.querySelectorAll('option,optgroup'))if(!o.closest('#lang')&&G.test(o.textContent+(o.label||'')))out.push('option: '+o.textContent);
+    return out;});
+  await page.click('#openSettings');await page.selectOption('#lang','en');await page.keyboard.press('Escape');
+  await page.click('.seg[data-ring="major"][data-i="1"]');await page.keyboard.press('2');
+  assert.deepEqual(await greekLeft(),[],'compose in English');
+  await page.keyboard.press('e');assert.deepEqual(await greekLeft(),[],'editor in English');await page.keyboard.press('Escape');
+  await page.click('#viewAnalysis');assert.deepEqual(await greekLeft(),[],'analysis in English');await page.click('#viewCompose');
+  await page.click('#openSettings');assert.deepEqual(await greekLeft(),[],'settings in English');
+  assert.equal(await page.evaluate(()=>document.documentElement.lang),'en');
+  await page.selectOption('#lang','el');await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#viewCompose').innerText(),'Σύνθεση');
 
   // Small window: nothing essential hidden.
   await page.setViewportSize({width:1024,height:700});await page.waitForTimeout(150);
@@ -107,5 +127,5 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
 
   assert.deepEqual(errors,[]);
   await browser.close();
-  console.log('Browser: start, wheel preview without storing, proposals after the selected step, durations, undo/redo, editor and Drop 2, drag, playback, 10 styles, analysis, PDF with Literata, MIDI, theme, persistence, v1.5 migration, 1024 px passed · '+out);
+  console.log('Browser: start, wheel preview without storing, proposals after the selected step, durations, undo/redo, editor and Drop 2, drag, playback, 10 styles, analysis, PDF with Literata, MIDI, theme, persistence, v1.5 migration, English and back, 1024 px passed · '+out);
 })().catch(e=>{console.error(e);process.exit(1);});

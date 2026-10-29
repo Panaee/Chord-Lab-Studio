@@ -10,9 +10,10 @@
   node?require('./modulation-engine.js'):root.ModulationLab,
   node?require('../legacy/chord_namer.js'):root.ChordNamer,
   node?require('../legacy/teacher.js'):root.Teacher,
-  node?require('../legacy/landscapes.js'):root.Landscapes);
+  node?require('../legacy/landscapes.js'):root.Landscapes,
+  node?require('./i18n.js'):root.I18N);
  if(node)module.exports=api;else root.StudioAnalysis=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(T,P,H,M,F,Mod,CN,Teacher,L){
+})(typeof globalThis!=='undefined'?globalThis:this,function(T,P,H,M,F,Mod,CN,Teacher,L,I){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const pc=T.mod,unique=xs=>[...new Set(xs)].sort((a,b)=>a-b);
@@ -108,7 +109,7 @@
    const movement=land&&previous?Teacher.transition(settings.style,previous.notes,analyzed.chord.notes):null;
    const advice=[...lesson,...(movement?.lines||[])].filter(line=>['yes','warn','no'].includes(line[0])).map(line=>line[1]);
    const heuristic=advice[0]||(land?land.idea:'Άκου τη διαφορά και αξιολόγησέ την με βάση τη συνθετική πρόθεση.');
-   return {...analyzed,index:i,comparison,pivots:pivotsFor(analyzed.chord,settings),heuristic,goal:goal.label};
+   return {...analyzed,index:i,comparison,pivots:pivotsFor(analyzed.chord,settings),heuristic,idea:land?land.idea:null,goal:goal.label};
   });
   const col=settings.scaleFamily==='messiaen'?M.collection(Number(settings.messiaenMode)||2,settings.tonic,Number(settings.messiaenTrans)||0):null;
   return {chords,settings,keyName:col?col.notation:T.name(settings.tonic)+' · '+T.MODE[settings.mode].label,
@@ -116,28 +117,44 @@
    bpm:Number(settings.bpm)||84,totalBeats:(project.sequence||[]).reduce((t,ch)=>t+(Number(ch.beats)||4),0),
    chromaticCount:chords.filter(x=>!x.harmonic.inScale).length};
  }
- function voicesHTML(cmp){
-  const rows=cmp.pairs.map(p=>`<tr><td>${esc(pitchName(p.from))}</td><td>${esc(pitchName(p.to))}</td><td>${p.delta>0?'+':''}${p.delta} ημιτ.</td></tr>`)
-   .concat(cmp.added.map(n=>`<tr><td>—</td><td>${esc(pitchName(n))}</td><td>νέα φωνή</td></tr>`),cmp.removed.map(n=>`<tr><td>${esc(pitchName(n))}</td><td>—</td><td>αποχώρηση</td></tr>`));
-  return `<table class="analysis-voices"><thead><tr><th>Από</th><th>Προς</th><th>Κίνηση</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+ function voicesHTML(cmp,lang='el'){
+  const W=(x,...a)=>esc(I.L(lang,x,...a));
+  const rows=cmp.pairs.map(p=>`<tr><td>${esc(pitchName(p.from))}</td><td>${esc(pitchName(p.to))}</td><td>${W('{0} ημιτ.',(p.delta>0?'+':'')+p.delta)}</td></tr>`)
+   .concat(cmp.added.map(n=>`<tr><td>—</td><td>${esc(pitchName(n))}</td><td>${W('νέα φωνή')}</td></tr>`),cmp.removed.map(n=>`<tr><td>${esc(pitchName(n))}</td><td>—</td><td>${W('αποχώρηση')}</td></tr>`));
+  return `<table class="analysis-voices"><thead><tr><th>${W('Από')}</th><th>${W('Προς')}</th><th>${W('Κίνηση')}</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
  }
- function transitionHTML(cmp){
-  if(!cmp)return '<p>Αφετηρία της αποθηκευμένης αλυσίδας.</p>';
-  const list=xs=>xs.length?xs.map(T.name).join(' · '):'καμία';
-  return `<p><b>Κοινές τονικές κλάσεις:</b> ${esc(list(cmp.common))}. <b>Νέες:</b> ${esc(list(cmp.gained))}. <b>Αποχωρούν:</b> ${esc(list(cmp.gone))}.</p><p><b>Ακριβώς κρατημένες νότες:</b> ${esc(cmp.held.length?cmp.held.map(pitchName).join(' · '):'καμία')}. <b>Συνολική κίνηση:</b> ${cmp.cost} ημιτόνια.</p>${voicesHTML(cmp)}${cmp.cadence?`<p class="analysis-cadence">${esc(cmp.cadence.text)}</p>`:''}<p class="analysis-method">Ελάχιστη κίνηση χωρίς διασταύρωση, με πραγματικές οκτάβες. Η αντιστοίχιση είναι πρόταση φωνών για το αποθηκευμένο voicing.</p>`;
+ function transitionHTML(cmp,lang='el'){
+  const W=(x,...a)=>esc(I.L(lang,x,...a));
+  if(!cmp)return `<p>${W('Αφετηρία της αποθηκευμένης αλυσίδας.')}</p>`;
+  const none=I.L(lang,'καμία'),list=xs=>xs.length?xs.map(T.name).join(' · '):none;
+  const cadence=cmp.cadence?(lang==='en'?I.L(lang,'Τοπική πτώση {0} → {1}: δεσπόζουσα 7η προς τονική μία πέμπτη κάτω. Ένδειξη τοπικής τονικοποίησης· δεν τεκμηριώνει από μόνη της μετατροπία.',cmp.cadence.from,cmp.cadence.to):cmp.cadence.text):'';
+  return `<p><b>${W('Κοινές τονικές κλάσεις:')}</b> ${esc(list(cmp.common))}. <b>${W('Νέες:')}</b> ${esc(list(cmp.gained))}. <b>${W('Αποχωρούν:')}</b> ${esc(list(cmp.gone))}.</p><p><b>${W('Ακριβώς κρατημένες νότες:')}</b> ${esc(cmp.held.length?cmp.held.map(pitchName).join(' · '):none)}. <b>${W('Συνολική κίνηση:')}</b> ${W('{0} ημιτόνια',cmp.cost)}.</p>${voicesHTML(cmp,lang)}${cadence?`<p class="analysis-cadence">${esc(cadence)}</p>`:''}<p class="analysis-method">${W('Ελάχιστη κίνηση χωρίς διασταύρωση, με πραγματικές οκτάβες. Η αντιστοίχιση είναι πρόταση φωνών για το αποθηκευμένο voicing.')}</p>`;
  }
- function summaryTable(m){
-  return `<div class="analysis-table-wrap"><table class="analysis-table"><thead><tr><th>Βήμα</th><th>Συγχορδία</th><th>Βαθμίδα</th><th>Νότες / οκτάβες</th><th>Χτύποι</th></tr></thead><tbody>${m.chords.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name)}</td><td>${esc(x.harmonic.roman)}</td><td>${esc(x.notesText)}</td><td>${Number(x.chord.beats)||4}</td></tr>`).join('')}</tbody></table></div>`;
+ function summaryTable(m,lang='el'){
+  const W=x=>esc(I.L(lang,x));
+  return `<div class="analysis-table-wrap"><table class="analysis-table"><thead><tr><th>${W('Βήμα')}</th><th>${W('Συγχορδία')}</th><th>${W('Βαθμίδα')}</th><th>${W('Νότες / οκτάβες')}</th><th>${W('Χτύποι')}</th></tr></thead><tbody>${m.chords.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(I.parts(lang,x.name))}</td><td>${esc(I.inline(lang,x.harmonic.roman))}</td><td>${esc(x.notesText)}</td><td>${Number(x.chord.beats)||4}</td></tr>`).join('')}</tbody></table></div>`;
  }
- function stepHTML(x){
-  const pivot=x.pivots.length?`<p class="analysis-pivots"><b>Πιθανά pivot:</b> ${x.pivots.map(p=>`${esc(p.destination)} (${esc(p.from)} → ${esc(p.to)})`).join(' · ')}. Η κοινή συγχορδία επιτρέπει μια διαδρομή· δεν αποδεικνύει ότι έγινε μετατροπία.</p>`:'';
-  const modal=x.modalRelations.length?`<p class="analysis-modal"><b>Πιθανός modal δανεισμός:</b> οι πραγματικές νότες ανήκουν στους παράλληλους τρόπους ${esc(x.modalRelations.join(' · '))}. Η κοινή συλλογή επιτρέπει αυτή την ανάγνωση· δεν αποδεικνύει πρόθεση δανεισμού.</p>`:'';
-  return `<article class="analysis-step"><header class="analysis-step-heading"><span class="analysis-number">${String(x.index+1).padStart(2,'0')}</span><div><h3>${esc(x.name)}</h3><span class="degree-badge">${esc(x.harmonic.roman)}</span> <span>${esc(x.harmonic.qualification)}</span></div></header><dl class="analysis-facts"><div><dt>Ποιότητα</dt><dd>${esc(x.quality)}</dd></div><div><dt>Θέση</dt><dd>${esc(x.inversion)}</dd></div><div><dt>Νότες / οκτάβες</dt><dd>${esc(x.notesText)}</dd></div><div><dt>Λειτουργία / σχέση</dt><dd>${esc(x.harmonic.functionName||((x.harmonic.inScale?'Εντός ':'Εκτός ')+(x.collection?'συμμετρικής συλλογής':'επιλεγμένου τρόπου')))}</dd></div></dl>${x.chord.label&&x.chord.label!==x.name?`<p class="analysis-source">Αποθηκευμένη επιλογή: ${esc(x.chord.label)} · ρίζα αναφοράς ${esc(T.name(x.chord.root))}.</p>`:''}<section class="analysis-transition"><h4>Σύνδεση με το προηγούμενο βήμα</h4>${transitionHTML(x.comparison)}</section>${modal}${pivot}<p class="analysis-theory"><b>Θεωρητικό δεδομένο:</b> ${esc(x.harmonic.roman)} ως προς ${esc(x.harmonic.keyName)}. ${esc(x.harmonic.functionName?'Η λειτουργία προϋποθέτει και ακουστικό/φραστικό πλαίσιο.':'Η συγκεκριμένη συλλογή δεν θεμελιώνει από μόνη της λειτουργική αρμονία.')}</p><p class="analysis-heuristic"><b>Συνθετική ευρετική:</b> ${esc(x.heuristic)} <span>Πρόθεση: ${esc(x.goal)}.</span></p></article>`;
+ /* Inversion text in English: fixed phrases plus the bass note. */
+ function inversionText(t,lang){
+  if(lang!=='en')return t;
+  const m=/^Μπάσο (\S+) · ελεύθερη διάταξη$/.exec(t)||/^Μπάσο (\S+) · ανοιχτό voicing$/.exec(t);
+  if(m)return /ελεύθερη/.test(t)?`Bass ${m[1]} · free voicing`:`Bass ${m[1]} · open voicing`;
+  const x=/^Ξένο μπάσο (\S+)$/.exec(t);if(x)return `Non-chord bass ${x[1]}`;
+  return I.L(lang,t);
  }
- function html(project){
-  const m=model(project);
-  if(!m.chords.length)return '<div class="analysis-empty"><span>ANALYSIS</span><h2>Η θεωρία ξεκινά από τη μουσική σου.</h2><p>Πρόσθεσε συγχορδίες στη Σύνθεση. Εδώ θα εμφανιστούν οι πραγματικές νότες, οι βαθμίδες και η κίνηση κάθε φωνής.</p></div>';
-  return `<div class="analysis-intro"><span>ΑΝΑΛΥΣΗ · ${esc(m.keyName)}</span><h2>Η αρμονία που έγραψες.</h2><p>${esc(m.style)} · ${esc(m.goal)}. Οι εξηγήσεις ακολουθούν τα αποθηκευμένα βήματα και τις οκτάβες τους.</p></div><div class="analysis-summary"><article><strong>${m.chords.length}</strong><span>συγχορδίες</span></article><article><strong>${m.totalBeats}</strong><span>χτύποι · ${m.bpm} BPM</span></article><article><strong>${m.chromaticCount}</strong><span>εκτός αναφοράς</span></article></div>${summaryTable(m)}${m.chords.map(stepHTML).join('')}`;
+ function stepHTML(x,lang='el'){
+  const W=(s,...a)=>esc(I.L(lang,s,...a)),inl=s=>esc(I.inline(lang,s));
+  const pivot=x.pivots.length?`<p class="analysis-pivots"><b>${W('Πιθανά pivot:')}</b> ${x.pivots.map(p=>`${esc(p.destination)} (${inl(p.from)} → ${inl(p.to)})`).join(' · ')}. ${W('Η κοινή συγχορδία επιτρέπει μια διαδρομή· δεν αποδεικνύει ότι έγινε μετατροπία.')}</p>`:'';
+  const modal=x.modalRelations.length?`<p class="analysis-modal"><b>${W('Πιθανός modal δανεισμός:')}</b> ${W('οι πραγματικές νότες ανήκουν στους παράλληλους τρόπους {0}.',x.modalRelations.map(r=>I.inline(lang,r)).join(' · '))} ${W('Η κοινή συλλογή επιτρέπει αυτή την ανάγνωση· δεν αποδεικνύει πρόθεση δανεισμού.')}</p>`:'';
+  const fn=x.harmonic.functionName?I.L(lang,x.harmonic.functionName):I.L(lang,(x.harmonic.inScale?'Εντός ':'Εκτός ')+(x.collection?'συμμετρικής συλλογής':'επιλεγμένου τρόπου'));
+  const heuristic=lang==='en'?(x.idea?I.L(lang,x.idea):I.L(lang,'Άκου τη διαφορά και αξιολόγησέ την με βάση τη συνθετική πρόθεση.')):x.heuristic;
+  const name=I.parts(lang,x.name);
+  return `<article class="analysis-step"><header class="analysis-step-heading"><span class="analysis-number">${String(x.index+1).padStart(2,'0')}</span><div><h3>${esc(name)}</h3><span class="degree-badge">${inl(x.harmonic.roman)}</span> <span>${W(x.harmonic.qualification)}</span></div></header><dl class="analysis-facts"><div><dt>${W('Ποιότητα')}</dt><dd>${W(x.quality)}</dd></div><div><dt>${W('Θέση')}</dt><dd>${esc(inversionText(x.inversion,lang))}</dd></div><div><dt>${W('Νότες / οκτάβες')}</dt><dd>${esc(x.notesText)}</dd></div><div><dt>${W('Λειτουργία / σχέση')}</dt><dd>${esc(fn)}</dd></div></dl>${x.chord.label&&x.chord.label!==x.name?`<p class="analysis-source">${W('Αποθηκευμένη επιλογή: {0} · ρίζα αναφοράς {1}.',I.parts(lang,x.chord.label),T.name(x.chord.root))}</p>`:''}<section class="analysis-transition"><h4>${W('Σύνδεση με το προηγούμενο βήμα')}</h4>${transitionHTML(x.comparison,lang)}</section>${modal}${pivot}<p class="analysis-theory"><b>${W('Θεωρητικό δεδομένο:')}</b> ${W('{0} ως προς {1}.',I.inline(lang,x.harmonic.roman),I.inline(lang,x.harmonic.keyName))} ${W(x.harmonic.functionName?'Η λειτουργία προϋποθέτει και ακουστικό/φραστικό πλαίσιο.':'Η συγκεκριμένη συλλογή δεν θεμελιώνει από μόνη της λειτουργική αρμονία.')}</p><p class="analysis-heuristic"><b>${W('Συνθετική ευρετική:')}</b> ${esc(heuristic)} <span>${W('Πρόθεση: {0}.',I.L(lang,x.goal))}</span></p></article>`;
+ }
+ function html(project,lang='el'){
+  const m=model(project),W=(x,...a)=>esc(I.L(lang,x,...a));
+  if(!m.chords.length)return `<div class="analysis-empty"><span>${W('ΑΝΑΛΥΣΗ')}</span><h2>${W('Η θεωρία ξεκινά από τη μουσική σου.')}</h2><p>${W('Πρόσθεσε συγχορδίες στη Σύνθεση. Εδώ θα εμφανιστούν οι πραγματικές νότες, οι βαθμίδες και η κίνηση κάθε φωνής.')}</p></div>`;
+  return `<div class="analysis-intro"><span>${W('ΑΝΑΛΥΣΗ')} · ${esc(I.inline(lang,m.keyName))}</span><h2>${W('Η αρμονία που έγραψες.')}</h2><p>${W(m.style)} · ${W(m.goal)}. ${W('Οι εξηγήσεις ακολουθούν τα αποθηκευμένα βήματα και τις οκτάβες τους.')}</p></div><div class="analysis-summary"><article><strong>${m.chords.length}</strong><span>${W('συγχορδίες')}</span></article><article><strong>${m.totalBeats}</strong><span>${W('χτύποι · {0} BPM',m.bpm)}</span></article><article><strong>${m.chromaticCount}</strong><span>${W('εκτός αναφοράς')}</span></article></div>${summaryTable(m,lang)}${m.chords.map(x=>stepHTML(x,lang)).join('')}`;
  }
  return {model,html,analyzeChord,transition,pitchName,summaryTable,stepHTML,transitionHTML,voicesHTML,esc};
 });

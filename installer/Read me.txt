@@ -23,4 +23,5 @@ What is in this folder
 If Chord Lab Studio is not installed, the installer downloads the official
 Electron runtime from GitHub (about 110 MB) and checks its SHA256. Without
 internet it uses npm (Node.js) or opens the app in a Google Chrome window.
-The installer's messages and the app's interface are in Greek.
+The installer and the app follow your Mac's language: Greek or English.
+In the app you can change it in Settings → Language.

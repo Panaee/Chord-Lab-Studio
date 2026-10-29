@@ -1,0 +1,280 @@
+Μείζονα	Major
+Δώριος	Dorian
+Φρύγιος	Phrygian
+Λύδιος	Lydian
+Μιξολύδιος	Mixolydian
+Ελάσσονα	Minor
+Λόκριος	Locrian
+Ολοτονικός	Whole-tone
+Οκτατονικός	Octatonic
+Εννεατονικός	Nonatonic
+8 φθόγγοι · 1–1–1–3	8 notes · 1–1–1–3
+6 φθόγγοι · 1–1–4	6 notes · 1–1–4
+8 φθόγγοι · 1–1–2–2	8 notes · 1–1–2–2
+10 φθόγγοι · 1–1–1–1–2	10 notes · 1–1–1–1–2
+Τριάδα	Triad
+7η	7th
+Χωρίς τίτλο	Untitled
+Αναίρεση.	Undone.
+Επαναφορά.	Redone.
+Το MIDI χρειάζεται την εφαρμογή ή Chrome/Edge.	MIDI needs the app or Chrome/Edge.
+Δεν δόθηκε πρόσβαση στο MIDI.	MIDI access was not granted.
+Κανένα όργανο MIDI	No MIDI instrument
+Εσωτερικός ήχος	Built-in sound
+MIDI συνδέθηκε. Παίξε μια συγχορδία και πάτα ⏎ για να μπει στη σύνθεση.	MIDI connected. Play a chord and press Return to add it.
+Έως 512 βήματα ανά έργο.	Up to 512 steps per project.
+Μπήκε {0} στο βήμα {1}.	Added {0} at step {1}.
+Αφαιρέθηκε {0}. ⌘Z για επαναφορά.	Removed {0}. ⌘Z to undo.
+Διάρκεια: {0} χτύποι.	Length: {0} beats.
+Νέο κέντρο: {0} {1}. Οι βαθμίδες ξαναϋπολογίστηκαν.	New centre: {0} {1}. Degrees recalculated.
+Πρόσθεσε πρώτα μια συγχορδία.	Add a chord first.
+Επανάληψη βημάτων {0}–{1}. Space για στοπ.	Looping steps {0}–{1}. Space to stop.
+Αναπαραγωγή βημάτων {0}–{1}.	Playing steps {0}–{1}.
+Κύκλος πέμπτων	Circle of fifths
+Κύκλος πέμπτων · {0}	Circle of fifths · {0}
+Άκου το κέντρο	Hear the centre
+Κιθάρα	Guitar
+Τώρα · <b>βήμα {0}</b> από {1}	Now · <b>step {0}</b> of {1}
+Αφετηρία · το κέντρο σου	Start · your centre
+▶ Άκου	▶ Listen
+✎ Νότες	✎ Notes
+＋ Ξεκίνα εδώ	＋ Start here
+Πρόσθεσε μετά το {0}	Add after {0}
+Ξεκίνα με αυτή	Start with this
+Δοκιμή · από το MIDI	Preview · from MIDI
+Δοκιμή · από τον κύκλο	Preview · from the circle
+Μορφή	Shape
+◎ Κάνε το κέντρο	◎ Make it the centre
+Άκυρο	Cancel
+Άκου τη μετάβαση	Hear the move
+Άκου τη μετάβαση ({0})	Hear the move ({0})
+Πρόσθεσε	Add
+Η σύνθεση ξεκινά εδώ. Κλικ στον κύκλο ή σε μια πρόταση, και ⏎.	Your piece starts here. Click the circle or a suggestion, then Return.
+{0} · {1} χτύποι · διπλό κλικ για νότες	{0} · {1} beats · double-click for notes
+Στοπ	Stop
+Αναπαραγωγή	Play
+Βήμα {0}	Step {0}
+Κλείσιμο	Close
+Πάτα πλήκτρα για να προσθέσεις ή να αφαιρέσεις νότες	Click keys to add or remove notes
+Οκτάβα	Octave
+Αναστροφή	Inversion
+Διάταξη	Voicing
+Κλειστή	Close
+Ανοιχτή	Open
+Χτύποι	Beats
+Αφαίρεση	Delete
+Η τοπική αποθήκευση απέτυχε. Κράτα αντίγραφο JSON.	Saving locally failed. Keep a JSON copy.
+Άνοιξε το έργο της προηγούμενης έκδοσης.	Opened the project from the previous version.
+Η βιβλιοθήκη δεν αποθηκεύτηκε.	The library was not saved.
+{0} βήματα	{0} steps
+Διαγραφή {0}	Delete {0}
+Καμία αποθηκευμένη σύνθεση.	No saved pieces.
+Αποθηκεύτηκε «{0}».	Saved “{0}”.
+Άνοιξε «{0}».	Opened “{0}”.
+Δεν άνοιξε: {0}	Could not open: {0}
+Νέα σύνθεση. ⌘Z επαναφέρει την προηγούμενη.	New piece. ⌘Z brings back the previous one.
+Αποθηκεύτηκε αντίγραφο JSON.	JSON copy saved.
+Το αρχείο είναι πολύ μεγάλο.	The file is too large.
+Άνοιξε «{0}» με {1} βήματα.	Opened “{0}” with {1} steps.
+Δεν άνοιξε το αρχείο: {0}	Could not open the file: {0}
+Πρόσθεσε πρώτα συγχορδίες.	Add some chords first.
+Εξαγωγή MIDI: ένα κομμάτι, οι ακριβείς νότες και διάρκειες.	MIDI exported: one track, the exact notes and lengths.
+Η εξαγωγή PDF ακυρώθηκε.	PDF export cancelled.
+Αποθηκεύτηκε το PDF: {0}	PDF saved: {0}
+Δεν δημιουργήθηκε PDF: {0}	Could not create the PDF: {0}
+Επίτρεψε τα αναδυόμενα παράθυρα για το PDF.	Allow pop-ups for the PDF.
+Άνοιξε η ανάλυση: Εκτύπωση → Αποθήκευση ως PDF.	The analysis is open: Print → Save as PDF.
+άκου την πρόταση	hear the suggestion
+πρόσθεσε ό,τι άκουσες	add what you heard
+αναπαραγωγή / στοπ	play / stop
+προηγούμενο / επόμενο βήμα	previous / next step
+επιλογή τμήματος	select a section
+μετακίνηση βήματος	move the step
+πιο σύντομο / πιο μακρύ	shorter / longer
+επανάληψη	loop
+νότες του βήματος	notes of the step
+αφαίρεση βήματος	delete the step
+διπλασιασμός	duplicate
+αναίρεση · επαναφορά	undo · redo
+αποθήκευση στη βιβλιοθήκη	save to the library
+άκυρο / κλείσιμο	cancel / close
+Επανάληψη ενεργή.	Loop on.
+Επανάληψη ανενεργή.	Loop off.
+Διατονικοί	Diatonic
+Messiaen · συμμετρικοί	Messiaen · symmetric
+Ελεύθερο	Free
+Κέντρο {0}.	Centre {0}.
+Ελεύθερο: προτάσεις μόνο από την τονικότητα.	Free: suggestions from the key only.
+Ο ήχος πηγαίνει και στην έξοδο MIDI.	Sound also goes to the MIDI output.
+Μόνο εσωτερικός ήχος.	Built-in sound only.
+Διαγράφηκε «{0}» από τη βιβλιοθήκη.	Deleted “{0}” from the library.
+Κέντρο	Centre
+Τρόπος	Mode
+Ύφος	Style
+Τονικό κέντρο	Tonal centre
+Συνθετικό ύφος	Composing style
+Μουσικό πλαίσιο	Musical context
+Προβολές	Views
+Σύνθεση	Compose
+Ανάλυση	Analysis
+Ρυθμίσεις	Settings
+Ρυθμίσεις (,)	Settings (,)
+Επόμενο	Next
+Πρόθεση	Intent
+Έργο (JSON)	Project (JSON)
+Η σύνθεσή σου	Your piece
+Αναπαραγωγή (Space)	Play (Space)
+Τέμπο	Tempo
+Επανάληψη (L)	Loop (L)
+Επανάληψη	Loop
+Βήματα της σύνθεσης	Steps of the piece
+Αναίρεση	Undo
+Αναίρεση (⌘Z)	Undo (⌘Z)
+Επαναφορά	Redo
+Επαναφορά (⇧⌘Z)	Redo (⇧⌘Z)
+Έργο	Project
+Όνομα	Name
+Νέο	New
+Αποθήκευση	Save
+Άνοιγμα JSON	Open JSON
+Ήχος και MIDI	Sound and MIDI
+Είσοδος	Input
+Σύνδεση MIDI	Connect MIDI
+Έξοδος	Output
+Προβολή	Display
+Όργανο	Instrument
+Πιάνο	Piano
+Θέμα	Theme
+Γλώσσα	Language
+Θεωρία	Theory
+Εργαστήριο θεωρίας	Theory lab
+Η προηγούμενη εφαρμογή: quiz, δάσκαλος, τοπία.	The earlier app: quizzes, a teacher, landscapes. In Greek only.
+Πλήκτρα	Keys
+Επιστροφή στη σύνθεση	Back to composing
+Κίνηση	Motion
+Αιώρηση	Suspension
+Σκιά	Shadow
+Ένταση	Tension
+Λύση	Release
+Μυστήριο	Mystery
+σχέσεις 4ης/5ης, μπάσο που προχωρά	4th/5th relations, a bass that moves on
+κοινές νότες, χρώμα χωρίς λύση	common notes, colour without resolution
+δανεικές ελάσσονες, μια σκιά στο φως	borrowed minors, a shadow in the light
+ημιτόνια, τρίτονα, δεσπόζουσες	semitones, tritones, dominants
+επιστροφή στο κέντρο	return to the centre
+συμμετρικές, αμφίσημες συγχορδίες	symmetric, ambiguous chords
+κρατά δύο κοινές νότες	keeps two common notes
+ανοιχτό χρώμα χωρίς λύση	open colour without resolution
+ελάσσονα σκιά	a minor shadow
+δανεική iv: η 3η πέφτει ημιτόνιο	borrowed iv: the 3rd falls a semitone
+♭VI / ♭VII από την ελάσσονα	♭VI / ♭VII from the minor
+μία φωνή κινείται ημιτόνιο	one voice moves a semitone
+δεσπόζουσα: το τρίτονο ζητά λύση	dominant: the tritone asks for resolution
+συμμετρική, ασταθής συγχορδία	symmetric, unstable chord
+ημιτόνιο μέσα στη συγχορδία	a semitone inside the chord
+τρίτονο	tritone
+νότες έξω από την κλίμακα	notes outside the scale
+πτώση V → I	V → I cadence
+η δεσπόζουσα ετοιμάζει την επιστροφή	the dominant prepares the return
+αμφίσημη συλλογή	ambiguous collection
+φως από άλλη κλίμακα	light from another scale
+ρίζα σε 3η ή τρίτονο: απρόσμενη σχέση	root a 3rd or tritone away: an unexpected relation
+η ρίζα ανεβαίνει 4η: προχωρά μπροστά	the root rises a 4th: it moves forward
+η ρίζα ανεβαίνει 5η	the root rises a 5th
+το μπάσο κινείται βήμα	the bass moves by step
+τέλεια πτώση	perfect cadence
+χρωματική μεσότητα	chromatic mediant
+αλλάζει μία νότα	one note changes
+Τονικότητα	Key
+Βασική κίνηση	Plain move
+ίσον	ison
+κρατά {0}	keeps {0}
+{0} ημιτ.	{0} st.
+νέα φωνή	new voice
+αποχώρηση	leaves
+Από	From
+Προς	To
+Αφετηρία της αποθηκευμένης αλυσίδας.	Start of the saved sequence.
+καμία	none
+Κοινές τονικές κλάσεις:	Common pitch classes:
+Νέες:	New:
+Αποχωρούν:	Leaving:
+Ακριβώς κρατημένες νότες:	Exactly held notes:
+Συνολική κίνηση:	Total motion:
+{0} ημιτόνια	{0} semitones
+Ελάχιστη κίνηση χωρίς διασταύρωση, με πραγματικές οκτάβες. Η αντιστοίχιση είναι πρόταση φωνών για το αποθηκευμένο voicing.	Minimal motion without voice crossing, with real octaves. The pairing is a suggested voice assignment for the stored voicing.
+Τοπική πτώση {0} → {1}: δεσπόζουσα 7η προς τονική μία πέμπτη κάτω. Ένδειξη τοπικής τονικοποίησης· δεν τεκμηριώνει από μόνη της μετατροπία.	Local cadence {0} → {1}: a dominant 7th to a tonic a fifth below. A sign of local tonicisation; on its own it does not prove a modulation.
+Βήμα	Step
+Συγχορδία	Chord
+Βαθμίδα	Degree
+Νότες / οκτάβες	Notes / octaves
+Πιθανά pivot:	Possible pivots:
+Η κοινή συγχορδία επιτρέπει μια διαδρομή· δεν αποδεικνύει ότι έγινε μετατροπία.	A shared chord allows a route; it does not prove a modulation happened.
+Πιθανός modal δανεισμός:	Possible modal borrowing:
+οι πραγματικές νότες ανήκουν στους παράλληλους τρόπους {0}.	the actual notes belong to the parallel modes {0}.
+Η κοινή συλλογή επιτρέπει αυτή την ανάγνωση· δεν αποδεικνύει πρόθεση δανεισμού.	The shared collection allows this reading; it does not prove an intent to borrow.
+Ποιότητα	Quality
+Θέση	Position
+Λειτουργία / σχέση	Function / relation
+Εντός συμμετρικής συλλογής	Inside the symmetric collection
+Εκτός συμμετρικής συλλογής	Outside the symmetric collection
+Εντός επιλεγμένου τρόπου	Inside the chosen mode
+Εκτός επιλεγμένου τρόπου	Outside the chosen mode
+Αποθηκευμένη επιλογή: {0} · ρίζα αναφοράς {1}.	Stored choice: {0} · reference root {1}.
+Σύνδεση με το προηγούμενο βήμα	Link with the previous step
+Θεωρητικό δεδομένο:	Theory:
+{0} ως προς {1}.	{0} in {1}.
+Η λειτουργία προϋποθέτει και ακουστικό/φραστικό πλαίσιο.	Function also depends on what is heard and on the phrasing.
+Η συγκεκριμένη συλλογή δεν θεμελιώνει από μόνη της λειτουργική αρμονία.	This collection does not establish functional harmony on its own.
+Συνθετική ευρετική:	Composing heuristic:
+Πρόθεση: {0}.	Intent: {0}.
+ΑΝΑΛΥΣΗ	ANALYSIS
+Η θεωρία ξεκινά από τη μουσική σου.	Theory starts from your music.
+Πρόσθεσε συγχορδίες στη Σύνθεση. Εδώ θα εμφανιστούν οι πραγματικές νότες, οι βαθμίδες και η κίνηση κάθε φωνής.	Add chords in Compose. The actual notes, the degrees and the motion of each voice will appear here.
+Η αρμονία που έγραψες.	The harmony you wrote.
+Οι εξηγήσεις ακολουθούν τα αποθηκευμένα βήματα και τις οκτάβες τους.	The explanations follow the stored steps and their octaves.
+συγχορδίες	chords
+χτύποι	beats
+χτύποι · {0} BPM	beats · {0} BPM
+εκτός αναφοράς	outside the reference
+Ελεύθερη αρμονία	Free harmony
+Άκου τη διαφορά και αξιολόγησέ την με βάση τη συνθετική πρόθεση.	Listen to the difference and judge it by your intent.
+Μείζων έβδομη	Major seventh
+Ελάσσων έβδομη	Minor seventh
+Έβδομη δεσπόζουσας	Dominant seventh
+Ελαττωμένη τριάδα	Diminished triad
+Ελαττωμένη έβδομη	Diminished seventh
+Μισοελαττωμένη έβδομη	Half-diminished seventh
+Αυξημένη τριάδα	Augmented triad
+Τεταρτογενής συλλογή	Quartal collection
+Ελεύθερη συλλογή	Free collection
+Θεμελιώδης κατάσταση	Root position
+1η αναστροφή · τρίτη στο μπάσο	1st inversion · 3rd in the bass
+2η αναστροφή · πέμπτη στο μπάσο	2nd inversion · 5th in the bass
+3η αναστροφή · έβδομη στο μπάσο	3rd inversion · 7th in the bass
+νότες εντός κλίμακας	notes inside the scale
+περιέχει χρωματικές νότες	contains chromatic notes
+όλες οι νότες μέσα στον τρόπο	all notes inside the mode
+περιέχει νότες εκτός τρόπου	contains notes outside the mode
+τονική	tonic
+δεσπόζουσα	dominant
+προδεσπόζουσα	predominant
+τονικό κέντρο (i)	tonal centre (i)
+φυσική ελάσσων v	natural-minor v
+υποδεσπόζουσα	subdominant
+Chord Lab · Ανάλυση	Chord Lab · Analysis
+Εκτύπωση / Αποθήκευση PDF	Print / Save as PDF
+Η αρμονική αλυσίδα μου	My harmonic sequence
+Αναφορά:	Reference:
+ · συμμετρική συλλογή Messiaen	 · Messiaen symmetric collection
+Συνθετική λογική:	Composing logic:
+Πρόθεση:	Intent:
+Σύνθεση:	Piece:
+{0} βήματα · {1} BPM · {2} χτύποι · {3} βήματα εκτός αναφοράς	{0} steps · {1} BPM · {2} beats · {3} steps outside the reference
+Ακολουθία:	Sequence:
+Πίνακας σύνθεσης	Overview
+Δικές μου σημειώσεις / ακρόαση	My notes / listening
+Τι έμαθα από αυτή την αλυσίδα;	What did I learn from this sequence?
+Ποιες αλλαγές ακούγονται πειστικές; Ποια φωνή θα κρατήσεις και ποια θα μετακινήσεις;	Which changes sound convincing? Which voice will you keep, and which will you move?
+Μεθοδολογία: βαθμίδες ως προς την ενεργή αναφορά κατά την εξαγωγή. Οι νότες και οκτάβες είναι τα πραγματικά αποθηκευμένα MIDI δεδομένα. Η κίνηση φωνών είναι ελάχιστη αντιστοίχιση χωρίς διασταύρωση· οι επιπλέον φωνές δηλώνονται ως προσθήκες ή αποχωρήσεις. Κοινές συγχορδίες και μεμονωμένες πτώσεις δεν αποδεικνύουν μετατροπία. Οι κρίσεις του συνθετικού ύφους είναι δημιουργικές ευρετικές και δηλώνονται χωριστά από τα θεωρητικά δεδομένα.	Method: degrees are relative to the reference active at export. Notes and octaves are the actual stored MIDI data. Voice leading is a minimal pairing without crossing; extra voices are shown as entries or exits. Shared chords and single cadences do not prove a modulation. The style's judgements are creative heuristics, kept separate from the theory.
+τονικότητα	key

@@ -1,0 +1,177 @@
+Classical
+functions and cadences
+A tonal centre and three families: home (I, vi, iii) → departure (IV, ii) → tension (V, vii°) → home. Harmony is a cycle.
+Major triad
+The 3rd decides major or minor; the 5th stabilises and can be left out.
+Minor triad
+Minor 3rd: a sweet, darker home.
+Dominant 7th (V7)
+The tritone 3rd–♭7 asks for resolution: the 3rd rises a semitone, the ♭7 falls.
+T–S–D–T, the basic cycle; it closes with a perfect cadence.
+Ends on a half cadence: a question phrase.
+I–IV–V7–vi (deceptive)
+The V promises home and goes to vi: the broken promise.
+V7 with the raised 7th (harmonic minor) gives a dramatic cadence.
+Roots in 4ths/5ths, all from the natural minor; circular motion without a cadence.
+Perfect cadence: the tritone resolves.
+Deceptive cadence: same tension, another home.
+maj7: light/nostalgia
+The chord's first “grown-up” note.
+m7: round, soft
+Changes the atmosphere without changing the chord.
+colour, silence, suspension
+Each sound stands like an object in a garden, with silence (ma) between as material. Chords are colours left unresolved. Roots: Debussy, Messiaen, Japanese aesthetics.
+Lydian light: maj7(♯11) without the 5th
+Major 7th and ♯11 in open voicing: the chord floats. The 5th is left out on purpose, so it doesn't anchor a centre.
+Semitone + tritone (the E♭–E–A cell)
+The cell Takemitsu calls “S–E–A” (Es–E–A): a semitone spread into a minor 9th, plus a tritone. Friction that shines without asking for resolution.
+Whole-tone cloud
+Four notes of the whole-tone scale: none pulls toward another, the harmony hangs like mist.
+Dominant that doesn't resolve (7♭9)
+Dominant texture without a destination. All notes belong to the half-step–whole-step octatonic scale.
+Shift by a minor 3rd
+The octatonic scale repeats every minor 3rd: the chord moves, the colour stays.
+Bass a semitone down
+Sliding under a still layer; no V–I.
+Tritone relation
+The most distant relation: two colours that share their tritone, without direction.
+Make it Lydian: + 7 + ♯11, − 5
+The 5th leaves so it doesn't anchor; the 7th and ♯11 float.
++ 9 + 11 (floating fourths)
+The minor opens into a stack of 4ths/2nds; no 5th.
++ ♭9 + ♯11 (octatonic)
+The dominant stops asking for resolution and becomes colour.
+melody, layers, drama
+One unforgettable melody with the whole orchestra serving it. Clear floors: bass, motion, melody. Drama builds as layers enter one by one.
+Epic foundation (major)
+An open 5th and octave below, the 3rd only higher up: a foundation without mud.
+Epic foundation (minor)
+Same layout, minor 3rd on top: weight and mourning without blur.
+Pedal + ♭VI above
+A chromatic mediant over a still bass (C with A♭ above): as if the light in the shot changed.
+The ♭VII borrowed from Mixolydian: heroic, a little archaic.
+I–♭VI–I (chromatic mediant)
+Major triads a 3rd apart with one common note: the world changes, without functional logic.
+I–iv–I (borrowed iv)
+A cloud passing in front of the sun.
+A descending bass line down to the major V: drama that returns.
+i–iv over a pedal
+The bass stays; the harmony changes above. Ritual weight.
+i–♭II–V7–i (Neapolitan)
+Dark nobility before the V; keep it for one moment in the piece.
+Octave + 5th foundation in the bass
+An open 5th and octave below the chord: an epic foundation, no 3rd down low.
+rhythm, blocks, dry brilliance
+Energy comes from rhythm and the clash of clean blocks. Everything dry and clipped; harmony stands inside the block, and “progress” is the cut.
+Petrushka: two majors a tritone apart
+Your triad below and a major triad a tritone higher on top (C + F♯). The roughness comes from two clean layers coexisting.
+Augurs: major + dominant 7th a semitone lower
+The “Augurs” chord from The Rite of Spring: F♭ major below, E♭7 above. In the score the strings hammer it with irregular accents.
+Stack of 4ths
+Perfect 4ths stacked on each other: a dry, archaic sound that declares neither major nor minor.
+Blocks on the octatonic axis
+Four triads from the same octatonic collection; cut from block to block, without transition.
+Block ↔ tritone
+Two clean blocks in conflict; repetition with a changed metre is the development.
+Static block, moving accent
+The harmony doesn't change; change the metre and where the accent falls.
++ a second triad a tritone above
+Your triad stays below; a major triad a tritone away enters on top (Petrushka).
+Byzantine
+ison, monophony, heterophony
+One melodic line and its ison (drone). Whatever is added echoes the line without harmonising it. In the orchestra it is a stylisation that respects the chant.
+In the Byzantine landscape chords don't belong to the idiom: hold the ison and put the melody above it.
+Ison
+One held note, the octave for body. Nothing else vertically; the melody moves above it.
+Ison with 5th (the limit)
+Octave and 5th are the limit; the 5th enters softer, as a second layer.
+Ison shift at a phrase joint
+The ison moves rarely and slowly, at the end of a phrase; if the bass walks, the rock is gone.
+Remove the 3rd: keep 1–5–8
+3rds and 6ths dissolve the idiom instantly.
+Hadjidakis
+lyrical song, minor
+A lyrical melody over simple harmony. The key dilemma of the minor: v or V — soft/modal or dramatic/classical. The descending bass line as archetypal melancholy.
+Open minor
+Bass and 5th low, the 3rd higher: a full but clear minor for song.
+Open major
+The same layout in major: light without weight.
+i–v–i (soft)
+No leading tone: the phrase rests, it doesn't close dramatically.
+i–V7–i (dramatic)
+With the raised 7th: the same phrase becomes a cadence with weight.
+The bass descends 1–♭7–♭6–5: the archetypal line of melancholy.
+Chromatic lament
+Bass 1–7–♭7–6–♭6–5 in semitones (in A: A–G♯–G–F♯–F–E).
+The borrowed iv: one note darkens (the 3rd of IV falls) before home.
+Keep the triad
+The colour comes from the next chord (v or V).
+ostinato, minimalism
+Few chords, endless arpeggio. Repetition shifts attention to the small differences; development comes from the pattern while the harmony stays almost still.
+Minor for arpeggio
+Three notes are enough; they're played in a steady arpeggio (eighths) and change rarely.
+One note changes: i → ♭VI/3
+From Am to F/A: the 5th rises a semitone, the others stay. One note changes, the light changes.
+Two common notes, one changes; alternate every 4 bars over a steady arpeggio.
+One chord every 4 bars (Am → F → C → G); the surface stays the same.
+A circular progression for an endless arpeggio; the voices barely move.
+Make it an arpeggio
+Don't add notes; play the same ones in a steady pattern and change one every few bars.
+Jazz
+ii–V–I, extensions, voicings
+The upper notes (9, 11, 13) give a richer light. The chord's identity lives in the 3rd and 7th; the strongest path to a goal is ii–V–I.
+The chord's identity lives in the 3rd and 7th; three notes are enough.
+9th and ♭3 a semitone apart inside the voicing: a round friction.
+Fourths + 3rd (“So What” voicing)
+Three perfect 4ths and a major 3rd on top: the “So What” voicing (Miles Davis, 1959). Dorian, open.
+ii–V–I (you are the ii)
+Subdominant → dominant → home, roots in 5ths.
+ii–♭II7–I (tritone substitution)
+The bass slides chromatically (D–D♭–C); D♭7 shares the tritone of G7.
+Turnaround: always returns to I.
+The A7 before Dm7 is its dominant: a spotlight on the ii.
+The 3rd and 7th resolve by semitone.
+The tritone substitution before home: elegance instead of weight.
+Light on top without changing the function.
+Round, open ii or Dorian i.
+A dominant with light; for darkness try ♭9 instead of 13.
+Electronic / ambient
+Floating pads and a bass that stays. The 3rd hides or softens (sus, add9); motion comes from sequence and timbre over a slow harmonic depth.
+Open sus2 (pad)
+No 3rd: neither major nor minor, the pad floats.
+The 9th next to the 3rd: air and light without the weight of the 7th.
+Pedal (a bass that stays)
+One note stays still while the chords change above: depth without density.
+Isus2 – IVadd9 over a pedal
+The bass stays, the pad changes: motion without weight.
+I–V–vi–IV as sus/add9
+The same circular progression with hidden or soft 3rds.
+i–♭VI–♭VII over a pedal
+Three chords over a still bass: dark, wandering.
+Hide the 3rd (sus2)
+The chord stops declaring major/minor.
+The 3rd changes
+Root and 5th stay; the 3rd moves by a semitone.
+Whole-step move
+Two common notes. The third moves by a whole step.
+Semitone move
+Two common notes. The third moves by a semitone.
+Suspension
+Add colour, keep common notes, avoid the obligatory ending.
+Nostalgia
+Small chromatic shifts, borrowed minors and major 7ths.
+Tension
+Semitones, altered notes, more density or dominants.
+Release
+A harmonic ending, a stable centre and smooth voice leading.
+Mystery
+Ambiguous chords, symmetric collections, veils instead of cadences.
+Motion
+Bass motion, fifth relations, transformations and succession.
+Ionian (major)
+Dorian
+Phrygian
+Lydian
+Mixolydian
+Aeolian (natural minor)
+Locrian

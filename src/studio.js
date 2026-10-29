@@ -6,7 +6,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const T=window.TheoryMap,F=window.FifthsLab,N=window.NextChords,L=window.Landscapes,M=window.MessiaenModes,
-  G=window.GuitarShapes,PS=window.ProjectStore,A=window.StudioAnalysis,R=window.RemarkableReport;
+  G=window.GuitarShapes,PS=window.ProjectStore,A=window.StudioAnalysis,R=window.RemarkableReport,I=window.I18N;
 const pc=T.mod;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const desktop=window.chordDesktop||null;
@@ -16,9 +16,14 @@ const MODES=[['ionian','Μείζονα'],['dorian','Δώριος'],['phrygian','
   ...[2,3,4,5,6,7].map(n=>['messiaen-'+n,`Messiaen ${n} · ${M.PATTERNS[n].name}`])];
 const EXTS=[['triad','Τριάδα'],['7','7η'],['add9','add9'],['sus2','sus2'],['sus4','sus4']];
 const noteName=n=>T.name(n)+(Math.floor(n/12)-1);
+/* Language: Greek text is the key (src/i18n.js). */
+const tx=(s,...a)=>I.L(state.lang,s,...a),tp=s=>I.parts(state.lang,s),ti=s=>I.inline(state.lang,s);
+const GREEK=/[α-ωΑ-Ωά-ώ]/;
+function modeLabel(id){const m=/^messiaen-(\d)$/.exec(id);return m?`Messiaen ${m[1]} · ${tx(M.PATTERNS[m[1]].name)}`:tx(MODES.find(x=>x[0]===id)[1]);}
+function modeShort(id){return /^messiaen/.test(id)?'Messiaen '+id.split('-')[1]:tx(MODES.find(m=>m[0]===id)[1]);}
 const uniq=xs=>[...new Set(xs)].sort((a,b)=>a-b);
 
-const state={tonic:0,mode:'ionian',style:'takemitsu',intent:'motion',bpm:84,loop:false,
+const state={lang:'el',tonic:0,mode:'ionian',style:'takemitsu',intent:'motion',bpm:84,loop:false,
   steps:[],sel:-1,range:null,preview:null,ext:'triad',suggestions:[],heard:-1,view:'compose',
   projectName:'Χωρίς τίτλο',instrument:'piano',theme:'ivory',editor:-1,
   midi:{access:null,outId:'',held:new Set(),timer:0},play:null};
@@ -49,8 +54,8 @@ const undoStack={past:[],future:[]};
 function snapshot(){return JSON.stringify({steps:state.steps,sel:state.sel,tonic:state.tonic,mode:state.mode,style:state.style,intent:state.intent,bpm:state.bpm});}
 function remember(){undoStack.past.push(snapshot());if(undoStack.past.length>200)undoStack.past.shift();undoStack.future.length=0;}
 function restore(s){const o=JSON.parse(s);Object.assign(state,{steps:o.steps,sel:o.sel,tonic:o.tonic,mode:o.mode,style:o.style,intent:o.intent,bpm:o.bpm});state.preview=null;state.range=null;state.heard=-1;clampSel();refresh();save();}
-function undo(){if(!undoStack.past.length)return;stop();undoStack.future.push(snapshot());restore(undoStack.past.pop());status('Αναίρεση.');}
-function redo(){if(!undoStack.future.length)return;stop();undoStack.past.push(snapshot());restore(undoStack.future.pop());status('Επαναφορά.');}
+function undo(){if(!undoStack.past.length)return;stop();undoStack.future.push(snapshot());restore(undoStack.past.pop());status(tx('Αναίρεση.'));}
+function redo(){if(!undoStack.future.length)return;stop();undoStack.past.push(snapshot());restore(undoStack.future.pop());status(tx('Επαναφορά.'));}
 
 /* ------------------------------------------------------------ sound */
 const Sound={ctx:null,bus:null,voices:new Set(),
@@ -97,19 +102,19 @@ function midiOut(notes,delay,dur){const out=midiOutput();if(!out)return;const no
   for(const n of notes)try{out.send([0x90,n,80],now+delay*1000);out.send([0x80,n,0],now+(delay+dur)*1000);}catch(_){}}
 function midiPanic(){const out=midiOutput();if(!out)return;try{out.clear?.();for(let c=0;c<16;c++){out.send([0xB0|c,123,0]);out.send([0xB0|c,120,0]);}}catch(_){}}
 async function connectMidi(silent=false){
-  if(!navigator.requestMIDIAccess){if(!silent)status('Το MIDI χρειάζεται την εφαρμογή ή Chrome/Edge.');return;}
-  try{state.midi.access=await navigator.requestMIDIAccess({sysex:false});}catch(e){if(!silent)status('Δεν δόθηκε πρόσβαση στο MIDI.');return;}
+  if(!navigator.requestMIDIAccess){if(!silent)status(tx('Το MIDI χρειάζεται την εφαρμογή ή Chrome/Edge.'));return;}
+  try{state.midi.access=await navigator.requestMIDIAccess({sysex:false});}catch(e){if(!silent)status(tx('Δεν δόθηκε πρόσβαση στο MIDI.'));return;}
   const bind=()=>{
     const inputs=[...state.midi.access.inputs.values()].filter(i=>i.state!=='disconnected');
     inputs.forEach(input=>{input.onmidimessage=onMidi;});
-    $('midiConnect').textContent=inputs.length?'MIDI: '+inputs.map(i=>i.name).join(', '):'Κανένα όργανο MIDI';
+    $('midiConnect').textContent=inputs.length?'MIDI: '+inputs.map(i=>i.name).join(', '):tx('Κανένα όργανο MIDI');
     const outs=[...state.midi.access.outputs.values()].filter(o=>o.state!=='disconnected');
     if(!outs.some(o=>o.id===state.midi.outId))state.midi.outId='';
-    $('midiOut').innerHTML='<option value="">Εσωτερικός ήχος</option>'+outs.map(o=>`<option value="${esc(o.id)}">${esc(o.name||o.id)}</option>`).join('');
+    $('midiOut').innerHTML=`<option value="">${esc(tx('Εσωτερικός ήχος'))}</option>`+outs.map(o=>`<option value="${esc(o.id)}">${esc(o.name||o.id)}</option>`).join('');
     $('midiOut').value=state.midi.outId;
   };
   state.midi.access.onstatechange=bind;bind();
-  if(!silent)status('MIDI συνδέθηκε. Παίξε μια συγχορδία και πάτα ⏎ για να μπει στη σύνθεση.');
+  if(!silent)status(tx('MIDI συνδέθηκε. Παίξε μια συγχορδία και πάτα ⏎ για να μπει στη σύνθεση.'));
 }
 function onMidi(e){
   const [op,n,v=0]=e.data||[];const type=op&0xF0;
@@ -130,13 +135,13 @@ function makeStep(ch,extra={}){
     beats:extra.beats||state.steps[state.sel]?.beats||4,sourceLabel:extra.sourceLabel||ch.originLabel||undefined,custom:Boolean(extra.custom)};
 }
 function insert(ch,extra){
-  if(state.steps.length>=MAX_STEPS){status('Έως 512 βήματα ανά έργο.');return;}
+  if(state.steps.length>=MAX_STEPS){status(tx('Έως 512 βήματα ανά έργο.'));return;}
   stop();remember();
   const at=state.steps.length?state.sel+1:0;
   state.steps.splice(at,0,makeStep(ch,extra));
   state.sel=at;state.preview=null;state.heard=-1;state.range=null;
   refresh();save();scrollToSel();
-  status(`Μπήκε ${state.steps[at].label} στο βήμα ${at+1}.`);
+  status(tx('Μπήκε {0} στο βήμα {1}.',tp(state.steps[at].label),at+1));
 }
 function select(i,{play=true,extend=false}={}){
   if(!state.steps.length)return;
@@ -150,7 +155,7 @@ function select(i,{play=true,extend=false}={}){
 function removeStep(i=state.sel){
   if(i<0||!state.steps[i])return;stop();remember();
   const [gone]=state.steps.splice(i,1);state.sel=Math.min(i,state.steps.length-1);state.range=null;
-  if(state.editor>=0)closeEditor();refresh();save();status(`Αφαιρέθηκε ${gone.label}. ⌘Z για επαναφορά.`);
+  if(state.editor>=0)closeEditor();refresh();save();status(tx('Αφαιρέθηκε {0}. ⌘Z για επαναφορά.',tp(gone.label)));
 }
 function duplicate(){
   if(state.sel<0)return;remember();const copy=JSON.parse(JSON.stringify(state.steps[state.sel]));
@@ -161,7 +166,7 @@ function move(from,to){
   remember();const [s]=state.steps.splice(from,1);const at=to>from?to-1:to;state.steps.splice(at,0,s);state.sel=at;state.range=null;refresh();save();
 }
 function setBeats(beats,i=state.sel){if(i<0||!state.steps[i]||state.steps[i].beats===beats)return;remember();state.steps[i].beats=beats;refresh();save();}
-function stepBeats(dir){if(state.sel<0)return;const b=state.steps[state.sel].beats||4;let ix=BEATS.indexOf(b);if(ix<0)ix=3;setBeats(BEATS[Math.max(0,Math.min(BEATS.length-1,ix+dir))]);status(`Διάρκεια: ${state.steps[state.sel].beats} χτύποι.`);}
+function stepBeats(dir){if(state.sel<0)return;const b=state.steps[state.sel].beats||4;let ix=BEATS.indexOf(b);if(ix<0)ix=3;setBeats(BEATS[Math.max(0,Math.min(BEATS.length-1,ix+dir))]);status(tx('Διάρκεια: {0} χτύποι.',state.steps[state.sel].beats));}
 function setNotes(i,notes,{record=true}={}){
   notes=uniq(notes.filter(n=>n>=21&&n<=108)).slice(0,MAX_NOTES);if(!notes.length)return;
   if(record)remember();
@@ -173,13 +178,13 @@ function setCenter(root,minor){
   remember();state.tonic=pc(root);
   if(minor!==undefined&&!/^messiaen/.test(state.mode))state.mode=minor?'aeolian':'ionian';
   state.preview=null;syncControls();refresh();save();
-  status(`Νέο κέντρο: ${T.name(state.tonic)} ${MODES.find(m=>m[0]===state.mode)[1]}. Οι βαθμίδες ξαναϋπολογίστηκαν.`);
+  status(tx('Νέο κέντρο: {0} {1}. Οι βαθμίδες ξαναϋπολογίστηκαν.',T.name(state.tonic),modeShort(state.mode)));
 }
 function setContext(field,value){remember();state[field]=value;state.preview=null;state.heard=-1;refresh();save();}
 
 /* ------------------------------------------------------------ playback */
 function playRange(){
-  if(!state.steps.length){status('Πρόσθεσε πρώτα μια συγχορδία.');return;}
+  if(!state.steps.length){status(tx('Πρόσθεσε πρώτα μια συγχορδία.'));return;}
   const ctx=Sound.init();if(!ctx)return;Sound.stopAll();
   let a,b;
   if(state.range)[a,b]=state.range;
@@ -195,7 +200,7 @@ function playRange(){
   timers.push(setTimeout(()=>{if(!state.play)return;if(state.loop)playRange();else stop();},total));
   state.play={timers,index:a,range:[a,b]};
   renderTransport();
-  status(state.loop?`Επανάληψη βημάτων ${a+1}–${b+1}. Space για στοπ.`:`Αναπαραγωγή βημάτων ${a+1}–${b+1}.`);
+  status(state.loop?tx('Επανάληψη βημάτων {0}–{1}. Space για στοπ.',a+1,b+1):tx('Αναπαραγωγή βημάτων {0}–{1}.',a+1,b+1));
 }
 function stop(silence=true){
   if(state.play){state.play.timers.forEach(clearTimeout);state.play=null;if(silence)Sound.stopAll();renderTransport();renderStripPlaying();}
@@ -222,10 +227,10 @@ function renderWheel(){
     const cls=['seg','ring-'+ring,rom?'dia':'',pre&&pre.ring===ring&&pre.index===i?'pre':''].join(' ');
     const [nx,ny]=polar(ring==='major'?187:ring==='minor'?130:82,a),[rx,ry]=polar(ring==='major'?162:ring==='minor'?111:70,a);
     const name=slotName(ring,i);
-    segs+=`<g class="${cls}" data-ring="${ring}" data-i="${i}" role="button" tabindex="${ring==='major'&&i===0?0:-1}" aria-label="${esc(name)}${rom?' · '+esc(rom):''}">`+
+    segs+=`<g class="${cls}" data-ring="${ring}" data-i="${i}" role="button" tabindex="${ring==='major'&&i===0?0:-1}" aria-label="${esc(name)}${rom?' · '+esc(ti(rom)):''}">`+
       `<path d="${sector(r0,r1,a-15,a+15)}"/><text class="n" x="${nx.toFixed(1)}" y="${(ring==='dim'?ny-3:ny).toFixed(1)}">${esc(name)}</text>`+
-      (rom&&ring!=='dim'?`<text class="r" x="${rx.toFixed(1)}" y="${ry.toFixed(1)}">${esc(rom)}</text>`:'')+
-      (rom&&ring==='dim'?`<text class="r" x="${nx.toFixed(1)}" y="${(ny+9).toFixed(1)}">${esc(rom)}</text>`:'')+`</g>`;
+      (rom&&ring!=='dim'?`<text class="r" x="${rx.toFixed(1)}" y="${ry.toFixed(1)}">${esc(ti(rom))}</text>`:'')+
+      (rom&&ring==='dim'?`<text class="r" x="${nx.toFixed(1)}" y="${(ny+9).toFixed(1)}">${esc(ti(rom))}</text>`:'')+`</g>`;
   }
   const outline=(s,cls)=>{const [r0,r1]=RINGS[s.ring];return `<path class="${cls}" d="${sector(r0+1.5,r1-1.5,s.index*30-13.5,s.index*30+13.5)}"/>`;};
   let marks='';
@@ -233,9 +238,9 @@ function renderWheel(){
   state.suggestions.forEach((c,ix)=>{const s=N.wheelSlot(c);const [,r1]=RINGS[s.ring];const k=s.ring+':'+s.index,n=stack.get(k)||0;stack.set(k,n+1);
     const [x,y]=polar(r1-11,s.index*30+[10,-10,0][n%3]);
     marks+=`<g class="marker${c.contrast?' contrast':''}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9.5"/><text x="${x.toFixed(1)}" y="${(y+.5).toFixed(1)}">${ix+1}</text></g>`;});
-  const mshort=/^messiaen/.test(state.mode)?'Messiaen '+state.mode.split('-')[1]:MODES.find(m=>m[0]===state.mode)[1];
-  $('wheel').innerHTML=`<svg viewBox="-222 -222 444 444" role="group" aria-label="Κύκλος πέμπτων · ${esc(T.name(state.tonic)+' '+mshort)}">${segs}${outline(curSlot,'cur-outline')}${pre?outline(pre,'pre-outline'):''}${marks}`+
-    `<g class="center" role="button" tabindex="-1" aria-label="Άκου το κέντρο"><circle r="58"/><text class="k" y="-6">${esc(T.name(state.tonic))}</text><text class="m" y="19">${esc(mshort)}</text></g></svg>`;
+  const mshort=modeShort(state.mode);
+  $('wheel').innerHTML=`<svg viewBox="-222 -222 444 444" role="group" aria-label="${esc(tx('Κύκλος πέμπτων · {0}',T.name(state.tonic)+' '+mshort))}">${segs}${outline(curSlot,'cur-outline')}${pre?outline(pre,'pre-outline'):''}${marks}`+
+    `<g class="center" role="button" tabindex="-1" aria-label="${esc(tx('Άκου το κέντρο'))}"><circle r="58"/><text class="k" y="-6">${esc(T.name(state.tonic))}</text><text class="m" y="19">${esc(mshort)}</text></g></svg>`;
 }
 function onWheel(e){
   const g=e.target.closest('.seg');
@@ -267,56 +272,64 @@ function fretboard(notes,root){
   for(let f=0;f<=4;f++)s+=`<line class="${f===0&&first===1?'nut':''}" x1="12" y1="${16+f*13.5}" x2="82" y2="${16+f*13.5}"/>`;
   g.frets.forEach((f,i)=>{const x=12+i*14;if(f<0)s+=`<text x="${x}" y="11">×</text>`;else if(f===0)s+=`<text x="${x}" y="11">○</text>`;else s+=`<circle cx="${x}" cy="${16+(f-first+.5)*13.5}" r="4.6"/>`;});
   if(first>1)s+=`<text x="92" y="${16+.5*13.5+3}">${first}</text>`;
-  return `<svg class="fret" viewBox="0 0 96 74" aria-label="Κιθάρα">${s}</svg>`;
+  return `<svg class="fret" viewBox="0 0 96 74" aria-label="${esc(tx('Κιθάρα'))}">${s}</svg>`;
 }
 function instrumentView(ch){return state.instrument==='guitar'?fretboard(ch.notes,ch.root):miniKeys(ch.notes);}
 function renderNow(){
   const c=current(),has=state.steps.length>0;
-  $('now').innerHTML=`<div class="eyebrow">${has?`Τώρα · <b>βήμα ${state.sel+1}</b> από ${state.steps.length}`:'Αφετηρία · το κέντρο σου'}</div>`+
-    `<div class="title"><span class="sym${c.label.length>9?' long':''}" title="${esc(c.label)}">${esc(c.label)}</span><span class="roman">${esc(romanOf(c))}</span></div>`+
+  const label=tp(c.label);
+  $('now').innerHTML=`<div class="eyebrow">${has?tx('Τώρα · <b>βήμα {0}</b> από {1}',state.sel+1,state.steps.length):esc(tx('Αφετηρία · το κέντρο σου'))}</div>`+
+    `<div class="title"><span class="sym${label.length>9?' long':''}" title="${esc(label)}">${esc(label)}</span><span class="roman">${esc(ti(romanOf(c)))}</span></div>`+
     `<div class="actions">${instrumentView(c)}<div class="row">`+
-    `<button type="button" class="btn-ghost" data-act="hear-now">▶ Άκου</button>`+
-    (has?`<button type="button" class="btn-ghost" data-act="edit">✎ Νότες</button>`:`<button type="button" class="btn-primary" data-act="start">＋ Ξεκίνα εδώ<span class="kbd">⏎</span></button>`)+
+    `<button type="button" class="btn-ghost" data-act="hear-now">${esc(tx('▶ Άκου'))}</button>`+
+    (has?`<button type="button" class="btn-ghost" data-act="edit">${esc(tx('✎ Νότες'))}</button>`:`<button type="button" class="btn-primary" data-act="start">${esc(tx('＋ Ξεκίνα εδώ'))}<span class="kbd">⏎</span></button>`)+
     `</div></div><div class="notes">${esc(c.notes.map(noteName).join(' · '))}</div>`;
 }
 function renderPreview(){
   const p=state.preview,box=$('preview');
   if(!p){box.hidden=true;box.innerHTML='';return;}
   box.hidden=false;
-  const after=state.steps.length?`Πρόσθεσε μετά το ${esc(current().label)}`:'Ξεκίνα με αυτή';
-  box.innerHTML=`<div class="eyebrow">Δοκιμή · ${p.source==='midi'?'από το MIDI':'από τον κύκλο'}</div>`+
-    `<div class="title"><span class="sym">${esc(p.label)}</span><span class="roman">${esc(p.roman||romanOf(p))}</span></div>`+
-    (p.source==='wheel'?`<div class="exts" role="radiogroup" aria-label="Μορφή">${EXTS.map(([id,l])=>`<button type="button" class="chip${state.ext===id?' on':''}" data-ext="${id}" role="radio" aria-checked="${state.ext===id}">${l}</button>`).join('')}</div>`:`<div class="exts"><span class="fine">${esc(p.notes.map(noteName).join(' · '))}</span></div>`)+
-    `<div class="actions"><button type="button" class="btn-primary" data-act="add-preview">＋ ${after}<span class="kbd">⏎</span></button>`+
-    `<button type="button" class="btn-ghost" data-act="center">◎ Κάνε το κέντρο</button><button type="button" class="btn-ghost" data-act="dismiss">Άκυρο <span class="kbd">esc</span></button></div>`;
+  const after=state.steps.length?tx('Πρόσθεσε μετά το {0}',tp(current().label)):tx('Ξεκίνα με αυτή');
+  box.innerHTML=`<div class="eyebrow">${esc(tx(p.source==='midi'?'Δοκιμή · από το MIDI':'Δοκιμή · από τον κύκλο'))}</div>`+
+    `<div class="title"><span class="sym">${esc(tp(p.label))}</span><span class="roman">${esc(ti(p.roman||romanOf(p)))}</span></div>`+
+    (p.source==='wheel'?`<div class="exts" role="radiogroup" aria-label="${esc(tx('Μορφή'))}">${EXTS.map(([id,l])=>`<button type="button" class="chip${state.ext===id?' on':''}" data-ext="${id}" role="radio" aria-checked="${state.ext===id}">${esc(tx(l))}</button>`).join('')}</div>`:`<div class="exts"><span class="fine">${esc(p.notes.map(noteName).join(' · '))}</span></div>`)+
+    `<div class="actions"><button type="button" class="btn-primary" data-act="add-preview">＋ ${esc(after)}<span class="kbd">⏎</span></button>`+
+    `<button type="button" class="btn-ghost" data-act="center">${esc(tx('◎ Κάνε το κέντρο'))}</button><button type="button" class="btn-ghost" data-act="dismiss">${esc(tx('Άκυρο'))} <span class="kbd">esc</span></button></div>`;
 }
 function renderIntents(){
-  $('intents').innerHTML=N.INTENTS.map(x=>`<button type="button" class="chip${state.intent===x.id?' on':''}" data-intent="${x.id}" role="radio" aria-checked="${state.intent===x.id}" title="${esc(x.hint)}">${esc(x.label)}</button>`).join('');
+  $('intents').innerHTML=N.INTENTS.map(x=>`<button type="button" class="chip${state.intent===x.id?' on':''}" data-intent="${x.id}" role="radio" aria-checked="${state.intent===x.id}" title="${esc(tx(x.hint))}">${esc(tx(x.label))}</button>`).join('');
 }
 const ICON_PLAY='<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></svg>',ICON_ADD='<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
 function renderCards(){
   const c=current();
   state.suggestions=N.suggest({current:c,history:state.steps.slice(0,state.sel+1),...keyOpts(),style:state.style,intent:state.intent});
-  $('cards').innerHTML=state.suggestions.map((s,i)=>`<li class="card${s.contrast?' contrast':''}${state.heard===i?' heard':''}" data-i="${i}">`+
+  $('cards').innerHTML=state.suggestions.map((s,i)=>{
+    const why=tx(s.reason&&(s.origin!=='style'||s.fit)?s.reason:(s.why||s.reason||'')),origin=tp(s.originLabel||'');
+    return `<li class="card${s.contrast?' contrast':''}${state.heard===i?' heard':''}" data-i="${i}">`+
     `<span class="badge">${i+1}</span>`+
-    `<div class="head"><span class="sym">${esc(s.label)}</span><span class="roman">${esc(s.roman)}</span></div>`+
-    `<div class="why" title="${esc(s.why||s.reason)}">${esc(s.reason&&(s.origin!=='style'||s.fit)?s.reason:(s.why||s.reason||''))}</div>`+
-    `<div class="meta"><span class="origin" title="${esc(s.originLabel)}">${esc(s.originLabel)}</span><span class="motion">${esc(s.motion.text)}</span></div>`+
-    `<div class="acts"><button type="button" data-act="hear" aria-label="Άκου τη μετάβαση" title="Άκου τη μετάβαση (${i+1})">${ICON_PLAY}</button><button type="button" class="add" data-act="add" aria-label="Πρόσθεσε" title="Πρόσθεσε μετά το ${esc(c.label)}">${ICON_ADD}</button></div></li>`).join('');
-  const l=land();$('styleNote').hidden=!l?.chordWarning;$('styleNote').textContent=l?.chordWarning||'';
+    `<div class="head"><span class="sym">${esc(tp(s.label))}</span><span class="roman">${esc(ti(s.roman))}</span></div>`+
+    `<div class="why" title="${esc(tx(s.why||s.reason||''))}">${esc(why)}</div>`+
+    `<div class="meta"><span class="origin" title="${esc(origin)}">${esc(origin)}</span><span class="motion">${esc(motionText(s.motion))}</span></div>`+
+    `<div class="acts"><button type="button" data-act="hear" aria-label="${esc(tx('Άκου τη μετάβαση'))}" title="${esc(tx('Άκου τη μετάβαση ({0})',i+1))}">${ICON_PLAY}</button><button type="button" class="add" data-act="add" aria-label="${esc(tx('Πρόσθεσε'))}" title="${esc(tx('Πρόσθεσε μετά το {0}',tp(c.label)))}">${ICON_ADD}</button></div></li>`;}).join('');
+  const l=land();$('styleNote').hidden=!l?.chordWarning;$('styleNote').textContent=l?.chordWarning?tx(l.chordWarning):'';
+}
+/* What stays and what moves, in the current language. */
+function motionText(m){
+  if(!m)return '';
+  return [m.held.length?tx('κρατά {0}',m.held.map(T.name).join('·')):'',...m.moves.slice(0,2).map(x=>`${T.name(x.from)}→${T.name(x.to)} ${x.delta>0?'↑':'↓'}${Math.abs(x.delta)}`)].filter(Boolean).join(' · ');
 }
 function renderStrip(){
   const strip=$('strip');
-  if(!state.steps.length){strip.innerHTML=`<span class="empty">Η σύνθεση ξεκινά εδώ. Κλικ στον κύκλο ή σε μια πρόταση, και ⏎.</span>`;return;}
+  if(!state.steps.length){strip.innerHTML=`<span class="empty">${esc(tx('Η σύνθεση ξεκινά εδώ. Κλικ στον κύκλο ή σε μια πρόταση, και ⏎.'))}</span>`;return;}
   strip.innerHTML=state.steps.map((s,i)=>{
     const inr=state.range&&i>=state.range[0]&&i<=state.range[1];
-    return `<button type="button" class="step${i===state.sel?' sel':''}${inr?' inrange':''}" role="option" aria-selected="${i===state.sel}" draggable="true" data-i="${i}" style="--beats:${s.beats||4}" title="${esc(s.label)} · ${s.beats||4} χτύποι · διπλό κλικ για νότες">`+
-      `<span class="s">${esc(s.label)}</span><span class="r">${esc(romanOf(s))}</span><span class="len">${s.beats||4}</span></button>`;}).join('');
+    return `<button type="button" class="step${i===state.sel?' sel':''}${inr?' inrange':''}" role="option" aria-selected="${i===state.sel}" draggable="true" data-i="${i}" style="--beats:${s.beats||4}" title="${esc(tx('{0} · {1} χτύποι · διπλό κλικ για νότες',tp(s.label),s.beats||4))}">`+
+      `<span class="s">${esc(tp(s.label))}</span><span class="r">${esc(ti(romanOf(s)))}</span><span class="len">${s.beats||4}</span></button>`;}).join('');
   renderStripPlaying();
 }
 function renderStripPlaying(){document.querySelectorAll('.step').forEach(el=>el.classList.toggle('playing',Boolean(state.play)&&Number(el.dataset.i)===state.play.index));}
 function scrollToSel(){const el=document.querySelector(`.step[data-i="${state.sel}"]`);el?.scrollIntoView?.({block:'nearest',inline:'nearest'});}
-function renderTransport(){$('play').classList.toggle('on',Boolean(state.play));$('play').setAttribute('aria-label',state.play?'Στοπ':'Αναπαραγωγή');
+function renderTransport(){$('play').classList.toggle('on',Boolean(state.play));$('play').setAttribute('aria-label',tx(state.play?'Στοπ':'Αναπαραγωγή'));
   $('loop').setAttribute('aria-pressed',String(state.loop));$('bpm').value=String(state.bpm);
   $('undo').disabled=!undoStack.past.length;$('redo').disabled=!undoStack.future.length;}
 function syncControls(){
@@ -326,7 +339,7 @@ function syncControls(){
 }
 function renderAnalysis(){
   if(state.view!=='analysis')return;
-  $('analysisBody').innerHTML=A.html(projectData());
+  $('analysisBody').innerHTML=A.html(projectData(),state.lang);
   for(const id of ['exportPdf','exportMidi'])$(id).disabled=!state.steps.length;
 }
 function refresh(){
@@ -353,14 +366,15 @@ function renderEditor(){
   const w=900/whites.length;let keys='';
   whites.forEach((n,k)=>{const on=s.notes.includes(n);keys+=`<rect class="w${on?' on':''}" data-n="${n}" x="${(k*w).toFixed(2)}" y="0" width="${(w-.8).toFixed(2)}" height="92" rx="3"/>`+(pc(n)===0||on?`<text class="${on?'on':''}" x="${(k*w+w/2).toFixed(2)}" y="84">${esc(noteName(n))}</text>`:'');});
   whites.forEach((n,k)=>{if([0,2,5,7,9].includes(pc(n))&&n+1<=hi){const b=n+1,on=s.notes.includes(b);keys+=`<rect class="b${on?' on':''}" data-n="${b}" x="${(k*w+w*.64).toFixed(2)}" y="0" width="${(w*.72).toFixed(2)}" height="56" rx="2"/>`;}});
-  $('editor').innerHTML=`<header><h2 id="editorTitle">Βήμα ${i+1}<span class="sym">${esc(s.label)}</span></h2><button type="button" class="icon-button" data-ed="close" aria-label="Κλείσιμο"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>`+
-    `<svg class="keys" viewBox="0 0 900 93" role="group" aria-label="Πάτα πλήκτρα για να προσθέσεις ή να αφαιρέσεις νότες">${keys}</svg>`+
+  const w_=k=>esc(tx(k));
+  $('editor').innerHTML=`<header><h2 id="editorTitle">${w_(tx('Βήμα {0}',i+1))}<span class="sym">${esc(tp(s.label))}</span></h2><button type="button" class="icon-button" data-ed="close" aria-label="${w_('Κλείσιμο')}"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>`+
+    `<svg class="keys" viewBox="0 0 900 93" role="group" aria-label="${w_('Πάτα πλήκτρα για να προσθέσεις ή να αφαιρέσεις νότες')}">${keys}</svg>`+
     `<div class="tools">`+
-    `<div class="group"><span>Οκτάβα</span><button type="button" data-ed="oct-">−</button><button type="button" data-ed="oct+">+</button></div>`+
-    `<div class="group"><span>Αναστροφή</span><button type="button" data-ed="inv-">↓</button><button type="button" data-ed="inv+">↑</button></div>`+
-    `<div class="group"><span>Διάταξη</span><button type="button" data-ed="v-close">Κλειστή</button><button type="button" data-ed="v-open">Ανοιχτή</button><button type="button" data-ed="v-drop2">Drop 2</button></div>`+
-    `<div class="group"><span>Χτύποι</span>${BEATS.map(b=>`<button type="button" class="${(s.beats||4)===b?'on':''}" data-ed="beats" data-b="${b}">${b}</button>`).join('')}</div>`+
-    `<span class="spacer"></span><div class="group"><button type="button" data-ed="hear">▶ Άκου</button><button type="button" data-ed="delete">Αφαίρεση</button></div></div>`;
+    `<div class="group"><span>${w_('Οκτάβα')}</span><button type="button" data-ed="oct-">−</button><button type="button" data-ed="oct+">+</button></div>`+
+    `<div class="group"><span>${w_('Αναστροφή')}</span><button type="button" data-ed="inv-">↓</button><button type="button" data-ed="inv+">↑</button></div>`+
+    `<div class="group"><span>${w_('Διάταξη')}</span><button type="button" data-ed="v-close">${w_('Κλειστή')}</button><button type="button" data-ed="v-open">${w_('Ανοιχτή')}</button><button type="button" data-ed="v-drop2">Drop 2</button></div>`+
+    `<div class="group"><span>${w_('Χτύποι')}</span>${BEATS.map(b=>`<button type="button" class="${(s.beats||4)===b?'on':''}" data-ed="beats" data-b="${b}">${b}</button>`).join('')}</div>`+
+    `<span class="spacer"></span><div class="group"><button type="button" data-ed="hear">${w_('▶ Άκου')}</button><button type="button" data-ed="delete">${w_('Αφαίρεση')}</button></div></div>`;
 }
 function onEditor(e){
   const i=state.editor,s=state.steps[i];if(!s)return;
@@ -392,7 +406,7 @@ function projectData(){
 function readProject(raw){
   const p=PS.normalize(raw),st=p.settings||{};
   const intents=N.INTENTS.map(x=>x.id);
-  state.projectName=p.name||'Χωρίς τίτλο';
+  state.projectName=p.name||tx('Χωρίς τίτλο');
   state.tonic=Number.isInteger(st.tonic)?st.tonic:0;
   state.mode=st.scaleFamily==='messiaen'&&M.PATTERNS[st.messiaenMode]&&st.messiaenMode>1?'messiaen-'+st.messiaenMode:(T.MODE[st.mode]?st.mode:'ionian');
   state.style=st.style==='free'||L.LANDSCAPES.some(l=>l.id===st.style)?st.style:'free';
@@ -407,30 +421,30 @@ function readProject(raw){
   state.sel=state.steps.length-1;state.range=null;state.preview=null;state.heard=-1;
 }
 let saveTimer=0;
-function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(KEY_PROJECT,JSON.stringify(projectData()));}catch(_){status('Η τοπική αποθήκευση απέτυχε. Κράτα αντίγραφο JSON.');}},250);}
+function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(KEY_PROJECT,JSON.stringify(projectData()));}catch(_){status(tx('Η τοπική αποθήκευση απέτυχε. Κράτα αντίγραφο JSON.'));}},250);}
 function load(){
   for(const k of [KEY_PROJECT,'cl-v15-project','cl-v06-project']){
     let raw=null;try{raw=localStorage.getItem(k);}catch(_){return;}
     if(!raw)continue;
-    try{readProject(JSON.parse(raw));if(k!==KEY_PROJECT)status('Άνοιξε το έργο της προηγούμενης έκδοσης.');return;}
+    try{readProject(JSON.parse(raw));if(k!==KEY_PROJECT)status(tx('Άνοιξε το έργο της προηγούμενης έκδοσης.'));return;}
     catch(_){try{localStorage.setItem('cl-v16-recovery-'+Date.now(),raw);}catch(__){}}
   }
 }
 function library(){try{const rows=JSON.parse(localStorage.getItem(KEY_LIBRARY)||'null');if(Array.isArray(rows))return rows;
   const old=JSON.parse(localStorage.getItem('cl-v15-library')||'[]');return Array.isArray(old)?old.filter(x=>x?.format==='chord-lab-project'):[];}catch(_){return [];}}
-function writeLibrary(rows){try{localStorage.setItem(KEY_LIBRARY,JSON.stringify(rows.slice(-64)));}catch(_){status('Η βιβλιοθήκη δεν αποθηκεύτηκε.');}}
+function writeLibrary(rows){try{localStorage.setItem(KEY_LIBRARY,JSON.stringify(rows.slice(-64)));}catch(_){status(tx('Η βιβλιοθήκη δεν αποθηκεύτηκε.'));}}
 function renderLibrary(){
   const rows=library();
-  $('library').innerHTML=rows.length?rows.map((p,i)=>`<li><button type="button" class="open" data-lib="${i}">${esc(p.name)} <small>· ${p.sequence?.length||0} βήματα</small></button><button type="button" class="del" data-libdel="${i}" aria-label="Διαγραφή ${esc(p.name)}">×</button></li>`).join(''):'<li class="fine">Καμία αποθηκευμένη σύνθεση.</li>';
+  $('library').innerHTML=rows.length?rows.map((p,i)=>`<li><button type="button" class="open" data-lib="${i}">${esc(p.name)} <small>· ${esc(tx('{0} βήματα',p.sequence?.length||0))}</small></button><button type="button" class="del" data-libdel="${i}" aria-label="${esc(tx('Διαγραφή {0}',p.name))}">×</button></li>`).join(''):`<li class="fine">${esc(tx('Καμία αποθηκευμένη σύνθεση.'))}</li>`;
 }
-function saveToLibrary(){const rows=library(),p=projectData(),i=rows.findIndex(x=>x.name===p.name);if(i>=0)rows[i]=p;else rows.push(p);writeLibrary(rows);renderLibrary();status(`Αποθηκεύτηκε «${p.name}».`);}
-function openFromLibrary(i){const p=library()[i];if(!p)return;stop();remember();try{readProject(p);refresh();save();status(`Άνοιξε «${state.projectName}».`);}catch(e){status('Δεν άνοιξε: '+e.message);}}
-function newProject(){stop();remember();state.steps=[];state.sel=-1;state.range=null;state.preview=null;state.projectName='Χωρίς τίτλο';closeEditor();refresh();save();status('Νέα σύνθεση. ⌘Z επαναφέρει την προηγούμενη.');}
-function exportJson(){download(JSON.stringify(projectData(),null,2),`${slug(state.projectName)}.json`,'application/json');status('Αποθηκεύτηκε αντίγραφο JSON.');}
+function saveToLibrary(){const rows=library(),p=projectData(),i=rows.findIndex(x=>x.name===p.name);if(i>=0)rows[i]=p;else rows.push(p);writeLibrary(rows);renderLibrary();status(tx('Αποθηκεύτηκε «{0}».',p.name));}
+function openFromLibrary(i){const p=library()[i];if(!p)return;stop();remember();try{readProject(p);refresh();save();status(tx('Άνοιξε «{0}».',state.projectName));}catch(e){status(tx('Δεν άνοιξε: {0}',e.message));}}
+function newProject(){stop();remember();state.steps=[];state.sel=-1;state.range=null;state.preview=null;state.projectName=tx('Χωρίς τίτλο');closeEditor();refresh();save();status(tx('Νέα σύνθεση. ⌘Z επαναφέρει την προηγούμενη.'));}
+function exportJson(){download(JSON.stringify(projectData(),null,2),`${slug(state.projectName)}.json`,'application/json');status(tx('Αποθηκεύτηκε αντίγραφο JSON.'));}
 async function importJson(file){
-  if(!file)return;if(file.size>2e6){status('Το αρχείο είναι πολύ μεγάλο.');return;}
-  try{const raw=JSON.parse(await file.text());PS.normalize(raw);stop();remember();readProject(raw);refresh();save();status(`Άνοιξε «${state.projectName}» με ${state.steps.length} βήματα.`);}
-  catch(e){status('Δεν άνοιξε το αρχείο: '+e.message);}
+  if(!file)return;if(file.size>2e6){status(tx('Το αρχείο είναι πολύ μεγάλο.'));return;}
+  try{const raw=JSON.parse(await file.text());PS.normalize(raw);stop();remember();readProject(raw);refresh();save();status(tx('Άνοιξε «{0}» με {1} βήματα.',state.projectName,state.steps.length));}
+  catch(e){status(tx('Δεν άνοιξε το αρχείο: {0}',e.message));}
 }
 function midiBytes(){
   const ppq=480,bpm=state.bpm,micro=Math.round(6e7/bpm),ev=[{t:0,b:[255,81,3,micro>>16&255,micro>>8&255,micro&255]},{t:0,b:[255,88,4,4,2,24,8]}];
@@ -442,13 +456,13 @@ function midiBytes(){
   const len=bytes.length;return new Uint8Array([77,84,104,100,0,0,0,6,0,0,0,1,ppq>>8,ppq&255,77,84,114,107,len>>>24&255,len>>>16&255,len>>>8&255,len&255,...bytes]);
   function vlen(v){let n=v>>>0;const a=[n&127];while((n>>=7)>0)a.unshift((n&127)|128);return a;}
 }
-function exportMidi(){if(!state.steps.length){status('Πρόσθεσε πρώτα συγχορδίες.');return;}download(midiBytes(),`${slug(state.projectName)}-${today()}.mid`,'audio/midi');status('Εξαγωγή MIDI: ένα κομμάτι, οι ακριβείς νότες και διάρκειες.');}
+function exportMidi(){if(!state.steps.length){status(tx('Πρόσθεσε πρώτα συγχορδίες.'));return;}download(midiBytes(),`${slug(state.projectName)}-${today()}.mid`,'audio/midi');status(tx('Εξαγωγή MIDI: ένα κομμάτι, οι ακριβείς νότες και διάρκειες.'));}
 async function exportPdf(){
-  if(!state.steps.length){status('Πρόσθεσε πρώτα συγχορδίες.');return;}
-  const html=R.makeHTML(projectData()),name=`${slug(state.projectName)}-${today()}.pdf`;
-  if(desktop?.exportPdf){try{const r=await desktop.exportPdf(html,name);status(r?.canceled?'Η εξαγωγή PDF ακυρώθηκε.':'Αποθηκεύτηκε το PDF: '+(r?.path||name));}catch(e){status('Δεν δημιουργήθηκε PDF: '+e.message);}return;}
-  const w=window.open('','_blank');if(!w){status('Επίτρεψε τα αναδυόμενα παράθυρα για το PDF.');return;}
-  w.document.open();w.document.write(html);w.document.close();w.focus();status('Άνοιξε η ανάλυση: Εκτύπωση → Αποθήκευση ως PDF.');
+  if(!state.steps.length){status(tx('Πρόσθεσε πρώτα συγχορδίες.'));return;}
+  const html=R.makeHTML(projectData(),state.lang),name=`${slug(state.projectName)}-${today()}.pdf`;
+  if(desktop?.exportPdf){try{const r=await desktop.exportPdf(html,name);status(r?.canceled?tx('Η εξαγωγή PDF ακυρώθηκε.'):tx('Αποθηκεύτηκε το PDF: {0}',r?.path||name));}catch(e){status(tx('Δεν δημιουργήθηκε PDF: {0}',e.message));}return;}
+  const w=window.open('','_blank');if(!w){status(tx('Επίτρεψε τα αναδυόμενα παράθυρα για το PDF.'));return;}
+  w.document.open();w.document.write(html);w.document.close();w.focus();status(tx('Άνοιξε η ανάλυση: Εκτύπωση → Αποθήκευση ως PDF.'));
 }
 
 /* ------------------------------------------------------------ views, settings, lab */
@@ -503,7 +517,7 @@ function onKey(e){
     select(state.sel+d);return;}
   if(e.key==='['){stepBeats(-1);return;}
   if(e.key===']'){stepBeats(1);return;}
-  if(e.key.toLowerCase()==='l'){state.loop=!state.loop;renderTransport();if(state.play){stop(false);playRange();}status(state.loop?'Επανάληψη ενεργή.':'Επανάληψη ανενεργή.');return;}
+  if(e.key.toLowerCase()==='l'){state.loop=!state.loop;renderTransport();if(state.play){stop(false);playRange();}status(state.loop?tx('Επανάληψη ενεργή.'):tx('Επανάληψη ανενεργή.'));return;}
   if(e.key.toLowerCase()==='e'){openEditor();return;}
   if(e.key==='Backspace'||e.key==='Delete'){e.preventDefault();removeStep();return;}
 }
@@ -526,20 +540,62 @@ function onCommand(cmd){
   }
 }
 
+/* ------------------------------------------------------------ language */
+/* Static text in index.html keeps its Greek original, so switching back works. */
+const ORIGINAL=new WeakMap();
+const DYNAMIC='#wheel,#now,#preview,#cards,#intents,#strip,#editor,#analysisBody,#library,#keysHelp,#status,#midiOut,#mode,#style,#tonic,#lang,#oldFrame,#midiConnect';
+function translateStatic(){
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);
+  for(let n=walker.currentNode;n;n=walker.nextNode()){
+    const el=n.nodeType===3?n.parentElement:n;
+    if(!el)continue;
+    // A dynamic container keeps its own labels static; what is inside it is rendered.
+    if(n.nodeType===3?el.closest(DYNAMIC):el.parentElement?.closest(DYNAMIC))continue;
+    if(n.nodeType===3){
+      const orig=ORIGINAL.has(n)?ORIGINAL.get(n):n.nodeValue;
+      if(!GREEK.test(orig))continue;
+      ORIGINAL.set(n,orig);const t=orig.trim();n.nodeValue=orig.replace(t,tx(t));
+    }else for(const a of ['title','aria-label','placeholder']){
+      if(!n.hasAttribute(a))continue;
+      let store=ORIGINAL.get(n);if(!store){store={};ORIGINAL.set(n,store);}
+      if(!(a in store))store[a]=n.getAttribute(a);
+      if(GREEK.test(store[a]))n.setAttribute(a,tx(store[a]));
+    }
+  }
+  if(!state.midi.access){$('midiConnect').textContent=tx('Σύνδεση MIDI');$('midiOut').options[0].textContent=tx('Εσωτερικός ήχος');}
+}
+function buildSelects(){
+  $('mode').innerHTML=`<optgroup label="${esc(tx('Διατονικοί'))}">${MODES.slice(0,7).map(([v])=>`<option value="${v}">${esc(modeLabel(v))}</option>`).join('')}</optgroup><optgroup label="${esc(tx('Messiaen · συμμετρικοί'))}">${MODES.slice(7).map(([v])=>`<option value="${v}">${esc(modeLabel(v))}</option>`).join('')}</optgroup>`;
+  $('style').innerHTML=`<option value="free">${esc(tx('Ελεύθερο'))}</option>`+L.LANDSCAPES.map(l=>`<option value="${l.id}">${esc(tx(l.name))}</option>`).join('');
+  $('keysHelp').innerHTML=KEYS.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(tx(v))}</dd>`).join('');
+}
+function applyLanguage(){
+  document.documentElement.lang=state.lang;
+  if(['Χωρίς τίτλο','Untitled'].includes(state.projectName))state.projectName=tx('Χωρίς τίτλο');
+  translateStatic();buildSelects();$('lang').value=state.lang;
+  desktop?.setLanguage?.(state.lang);
+  state.midi.access?.onstatechange?.();
+}
+function setLanguage(lang){
+  state.lang=lang==='en'?'en':'el';
+  try{localStorage.setItem('cl-lang',state.lang);}catch(_){}
+  applyLanguage();refresh();if(!$('settings').hidden)renderLibrary();save();
+}
+
 /* ------------------------------------------------------------ setup */
 function setup(){
   try{state.theme=localStorage.getItem('cl-theme')||'ivory';state.instrument=localStorage.getItem('cl-instrument')||'piano';}catch(_){}
   if(!['ivory','slate','dark'].includes(state.theme))state.theme='ivory';
   document.body.dataset.theme=state.theme;
   if(desktop?.platform==='darwin')document.body.classList.add('mac-desktop');
+  let storedLang=null;try{storedLang=localStorage.getItem('cl-lang');}catch(_){}
+  state.lang=I.detect(storedLang,navigator.languages||[navigator.language]);
   $('tonic').innerHTML=T.N.map((n,i)=>`<option value="${i}">${n}</option>`).join('');
-  $('mode').innerHTML=`<optgroup label="Διατονικοί">${MODES.slice(0,7).map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</optgroup><optgroup label="Messiaen · συμμετρικοί">${MODES.slice(7).map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</optgroup>`;
-  $('style').innerHTML=`<option value="free">Ελεύθερο</option>`+L.LANDSCAPES.map(l=>`<option value="${l.id}">${esc(l.name)}</option>`).join('');
-  $('keysHelp').innerHTML=KEYS.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
   load();
-  $('tonic').addEventListener('change',e=>{setContext('tonic',Number(e.target.value));status(`Κέντρο ${T.name(state.tonic)}.`);});
+  applyLanguage();
+  $('tonic').addEventListener('change',e=>{setContext('tonic',Number(e.target.value));status(tx('Κέντρο {0}.',T.name(state.tonic)));});
   $('mode').addEventListener('change',e=>setContext('mode',e.target.value));
-  $('style').addEventListener('change',e=>{setContext('style',e.target.value);const l=land();status(l?`${l.name}: ${l.short}.`:'Ελεύθερο: προτάσεις μόνο από την τονικότητα.');});
+  $('style').addEventListener('change',e=>{setContext('style',e.target.value);const l=land();status(l?`${tx(l.name)}: ${tx(l.short)}.`:tx('Ελεύθερο: προτάσεις μόνο από την τονικότητα.'));});
   $('viewCompose').addEventListener('click',()=>setView('compose'));
   $('viewAnalysis').addEventListener('click',()=>setView('analysis'));
   $('openSettings').addEventListener('click',openSettings);
@@ -559,7 +615,7 @@ function setup(){
     if(a==='center'&&state.preview)setCenter(state.preview.root,state.preview.family==='minor');
     if(a==='dismiss'){state.preview=null;renderPreview();renderWheel();}});
   $('intents').addEventListener('click',e=>{const b=e.target.closest('[data-intent]');if(!b)return;state.intent=b.dataset.intent;state.heard=-1;renderWheelAndCards();save();
-    status(N.INTENTS.find(x=>x.id===state.intent).label+': '+N.INTENTS.find(x=>x.id===state.intent).hint+'.');});
+    status(tx(N.INTENTS.find(x=>x.id===state.intent).label)+': '+tx(N.INTENTS.find(x=>x.id===state.intent).hint)+'.');});
   $('cards').addEventListener('click',e=>{const li=e.target.closest('.card');if(!li)return;const i=Number(li.dataset.i);
     if(e.target.closest('[data-act="add"]')){const s=state.suggestions[i];insert(s,{sourceLabel:s.originLabel});return;}
     hear(i);});
@@ -578,17 +634,18 @@ function setup(){
   $('bpm').addEventListener('change',e=>{const v=Math.max(40,Math.min(220,Math.round(Number(e.target.value))||84));if(v!==state.bpm){remember();state.bpm=v;save();}renderTransport();if(state.play){stop(false);playRange();}});
   $('undo').addEventListener('click',undo);$('redo').addEventListener('click',redo);
   $('editor').addEventListener('click',onEditor);
-  $('projectName').addEventListener('change',e=>{state.projectName=(e.target.value||'Χωρίς τίτλο').slice(0,80);save();});
+  $('projectName').addEventListener('change',e=>{state.projectName=(e.target.value||tx('Χωρίς τίτλο')).slice(0,80);save();});
   $('newProject').addEventListener('click',newProject);
   $('saveLibrary').addEventListener('click',saveToLibrary);
   $('importJson').addEventListener('click',()=>$('importFile').click());
   $('importFile').addEventListener('change',async e=>{await importJson(e.target.files?.[0]);e.target.value='';});
   $('library').addEventListener('click',e=>{const o=e.target.closest('[data-lib]');if(o){openFromLibrary(Number(o.dataset.lib));closeSettings();return;}
-    const d=e.target.closest('[data-libdel]');if(d){const rows=library();const [gone]=rows.splice(Number(d.dataset.libdel),1);writeLibrary(rows);renderLibrary();status(`Διαγράφηκε «${gone?.name}» από τη βιβλιοθήκη.`);}});
+    const d=e.target.closest('[data-libdel]');if(d){const rows=library();const [gone]=rows.splice(Number(d.dataset.libdel),1);writeLibrary(rows);renderLibrary();status(tx('Διαγράφηκε «{0}» από τη βιβλιοθήκη.',gone?.name));}});
   $('midiConnect').addEventListener('click',()=>connectMidi(false));
-  $('midiOut').addEventListener('change',e=>{midiPanic();state.midi.outId=e.target.value;status(state.midi.outId?'Ο ήχος πηγαίνει και στην έξοδο MIDI.':'Μόνο εσωτερικός ήχος.');});
+  $('midiOut').addEventListener('change',e=>{midiPanic();state.midi.outId=e.target.value;status(state.midi.outId?tx('Ο ήχος πηγαίνει και στην έξοδο MIDI.'):tx('Μόνο εσωτερικός ήχος.'));});
   $('instrument').addEventListener('change',e=>{state.instrument=e.target.value;try{localStorage.setItem('cl-instrument',state.instrument);}catch(_){}renderNow();});
   $('theme').addEventListener('change',e=>{state.theme=e.target.value;document.body.dataset.theme=state.theme;try{localStorage.setItem('cl-theme',state.theme);}catch(_){}});
+  $('lang').addEventListener('change',e=>setLanguage(e.target.value));
   $('openLab').addEventListener('click',openLab);
   $('closeLab').addEventListener('click',closeLab);
   $('oldFrame').addEventListener('load',()=>labPost($('oldOverlay').hidden?'pause':'resume'));
@@ -602,5 +659,5 @@ function setup(){
   refresh();
 }
 setup();
-window.ChordStudio={state,refresh,insert,select,undo,redo,projectData,readProject,midiBytes,hear,addHeardOrPreview,previewFromWheel,setBeats,playRange,stop,onCommand};
+window.ChordStudio={state,refresh,insert,select,undo,redo,projectData,readProject,midiBytes,hear,addHeardOrPreview,previewFromWheel,setBeats,playRange,stop,onCommand,setLanguage};
 })();

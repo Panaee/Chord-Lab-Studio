@@ -30,7 +30,7 @@ ManifestDPIAware true
 !include "x64.nsh"
 !define APPNAME "Chord Lab Studio"
 !define APPEXE "Chord Lab Studio.exe"
-!define UNINSTEXE "Κατάργηση Chord Lab Studio.exe"
+!define UNINSTEXE "Uninstall Chord Lab Studio.exe"
 !define UNINSTKEY "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\ChordLabStudio"
 Name "${{APPNAME}} {version}"
 OutFile "{os.path.abspath(out)}"
@@ -44,24 +44,30 @@ BrandingText "Chord Lab Studio {version}"
 !define MUI_UNICON "{os.path.abspath(icon)}"
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_RUN "$INSTDIR\\${{APPEXE}}"
-!define MUI_FINISHPAGE_RUN_TEXT "Άνοιγμα του Chord Lab Studio"
+!define MUI_FINISHPAGE_RUN_TEXT "$(RunText)"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
+; English first: it is the default when the Windows language is neither.
+!insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_LANGUAGE "Greek"
+LangString RunText ${{LANG_ENGLISH}} "Open Chord Lab Studio"
+LangString RunText ${{LANG_GREEK}} "Άνοιγμα του Chord Lab Studio"
+LangString Need64 ${{LANG_ENGLISH}} "Chord Lab Studio needs 64-bit Windows."
+LangString Need64 ${{LANG_GREEK}} "Το Chord Lab Studio χρειάζεται Windows 64-bit."
 
 VIProductVersion "{a}.{b}.{c}.0"
-VIAddVersionKey /LANG=${{LANG_GREEK}} "ProductName" "Chord Lab Studio"
-VIAddVersionKey /LANG=${{LANG_GREEK}} "FileDescription" "Εγκατάσταση Chord Lab Studio"
-VIAddVersionKey /LANG=${{LANG_GREEK}} "FileVersion" "{version}"
-VIAddVersionKey /LANG=${{LANG_GREEK}} "ProductVersion" "{version}"
-VIAddVersionKey /LANG=${{LANG_GREEK}} "LegalCopyright" ""
+VIAddVersionKey /LANG=${{LANG_ENGLISH}} "ProductName" "Chord Lab Studio"
+VIAddVersionKey /LANG=${{LANG_ENGLISH}} "FileDescription" "Chord Lab Studio Setup"
+VIAddVersionKey /LANG=${{LANG_ENGLISH}} "FileVersion" "{version}"
+VIAddVersionKey /LANG=${{LANG_ENGLISH}} "ProductVersion" "{version}"
+VIAddVersionKey /LANG=${{LANG_ENGLISH}} "LegalCopyright" ""
 
 Function .onInit
   ${{IfNot}} ${{RunningX64}}
-    MessageBox MB_ICONSTOP "Το Chord Lab Studio χρειάζεται Windows 64-bit."
+    MessageBox MB_ICONSTOP "$(Need64)"
     Abort
   ${{EndIf}}
 FunctionEnd
@@ -78,6 +84,7 @@ Section "Chord Lab Studio"
   SetOutPath "$INSTDIR"
   RMDir /r "$INSTDIR\\resources"
   File /r "{src}\\*.*"
+  Delete "$INSTDIR\\Κατάργηση Chord Lab Studio.exe"
   WriteUninstaller "$INSTDIR\\${{UNINSTEXE}}"
   CreateShortCut "$SMPROGRAMS\\${{APPNAME}}.lnk" "$INSTDIR\\${{APPEXE}}" "" "$INSTDIR\\${{APPEXE}}" 0
   CreateShortCut "$DESKTOP\\${{APPNAME}}.lnk" "$INSTDIR\\${{APPEXE}}" "" "$INSTDIR\\${{APPEXE}}" 0
