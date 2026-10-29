@@ -69,4 +69,24 @@ const m2=N.keyOf({tonic:0,mode:'messiaen-2'});assert.equal(m2.pcs.length,8);
 assert(N.keyChords(m2).every(ch=>ch.pcs.every(p=>m2.pcs.includes(p))));
 // Recognition keeps the played notes and names them.
 const rec=N.recognise([52,55,60],key);assert.equal(rec.label,'C/E');assert.deepEqual(rec.notes,[52,55,60]);
-console.log(`NextChords: 9 styles × 6 intents shape ≥2 of 3 proposals (${triples.size} distinct sets), symbols and Roman case, path continuation, Glass bass, Byzantine ison, voice leading, wheel slots passed`);
+
+// The bass moves by octaves, never off its note (Dm high → E7 kept E in the bass).
+const e7=N.voiceLead([62,65,69,74],[4,8,11,2],4);assert.equal(Math.min(...e7)%12,4,'E in the bass');assert(Math.min(...e7)<=62);
+
+// Starting phrases: the style's paths on the tonic, four chords first, voice count kept.
+const startAm={root:9,notes:[57,60,64,69]};
+const mor=N.phrase({tonic:9,mode:'aeolian',style:'morricone',start:startAm});
+assert.equal(mor.name,'Morricone · i–♭VII–♭VI–V');assert.deepEqual(mor.chords.map(c=>c.label),['Am','G','F','E']);
+assert(mor.chords.every(c=>c.notes.length===4));
+assert.equal(N.phrase({tonic:9,mode:'aeolian',style:'morricone',start:startAm,turn:1}).name,'Morricone · i–♭II–V7–i (ναπολιτάνικη)');
+const startC={root:0,notes:[48,52,55,60]};
+assert.deepEqual(N.phrase({tonic:0,mode:'ionian',style:'jazz',start:startC}).chords.map(c=>c.label),['Cmaj7','Am7','Dm7','G7']);
+assert.deepEqual(N.phrase({tonic:0,mode:'ionian',style:'byzantine',start:startC}).chords.map(c=>c.notes.length),[2,2,2],'ison');
+assert.equal(N.phrase({tonic:0,mode:'ionian',style:'free',start:startC}),null);
+assert.equal(N.phrase({tonic:0,mode:'messiaen-3',style:'morricone',start:startC}),null);
+for(const l of L.LANDSCAPES)for(const [tonic,mode,start] of [[0,'ionian',startC],[9,'aeolian',startAm]]){
+  const p=N.phrase({tonic,mode,style:l.id,start});assert(p&&p.chords.length>=3,l.id+' '+mode);
+  assert.equal(p.chords[0].root,tonic,'starts on the tonic');
+  for(const c of p.chords)assert(Math.min(...c.notes)>=28&&Math.max(...c.notes)<=100,`${l.id}: ${c.label} in range`);
+}
+console.log(`NextChords: 9 styles × 6 intents shape ≥2 of 3 proposals (${triples.size} distinct sets), symbols and Roman case, path continuation, Glass bass, Byzantine ison, voice leading, wheel slots, starting phrases passed`);

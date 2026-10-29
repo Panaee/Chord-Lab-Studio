@@ -19,6 +19,9 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   assert.equal(await page.evaluate(()=>ChordStudio.state.lang),'el');
   // Empty start: the tonic waits as a start, nothing is stored.
   let s=await S();assert.equal(s.steps.length,0);assert.equal(s.sugg.length,3);
+  // The empty bar names the three gestures and offers a phrase in the style.
+  assert.match(await page.locator('#strip').innerText(),/1 2 3/);
+  assert.match(await page.locator('[data-act="phrase"]').innerText(),/Takemitsu/);
   await page.keyboard.press('Enter');s=await S();assert.deepEqual(s.steps.map(x=>x.label),['C']);assert.equal(s.sel,0);
 
   // The wheel only auditions: a preview, no new step.
@@ -35,6 +38,14 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   const afterC=s.sugg[1];await page.keyboard.press('2');await page.keyboard.press('Enter');
   s=await S();assert.equal(s.steps.length,4);assert.equal(s.sel,1);assert.equal(s.steps[1].label,afterC.label,'inserted after the selected step');
   assert.equal(s.steps[0].label,'C');
+
+  // A proposal is heard after the two last steps; the keyboard shows what stays, leaves and arrives.
+  await page.keyboard.press('1');
+  assert.match(await page.locator('#status').innerText(),/^Ακούς: \S+ → \S+ → \S+$/);
+  assert.match(await page.locator('#now .eyebrow').innerText(),/→/);
+  assert.equal(await page.locator('#now .legend').count(),1);
+  assert(await page.locator('#now .mini rect.arrive, #now .mini rect.leave').count()>0);
+  await page.keyboard.press('Escape');assert.equal(await page.locator('#now .legend').count(),0);
 
   // Durations, undo and redo.
   await page.keyboard.press(']');await page.keyboard.press(']');s=await S();assert.equal(s.steps[1].beats,8);
@@ -70,14 +81,34 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   await page.selectOption('#style','takemitsu');
   await page.screenshot({path:path.join(out,'compose.png')});
 
+  // Cards and their numbers on the wheel point at each other.
+  await page.hover('.card[data-i="0"]');
+  assert.deepEqual(await page.$$eval('#wheel .marker.hot',m=>m.map(x=>x.dataset.i)),['0']);
+  assert(await page.locator('#wheel .seg.hot').count()>=1);
+  const slot=await page.evaluate(()=>{const w=NextChords.wheelSlot(ChordStudio.state.suggestions[1]);return [w.ring,w.index];});
+  await page.hover(`.seg[data-ring="${slot[0]}"][data-i="${slot[1]}"] .n`,{force:true});
+  assert((await page.$$eval('.card.hot',c=>c.map(x=>x.dataset.i))).includes('1'));
+  // Functions in major and minor; none in the other modes. Proposals outside the scale say so.
+  const fnOf=(ring,i)=>page.getAttribute(`.seg[data-ring="${ring}"][data-i="${i}"]`,'class');
+  assert.match(await fnOf('major',1),/fn-d/);assert.match(await fnOf('major',11),/fn-s/);assert.match(await fnOf('minor',0),/fn-t/);
+  assert.equal(await page.locator('#wheel .legend').count(),1);
+  await page.selectOption('#mode','dorian');assert.equal(await page.locator('#wheel [class*="fn-"]').count(),0);
+  await page.selectOption('#mode','ionian');
+  assert.deepEqual(await page.$$eval('.card',c=>c.map(x=>Boolean(x.querySelector('.out')))),await page.evaluate(()=>ChordStudio.state.suggestions.map(x=>!x.inKey)));
+
   // Analysis follows the durations; the PDF page is 157×210 mm.
   await page.click('#viewAnalysis');assert.match(await page.locator('#analysisBody').innerText(),/ΑΝΑΛΥΣΗ/);
   const total=(await S()).steps.reduce((t,x)=>t+x.beats,0);
   assert.match(await page.locator('.analysis-summary').innerText(),new RegExp(String(total)));
   await page.screenshot({path:path.join(out,'analysis.png')});
+  // Each step of the Analysis can be heard: the table rows and ▶.
+  assert.equal(await page.locator('.analysis-step .listen').count(),total>0?(await S()).steps.length:0);
+  await page.click('tr[data-step="1"]');assert.match(await page.locator('#status').innerText(),/^Ακούς: \S+ → \S+$/);
+  assert.equal(await page.locator('tr.on').getAttribute('data-step'),'1');
   const html=await page.evaluate(()=>RemarkableReport.makeHTML(ChordStudio.projectData()));
   const report=await browser.newPage();await report.setContent(html);await report.waitForTimeout(200);
   await report.pdf({path:path.join(out,'report.pdf'),preferCSSPageSize:true,printBackground:true});
+  assert(!/data-step|class="listen"/.test(html),'no listening controls in the PDF');
   const size=await report.evaluate(()=>document.fonts.check('420 11.5pt Literata'));assert(size,'Literata loaded for the report');
   await page.click('#viewCompose');
 
@@ -101,6 +132,23 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   const migrated=await old.evaluate(()=>({labels:ChordStudio.state.steps.map(x=>x.label),beats:ChordStudio.state.steps.map(x=>x.beats),tonic:ChordStudio.state.tonic,mode:ChordStudio.state.mode,intent:ChordStudio.state.intent,name:ChordStudio.state.projectName}));
   assert.deepEqual(migrated,{labels:['Am','E7'],beats:[4,4],tonic:9,mode:'aeolian',intent:'nostalgia',name:'Παλιό'});
   await fresh.close();
+
+  // A starting phrase: Morricone in A minor gives i–♭VII–♭VI–V and plays it; after ⌘Z the next path is offered.
+  const ph=await browser.newContext({viewport:{width:1280,height:800},locale:'el-GR'});const pp=await ph.newPage();pp.on('pageerror',e=>errors.push(e.message));
+  await pp.goto(url);await pp.waitForTimeout(300);
+  await pp.selectOption('#tonic','9');await pp.selectOption('#mode','aeolian');await pp.selectOption('#style','morricone');
+  assert.equal(await pp.locator('#now .sym').innerText(),'Am','the start chord is named from its notes');
+  await pp.click('[data-act="phrase"]');
+  assert.deepEqual(await pp.evaluate(()=>ChordStudio.state.steps.map(s=>s.label)),['Am','G','F','E']);
+  assert(await pp.evaluate(()=>Boolean(ChordStudio.state.play)),'the phrase plays');
+  assert.match(await pp.locator('#status').innerText(),/^Morricone · i–♭VII–♭VI–V: /);
+  await pp.keyboard.press('Space');await pp.keyboard.press('Control+z');
+  assert.equal(await pp.evaluate(()=>ChordStudio.state.steps.length),0);
+  assert.match(await pp.locator('[data-act="phrase"]').innerText(),/ναπολιτάνικη/);
+  await pp.evaluate(()=>ChordStudio.setLanguage('en'));
+  assert.doesNotMatch(await pp.locator('#strip').innerText(),/[α-ωΑ-Ωά-ώ]/);
+  await pp.click('[data-act="phrase"]');assert.doesNotMatch(await pp.locator('#status').innerText(),/[α-ωΑ-Ωά-ώ]/);
+  await ph.close();
 
   // English: no Greek letters anywhere visible, in labels or in options; back to Greek.
   const greekLeft=()=>page.evaluate(()=>{const G=/[α-ωΑ-Ωά-ώ]/,out=[],ov=document.getElementById('oldOverlay');
@@ -127,5 +175,5 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
 
   assert.deepEqual(errors,[]);
   await browser.close();
-  console.log('Browser: start, wheel preview without storing, proposals after the selected step, durations, undo/redo, editor and Drop 2, drag, playback, 10 styles, analysis, PDF with Literata, MIDI, theme, persistence, v1.5 migration, English and back, 1024 px passed · '+out);
+  console.log('Browser: start, wheel preview without storing, proposals after the selected step, durations, undo/redo, editor and Drop 2, drag, playback, 10 styles, analysis, PDF with Literata, MIDI, theme, persistence, v1.5 migration, starting phrase, phrase listening, voice-leading keys, card and wheel links, functions, Analysis listening, English and back, 1024 px passed · '+out);
 })().catch(e=>{console.error(e);process.exit(1);});

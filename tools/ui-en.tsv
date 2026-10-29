@@ -49,7 +49,6 @@ MIDI συνδέθηκε. Παίξε μια συγχορδία και πάτα �
 Άκου τη μετάβαση	Hear the move
 Άκου τη μετάβαση ({0})	Hear the move ({0})
 Πρόσθεσε	Add
-Η σύνθεση ξεκινά εδώ. Κλικ στον κύκλο ή σε μια πρόταση, και ⏎.	Your piece starts here. Click the circle or a suggestion, then Return.
 {0} · {1} χτύποι · διπλό κλικ για νότες	{0} · {1} beats · double-click for notes
 Στοπ	Stop
 Αναπαραγωγή	Play
@@ -84,7 +83,6 @@ MIDI συνδέθηκε. Παίξε μια συγχορδία και πάτα �
 Δεν δημιουργήθηκε PDF: {0}	Could not create the PDF: {0}
 Επίτρεψε τα αναδυόμενα παράθυρα για το PDF.	Allow pop-ups for the PDF.
 Άνοιξε η ανάλυση: Εκτύπωση → Αποθήκευση ως PDF.	The analysis is open: Print → Save as PDF.
-άκου την πρόταση	hear the suggestion
 πρόσθεσε ό,τι άκουσες	add what you heard
 αναπαραγωγή / στοπ	play / stop
 προηγούμενο / επόμενο βήμα	previous / next step
@@ -278,3 +276,18 @@ Chord Lab · Ανάλυση	Chord Lab · Analysis
 Ποιες αλλαγές ακούγονται πειστικές; Ποια φωνή θα κρατήσεις και ποια θα μετακινήσεις;	Which changes sound convincing? Which voice will you keep, and which will you move?
 Μεθοδολογία: βαθμίδες ως προς την ενεργή αναφορά κατά την εξαγωγή. Οι νότες και οκτάβες είναι τα πραγματικά αποθηκευμένα MIDI δεδομένα. Η κίνηση φωνών είναι ελάχιστη αντιστοίχιση χωρίς διασταύρωση· οι επιπλέον φωνές δηλώνονται ως προσθήκες ή αποχωρήσεις. Κοινές συγχορδίες και μεμονωμένες πτώσεις δεν αποδεικνύουν μετατροπία. Οι κρίσεις του συνθετικού ύφους είναι δημιουργικές ευρετικές και δηλώνονται χωριστά από τα θεωρητικά δεδομένα.	Method: degrees are relative to the reference active at export. Notes and octaves are the actual stored MIDI data. Voice leading is a minimal pairing without crossing; extra voices are shown as entries or exits. Shared chords and single cadences do not prove a modulation. The style's judgements are creative heuristics, kept separate from the theory.
 τονικότητα	key
+Κλικ στον κύκλο = άκου · 1 2 3 = άκου πρόταση · ⏎ = κράτα	Click the circle = listen · 1 2 3 = hear a suggestion · Return = keep
+Ξεκίνα με μια φράση	Start with a phrase
+από τις πρώτες προτάσεις	from the first suggestions
+Φράση από τις πρώτες προτάσεις: {0}.	Phrase from the first suggestions: {0}.
+Ακούς: {0}	Listening: {0}
+άκου την πρόταση μέσα στη φράση	hear the suggestion inside the phrase
+μένει	stays
+φεύγει	leaves
+έρχεται	arrives
+Τονική	Tonic
+Υποδεσπόζουσα	Subdominant
+Δεσπόζουσα	Dominant
+εκτός κλίμακας	outside the scale
+εκτός συλλογής	outside the collection
+Άκου	Listen

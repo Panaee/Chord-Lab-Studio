@@ -19,16 +19,22 @@ Projects stay on your computer: `~/Library/Application Support/Chord Lab Studio`
 ### How it works
 
 1. **Centre, mode, style** at the top. The style (Takemitsu, Morricone, Stravinsky, Byzantine, Hadjidakis, Glass, jazz, ambient) shapes two of the three suggestions. The third is a plain move in the key, marked as such.
-2. **The circle** has three rings: major outside, relative minor in the middle, diminished inside. The seven chords of the key are lit, with their Roman numerals.
-3. **Click a chord on the circle to hear it.** It appears as a preview (triad, 7th, add9, sus2, sus4). Nothing is stored until you press Return.
-4. **Next**: three suggestions after the selected step. The intent (motion, suspension, shadow, tension, release, mystery) reorders them. Each card shows the chord symbol, the degree, why it works and which voice moves.
-5. **The timeline**: each step is as wide as its duration. Click to select and hear, double-click to edit notes, drag to reorder, Shift-click to select a section for looping.
+2. **Empty start**: «Start with a phrase» loads one of the style's paths on your centre (Morricone in A minor: Am–G–F–E) and plays it. ⌘Z, and the next path is offered.
+3. **The circle** has three rings: major outside, relative minor in the middle, diminished inside. The seven chords of the key are lit, with their Roman numerals. In major and minor the colour shows the function: tonic (I, iii, vi), subdominant (ii, IV), dominant (V, vii°).
+4. **Click a chord on the circle to hear it.** It appears as a preview (triad, 7th, add9, sus2, sus4). Nothing is stored until you press Return.
+5. **Next**: three suggestions after the selected step. The intent (motion, suspension, shadow, tension, release, mystery) reorders them. Each card shows the chord symbol, the degree, why it works, which voice moves and whether it leaves the scale. Hovering a card lights its number on the circle, and the other way round.
+   - 1 · 2 · 3 plays your last two steps, then the suggestion, at your tempo.
+   - The small keyboard shows the move: notes that stay, notes that leave, notes that arrive, and an arc for each voice.
+6. **The timeline**: each step is as wide as its duration. Click to select and hear, double-click to edit notes, drag to reorder, Shift-click to select a section for looping.
+7. **Analysis**: click a row or ▶ to hear the move into that step.
 
-Keys: 1 · 2 · 3 hear a suggestion · Return add it · Space play/stop · ← → previous/next step · [ ] shorter/longer · L loop · E edit notes · ⌫ delete · ⌘D duplicate · ⌘Z / ⇧⌘Z undo/redo · ⌘S save.
+Keys: 1 · 2 · 3 hear a suggestion inside the phrase · Return add it · Space play/stop · ← → previous/next step · [ ] shorter/longer · L loop · E edit notes · ⌫ delete · ⌘D duplicate · ⌘Z / ⇧⌘Z undo/redo · ⌘S save.
 
 Exports: MIDI with the exact notes and durations, a PDF analysis sized for tablets and e-readers (157×210 mm, Literata), project files as JSON. Projects from 1.4 and 1.5 open.
 
-The style suggestions are named, auditable heuristics for composing. They do not predict any composer's choices.
+The style suggestions are named, auditable heuristics for composing. They do not predict any composer's choices. The function colours follow a simple textbook model; iii and vi (III and VI in minor) can also be heard otherwise.
+
+Next: [ROADMAP.md](ROADMAP.md).
 
 Build: `npm ci`, `npm start`, `npm test`, `npm run test:browser`, `npm run build:mac`. The Windows installer is built without Wine; see the commands under «Ανάπτυξη» below.
 
@@ -53,18 +59,26 @@ Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
 ## Η ροή
 
 1. **Κέντρο, τρόπος, ύφος** πάνω. Το ύφος (Takemitsu, Morricone, Glass, Τζαζ …) διαμορφώνει τις δύο από τις τρεις προτάσεις. Η τρίτη είναι μια βασική κίνηση στην τονικότητα, σημειωμένη ως τέτοια.
-2. **Κύκλος**: τρία δαχτυλίδια, μείζονες έξω, σχετικές ελάσσονες στη μέση, ελαττωμένες μέσα. Οι επτά συγχορδίες της τονικότητας είναι φωτισμένες, με τις βαθμίδες τους. Το περίγραμμα δείχνει την τρέχουσα συγχορδία, οι αριθμοί 1–3 τις προτάσεις.
-3. **Κλικ στον κύκλο = ακρόαση.** Η συγχορδία εμφανίζεται ως «Δοκιμή» (τριάδα, 7η, add9, sus2, sus4). Τίποτα δεν αποθηκεύεται μέχρι να πατήσεις ⏎ ή «Πρόσθεσε».
-4. **Επόμενο**: τρεις προτάσεις μετά το επιλεγμένο βήμα. Η πρόθεση (Κίνηση, Αιώρηση, Σκιά, Ένταση, Λύση, Μυστήριο) αλλάζει τη σειρά τους. Κάθε κάρτα δείχνει σύμβολο, βαθμίδα, γιατί, από πού έρχεται και ποια φωνή κινείται. 1/2/3 ακούς τη μετάβαση, ⏎ την προσθέτεις.
-5. **Η μπάρα**: κάθε βήμα έχει πλάτος ανάλογο της διάρκειάς του. Κλικ = επιλογή και ακρόαση, διπλό κλικ = νότες, σύρσιμο = σειρά, ⇧ + κλικ = τμήμα για επανάληψη.
+2. **Άδεια αρχή**: το «Ξεκίνα με μια φράση» φορτώνει μία από τις διαδρομές του ύφους πάνω στο κέντρο σου (Morricone σε Λα ελάσσονα: Am–G–F–E) και την παίζει. Με ⌘Z προτείνεται η επόμενη.
+3. **Κύκλος**: τρία δαχτυλίδια, μείζονες έξω, σχετικές ελάσσονες στη μέση, ελαττωμένες μέσα. Οι επτά συγχορδίες της τονικότητας είναι φωτισμένες, με τις βαθμίδες τους. Το περίγραμμα δείχνει την τρέχουσα συγχορδία, οι αριθμοί 1–3 τις προτάσεις. Σε μείζονα και ελάσσονα το χρώμα δείχνει τη λειτουργία: τονική (I, iii, vi), υποδεσπόζουσα (ii, IV), δεσπόζουσα (V, vii°).
+4. **Κλικ στον κύκλο = ακρόαση.** Η συγχορδία εμφανίζεται ως «Δοκιμή» (τριάδα, 7η, add9, sus2, sus4). Τίποτα δεν αποθηκεύεται μέχρι να πατήσεις ⏎ ή «Πρόσθεσε».
+5. **Επόμενο**: τρεις προτάσεις μετά το επιλεγμένο βήμα. Η πρόθεση (Κίνηση, Αιώρηση, Σκιά, Ένταση, Λύση, Μυστήριο) αλλάζει τη σειρά τους. Κάθε κάρτα δείχνει σύμβολο, βαθμίδα, γιατί, από πού έρχεται, ποια φωνή κινείται και αν βγαίνει από την κλίμακα. Όταν περνάς πάνω από μια κάρτα, φωτίζεται ο αριθμός της στον κύκλο, και αντίστροφα.
+   - 1/2/3: ακούς τα δύο τελευταία βήματα και μετά την πρόταση, στο tempo σου. ⏎ την προσθέτεις.
+   - Το μικρό πληκτρολόγιο δείχνει τη μετάβαση: ποιες νότες μένουν, ποιες φεύγουν, ποιες έρχονται, και ένα τόξο για κάθε φωνή που κινείται.
+6. **Η μπάρα**: κάθε βήμα έχει πλάτος ανάλογο της διάρκειάς του. Κλικ = επιλογή και ακρόαση, διπλό κλικ = νότες, σύρσιμο = σειρά, ⇧ + κλικ = τμήμα για επανάληψη.
+7. **Ανάλυση**: κλικ σε μια γραμμή του πίνακα ή στο ▶ παίζει τη μετάβαση προς εκείνο το βήμα.
 
 Υπάρχει πάντα μία τρέχουσα συγχορδία: το επιλεγμένο βήμα. Οι προτάσεις υπολογίζονται από αυτό και μπαίνουν ακριβώς μετά από αυτό.
+
+Τα χρώματα των λειτουργιών ακολουθούν ένα απλό σχολικό μοντέλο. Οι iii και vi (III και VI στην ελάσσονα) ακούγονται και αλλιώς, ανάλογα με τη φράση.
+
+Τα επόμενα: [ROADMAP.md](ROADMAP.md).
 
 ## Πλήκτρα
 
 | | |
 |---|---|
-| 1 · 2 · 3 | άκου την πρόταση |
+| 1 · 2 · 3 | άκου την πρόταση μέσα στη φράση |
 | ⏎ | πρόσθεσε ό,τι άκουσες (πρόταση, δοκιμή κύκλου ή MIDI) |
 | Space | αναπαραγωγή / στοπ |
 | ← → | προηγούμενο / επόμενο βήμα |

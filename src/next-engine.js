@@ -70,7 +70,8 @@ function voiceLead(from,targetPcs,bassPc){
   if(!src.length){const b=48+bassTarget;return uniq([b,...pcs.filter(p=>p!==bassTarget).map(p=>60+pc(p-0)),...(pcs.length<3?[b+12]:[])]);}
   const nearest=n=>p=>{let best=null;for(let d=0;d<=6&&best===null;d++)for(const c of [n-d,n+d])if(best===null&&pc(c)===p)best=c;return best;};
   const above=(n,floor)=>{while(n<=floor)n+=12;return n;};
-  const bass=Math.max(28,Math.min(62,nearest(src[0])(bassTarget)));
+  // The bass stays between E1 and D4, moved by octaves so it keeps its note.
+  let bass=nearest(src[0])(bassTarget);while(bass>62)bass-=12;while(bass<28)bass+=12;
   const voices=src.slice(1).length?src.slice(1):[bass+12,bass+16,bass+19];
   const want=new Set(pcs.filter(p=>p!==bassTarget));
   if(!want.size)want.add(bassTarget);
@@ -307,6 +308,31 @@ function suggest(opts={}){
     why:c.why||'',reason:c.reason||'',fit:Boolean(c.fit),motion:c.motion,score:Math.round(c.score*100)/100,rank:i+1}));
 }
 
+/* A starting phrase: one of the style's paths, built on the tonic chord.
+   Paths of four chords come first; turn walks through the others. Without a
+   path for this style or for a Messiaen collection, null. */
+function phrase(opts={}){
+  const land=L.LANDSCAPES.find(l=>l.id===opts.style)||null,key=keyOf(opts),start=opts.start;
+  if(!land||key.messiaen||!start?.notes?.length)return null;
+  const t=pc(start.root),fam=family(uniq(start.notes.map(pc)),t)==='minor'?'minor':'major';
+  const paths=land.progressions.filter(p=>p.steps.length>=3&&(p.applies.includes('any')||p.applies.includes(fam)))
+    .sort((a,b)=>(b.steps.length===4)-(a.steps.length===4)||b.steps.length-a.steps.length);
+  if(!paths.length)return null;
+  const p=paths[(opts.turn||0)%paths.length];
+  let prev=start.notes;
+  const chords=p.steps.map(([off,q,bassOff])=>{
+    const r=pc(t+off);let quality,notes;
+    if(q==='ison'){quality='custom';notes=fromTemplate([0,12],r,prev);}
+    else{quality=q==='same'?fam:(LANDQ[q]??'custom');
+      notes=voiceLead(prev,uniq(tonesFor(q==='same'?fam:LANDQ[q]??q).map(x=>pc(r+x))),Number.isInteger(bassOff)?pc(t+bassOff):r);}
+    prev=notes;
+    const ch={root:r,quality:QUAL[quality]?quality:'custom',notes,pcs:uniq(notes.map(pc))};
+    ch.label=symbol(notes,r);ch.roman=roman(ch,key);ch.family=family(ch.pcs,r);ch.inKey=ch.pcs.every(x=>key.pcs.includes(x));
+    return ch;
+  });
+  return {name:`${land.name} · ${p.name}`,why:p.why,chords,count:paths.length};
+}
+
 /* A chord on the wheel: root plus ring (major outer, minor middle, dim inner). */
 function chordFor(root,ring,opts={}){
   const key=keyOf(opts);let q=ring==='minor'?'minor':ring==='dim'?'dim':'major';
@@ -343,5 +369,5 @@ function wheelSlot(ch){
   return {ring,index};
 }
 
-return {QUAL,INTENTS,PRIORITY,family,symbol,roman,voiceLead,fromTemplate,motion,keyOf,keyChords,suggest,chordFor,recognise,wheelSlot,pretty,sig};
+return {QUAL,INTENTS,PRIORITY,family,symbol,roman,voiceLead,fromTemplate,motion,keyOf,keyChords,suggest,phrase,chordFor,recognise,wheelSlot,pretty,sig};
 });

@@ -36,7 +36,7 @@ function land(){return L.LANDSCAPES.find(l=>l.id===state.style)||null;}
 function startChord(){
   const ring=['dorian','phrygian','aeolian'].includes(state.mode)?'minor':state.mode==='locrian'?'dim':'major';
   const ch=N.chordFor(state.tonic,ring,keyOpts());
-  const b=48+pc(state.tonic);ch.notes=N.voiceLead([b,b+4,b+7,b+12],ch.pcs,state.tonic);return ch;
+  const b=48+pc(state.tonic);ch.notes=N.voiceLead([b,b+4,b+7,b+12],ch.pcs,state.tonic);ch.label=N.symbol(ch.notes,ch.root);return ch;
 }
 function current(){return state.steps[state.sel]||startChord();}
 function romanOf(ch){return N.roman({root:ch.root,notes:ch.notes,pcs:uniq(ch.notes.map(pc))},key());}
@@ -95,6 +95,16 @@ const Sound={ctx:null,bus:null,voices:new Set(),
 };
 function audition(notes,dur=1.3){stop(false);Sound.stopAll();Sound.chord(notes,0,dur);}
 function transition(from,to){stop(false);Sound.stopAll();Sound.chord(from,0,.85);Sound.chord(to,.95,1.5);}
+/* A proposal heard in its phrase: the step before, the current step, then the
+   proposal, at one and a half beats of the tempo each. */
+function inPhrase(to){
+  stop(false);Sound.stopAll();
+  const lead=state.steps.length?state.steps.slice(Math.max(0,state.sel-1),state.sel+1):[startChord()];
+  const d=Math.max(.55,Math.min(1.1,90/state.bpm));let at=0;
+  for(const s of lead){Sound.chord(s.notes,at,d*.92);at+=d;}
+  Sound.chord(to.notes,at,d*1.6);
+  return lead;
+}
 
 /* ------------------------------------------------------------ MIDI */
 function midiOutput(){return state.midi.access?.outputs?.get?.(state.midi.outId)||null;}
@@ -125,7 +135,7 @@ function onMidi(e){
     const notes=[...state.midi.held].sort((a,b)=>a-b);
     if(notes.length<2||notes.length>MAX_NOTES)return;
     const ch=N.recognise(notes,keyOpts());
-    state.preview={...ch,source:'midi'};renderPreview();renderWheel();
+    state.preview={...ch,source:'midi'};state.heard=-1;renderPreview();renderWheel();renderNow();
   },70);
 }
 
@@ -216,18 +226,22 @@ function sector(r0,r1,a0,a1){
 }
 function slotName(ring,i){if(ring==='major')return F.MAJOR[i];const m=F.MINOR[i];return ring==='minor'?m:m.replace(/m$/,'')+'°';}
 function slotRoot(ring,i){return ring==='major'?F.ROOTS[i]:F.MINOR_ROOTS[i];}
+/* Functions by scale degree, in major and minor only: I iii vi tonic,
+   ii IV subdominant, V vii° dominant (the same degrees in minor). */
+const FN=['t','s','t','s','d','t','d'],FN_NAME={t:'Τονική',s:'Υποδεσπόζουσα',d:'Δεσπόζουσα'};
+const slotKey=ch=>{const s=N.wheelSlot(ch);return s.ring+':'+s.index;};
 function renderWheel(){
-  const k=key(),dia=new Map();
-  for(const ch of N.keyChords(k)){const s=N.wheelSlot(ch);dia.set(s.ring+':'+s.index,N.roman(ch,k));}
+  const k=key(),dia=new Map(),fn=new Map(),tonal=['ionian','aeolian'].includes(state.mode);
+  for(const ch of N.keyChords(k)){const s=slotKey(ch);dia.set(s,N.roman(ch,k));if(tonal)fn.set(s,FN[ch.degree]);}
   const cur=current(),curSlot=N.wheelSlot({root:cur.root,notes:cur.notes});
   const pre=state.preview?N.wheelSlot(state.preview):null;
   let segs='';
   for(const ring of ['major','minor','dim'])for(let i=0;i<12;i++){
     const [r0,r1]=RINGS[ring],a=i*30,id=ring+':'+i,rom=dia.get(id);
-    const cls=['seg','ring-'+ring,rom?'dia':'',pre&&pre.ring===ring&&pre.index===i?'pre':''].join(' ');
+    const f=fn.get(id),cls=['seg','ring-'+ring,rom?'dia':'',f?'fn-'+f:'',pre&&pre.ring===ring&&pre.index===i?'pre':''].join(' ');
     const [nx,ny]=polar(ring==='major'?187:ring==='minor'?130:82,a),[rx,ry]=polar(ring==='major'?162:ring==='minor'?111:70,a);
-    const name=slotName(ring,i);
-    segs+=`<g class="${cls}" data-ring="${ring}" data-i="${i}" role="button" tabindex="${ring==='major'&&i===0?0:-1}" aria-label="${esc(name)}${rom?' · '+esc(ti(rom)):''}">`+
+    const name=slotName(ring,i),about=[name,rom?ti(rom):'',f?tx(FN_NAME[f]):''].filter(Boolean).join(' · ');
+    segs+=`<g class="${cls}" data-ring="${ring}" data-i="${i}" role="button" tabindex="${ring==='major'&&i===0?0:-1}" aria-label="${esc(about)}"><title>${esc(about)}</title>`+
       `<path d="${sector(r0,r1,a-15,a+15)}"/><text class="n" x="${nx.toFixed(1)}" y="${(ring==='dim'?ny-3:ny).toFixed(1)}">${esc(name)}</text>`+
       (rom&&ring!=='dim'?`<text class="r" x="${rx.toFixed(1)}" y="${ry.toFixed(1)}">${esc(ti(rom))}</text>`:'')+
       (rom&&ring==='dim'?`<text class="r" x="${nx.toFixed(1)}" y="${(ny+9).toFixed(1)}">${esc(ti(rom))}</text>`:'')+`</g>`;
@@ -237,9 +251,10 @@ function renderWheel(){
   const stack=new Map();
   state.suggestions.forEach((c,ix)=>{const s=N.wheelSlot(c);const [,r1]=RINGS[s.ring];const k=s.ring+':'+s.index,n=stack.get(k)||0;stack.set(k,n+1);
     const [x,y]=polar(r1-11,s.index*30+[10,-10,0][n%3]);
-    marks+=`<g class="marker${c.contrast?' contrast':''}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9.5"/><text x="${x.toFixed(1)}" y="${(y+.5).toFixed(1)}">${ix+1}</text></g>`;});
+    marks+=`<g class="marker${c.contrast?' contrast':''}" data-i="${ix}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9.5"/><text x="${x.toFixed(1)}" y="${(y+.5).toFixed(1)}">${ix+1}</text></g>`;});
   const mshort=modeShort(state.mode);
-  $('wheel').innerHTML=`<svg viewBox="-222 -222 444 444" role="group" aria-label="${esc(tx('Κύκλος πέμπτων · {0}',T.name(state.tonic)+' '+mshort))}">${segs}${outline(curSlot,'cur-outline')}${pre?outline(pre,'pre-outline'):''}${marks}`+
+  const legend=tonal?`<g class="legend" aria-hidden="true">${['t','s','d'].map((id,n)=>`<rect class="fn-${id}" x="-221" y="${170.5+n*17}" width="11" height="11" rx="2"/><text x="-205" y="${176+n*17}">${esc(tx(FN_NAME[id]))}</text>`).join('')}</g>`:'';
+  $('wheel').innerHTML=`<svg viewBox="-222 -222 444 444" role="group" aria-label="${esc(tx('Κύκλος πέμπτων · {0}',T.name(state.tonic)+' '+mshort))}">${legend}${segs}${outline(curSlot,'cur-outline')}${pre?outline(pre,'pre-outline'):''}${marks}`+
     `<g class="center" role="button" tabindex="-1" aria-label="${esc(tx('Άκου το κέντρο'))}"><circle r="58"/><text class="k" y="-6">${esc(T.name(state.tonic))}</text><text class="m" y="19">${esc(mshort)}</text></g></svg>`;
 }
 function onWheel(e){
@@ -250,19 +265,27 @@ function onWheel(e){
 function previewFromWheel(root,ring){
   const ch=N.chordFor(root,ring,{...keyOpts(),extension:state.ext,from:current().notes});
   state.preview={...ch,source:'wheel',ring};state.heard=-1;
-  renderPreview();renderWheel();renderCards();
+  renderPreview();renderWheel();renderCards();renderNow();
   audition(ch.notes);
 }
 function setExt(ext){state.ext=ext;if(state.preview?.source==='wheel')previewFromWheel(state.preview.root,state.preview.ring);}
 
 /* ------------------------------------------------------------ panels */
-function miniKeys(notes){
-  const lo=Math.min(48,Math.floor(Math.min(...notes)/12)*12),hi=Math.max(lo+24,Math.ceil((Math.max(...notes)+1)/12)*12);
+/* With a target: held notes, notes that leave, notes that arrive, and an arc
+   for each voice that moves (the same matching as the Analysis). */
+function miniKeys(notes,to=null){
+  const all=to?[...notes,...to]:notes;
+  const lo=Math.min(48,Math.floor(Math.min(...all)/12)*12),hi=Math.max(lo+24,Math.ceil((Math.max(...all)+1)/12)*12);
   const whites=[];for(let n=lo;n<=hi;n++)if(![1,3,6,8,10].includes(pc(n)))whites.push(n);
-  const w=200/whites.length;let s='';
-  whites.forEach((n,i)=>{s+=`<rect class="w${notes.includes(n)?' on':''}" x="${(i*w).toFixed(2)}" y="0" width="${(w-.6).toFixed(2)}" height="44" rx="2"/>`;});
-  whites.forEach((n,i)=>{if([0,2,5,7,9].includes(pc(n))&&n+1<=hi){const b=n+1;s+=`<rect class="b${notes.includes(b)?' on':''}" x="${(i*w+w*.65).toFixed(2)}" y="0" width="${(w*.7).toFixed(2)}" height="27" rx="1.5"/>`;}});
-  return `<svg class="mini" viewBox="0 0 200 45" aria-hidden="true">${s}</svg>`;
+  const w=200/whites.length,x={};let s='';
+  const cls=n=>{const a=notes.includes(n),b=to?to.includes(n):a;return a&&b?' on':a?' leave':b?' arrive':'';};
+  whites.forEach((n,i)=>{x[n]=i*w+w/2;s+=`<rect class="w${cls(n)}" x="${(i*w).toFixed(2)}" y="0" width="${(w-.6).toFixed(2)}" height="44" rx="2"/>`;});
+  whites.forEach((n,i)=>{if([0,2,5,7,9].includes(pc(n))&&n+1<=hi){const b=n+1;x[b]=i*w+w;s+=`<rect class="b${cls(b)}" x="${(i*w+w*.65).toFixed(2)}" y="0" width="${(w*.7).toFixed(2)}" height="27" rx="1.5"/>`;}});
+  if(to)for(const p of A.voicePairs(uniq(notes),uniq(to)).pairs){
+    if(!p.delta)continue;const a=x[p.from],b=x[p.to],h=Math.min(13,4+Math.abs(b-a)*.18),f=v=>v.toFixed(1);
+    s+=`<path class="arc" d="M${f(a)} -1Q${f((a+b)/2)} ${f(-1-2*h)} ${f(b)} -1"/><path class="arc" d="M${f(b-2.4)} -4.2L${f(b)} -1L${f(b+2.4)} -4.2"/>`;
+  }
+  return `<svg class="mini" viewBox="0 -16 200 61" aria-hidden="true">${s}</svg>`;
 }
 function fretboard(notes,root){
   const g=G.suggest(notes,root);if(!g)return miniKeys(notes);
@@ -275,15 +298,17 @@ function fretboard(notes,root){
   return `<svg class="fret" viewBox="0 0 96 74" aria-label="${esc(tx('Κιθάρα'))}">${s}</svg>`;
 }
 function instrumentView(ch){return state.instrument==='guitar'?fretboard(ch.notes,ch.root):miniKeys(ch.notes);}
+/* What you are listening to next: a proposal you heard or a preview. */
+function target(){return state.heard>=0?state.suggestions[state.heard]||null:state.preview;}
 function renderNow(){
   const c=current(),has=state.steps.length>0;
-  const label=tp(c.label);
-  $('now').innerHTML=`<div class="eyebrow">${has?tx('Τώρα · <b>βήμα {0}</b> από {1}',state.sel+1,state.steps.length):esc(tx('Αφετηρία · το κέντρο σου'))}</div>`+
+  const label=tp(c.label),to=state.instrument==='piano'?target():null;
+  $('now').innerHTML=`<div class="eyebrow">${has?tx('Τώρα · <b>βήμα {0}</b> από {1}',state.sel+1,state.steps.length):esc(tx('Αφετηρία · το κέντρο σου'))}${to?` <span class="to">→ ${esc(tp(to.label))}</span>`:''}</div>`+
     `<div class="title"><span class="sym${label.length>9?' long':''}" title="${esc(label)}">${esc(label)}</span><span class="roman">${esc(ti(romanOf(c)))}</span></div>`+
-    `<div class="actions">${instrumentView(c)}<div class="row">`+
+    `<div class="actions">${to?miniKeys(c.notes,to.notes):instrumentView(c)}<div class="row">`+
     `<button type="button" class="btn-ghost" data-act="hear-now">${esc(tx('▶ Άκου'))}</button>`+
     (has?`<button type="button" class="btn-ghost" data-act="edit">${esc(tx('✎ Νότες'))}</button>`:`<button type="button" class="btn-primary" data-act="start">${esc(tx('＋ Ξεκίνα εδώ'))}<span class="kbd">⏎</span></button>`)+
-    `</div></div><div class="notes">${esc(c.notes.map(noteName).join(' · '))}</div>`;
+    `</div></div>`+(to?`<div class="notes legend"><span><i class="on"></i>${esc(tx('μένει'))}</span><span><i class="leave"></i>${esc(tx('φεύγει'))}</span><span><i class="arrive"></i>${esc(tx('έρχεται'))}</span></div>`:`<div class="notes">${esc(c.notes.map(noteName).join(' · '))}</div>`);
 }
 function renderPreview(){
   const p=state.preview,box=$('preview');
@@ -309,7 +334,7 @@ function renderCards(){
     `<span class="badge">${i+1}</span>`+
     `<div class="head"><span class="sym">${esc(tp(s.label))}</span><span class="roman">${esc(ti(s.roman))}</span></div>`+
     `<div class="why" title="${esc(tx(s.why||s.reason||''))}">${esc(why)}</div>`+
-    `<div class="meta"><span class="origin" title="${esc(origin)}">${esc(origin)}</span><span class="motion">${esc(motionText(s.motion))}</span></div>`+
+    `<div class="meta">${s.inKey?'':`<span class="out">${esc(key().messiaen?tx('εκτός συλλογής'):tx('εκτός κλίμακας'))}</span>`}<span class="origin" title="${esc(origin)}">${esc(origin)}</span><span class="motion">${esc(motionText(s.motion))}</span></div>`+
     `<div class="acts"><button type="button" data-act="hear" aria-label="${esc(tx('Άκου τη μετάβαση'))}" title="${esc(tx('Άκου τη μετάβαση ({0})',i+1))}">${ICON_PLAY}</button><button type="button" class="add" data-act="add" aria-label="${esc(tx('Πρόσθεσε'))}" title="${esc(tx('Πρόσθεσε μετά το {0}',tp(c.label)))}">${ICON_ADD}</button></div></li>`;}).join('');
   const l=land();$('styleNote').hidden=!l?.chordWarning;$('styleNote').textContent=l?.chordWarning?tx(l.chordWarning):'';
 }
@@ -320,7 +345,9 @@ function motionText(m){
 }
 function renderStrip(){
   const strip=$('strip');
-  if(!state.steps.length){strip.innerHTML=`<span class="empty">${esc(tx('Η σύνθεση ξεκινά εδώ. Κλικ στον κύκλο ή σε μια πρόταση, και ⏎.'))}</span>`;return;}
+  if(!state.steps.length){const p=stylePhrase();
+    strip.innerHTML=`<span class="empty">${esc(tx('Κλικ στον κύκλο = άκου · 1 2 3 = άκου πρόταση · ⏎ = κράτα'))}</span>`+
+      `<button type="button" class="phrase" data-act="phrase">${esc(tx('Ξεκίνα με μια φράση'))}<small>${esc(p?tp(p.name):tx('από τις πρώτες προτάσεις'))}</small></button>`;return;}
   strip.innerHTML=state.steps.map((s,i)=>{
     const inr=state.range&&i>=state.range[0]&&i<=state.range[1];
     return `<button type="button" class="step${i===state.sel?' sel':''}${inr?' inrange':''}" role="option" aria-selected="${i===state.sel}" draggable="true" data-i="${i}" style="--beats:${s.beats||4}" title="${esc(tx('{0} · {1} χτύποι · διπλό κλικ για νότες',tp(s.label),s.beats||4))}">`+
@@ -339,7 +366,7 @@ function syncControls(){
 }
 function renderAnalysis(){
   if(state.view!=='analysis')return;
-  $('analysisBody').innerHTML=A.html(projectData(),state.lang);
+  $('analysisBody').innerHTML=A.html(projectData(),state.lang,{listen:true});
   for(const id of ['exportPdf','exportMidi'])$(id).disabled=!state.steps.length;
 }
 function refresh(){
@@ -475,7 +502,7 @@ function closeSettings(){$('settings').hidden=true;$('scrim').hidden=true;}
 function labPost(type){try{$('oldFrame').contentWindow?.postMessage({type:'chord-studio:legacy-'+type},'*');}catch(_){}}
 function openLab(){stop();closeSettings();$('oldOverlay').hidden=false;const f=$('oldFrame');if(f.dataset.loaded!=='1'){f.dataset.loaded='1';f.src='legacy/index.html';}else labPost('resume');}
 function closeLab(){labPost('pause');$('oldOverlay').hidden=true;}
-const KEYS=[['1 · 2 · 3','άκου την πρόταση'],['⏎','πρόσθεσε ό,τι άκουσες'],['Space','αναπαραγωγή / στοπ'],['← →','προηγούμενο / επόμενο βήμα'],['⇧ ← →','επιλογή τμήματος'],['⌥ ← →','μετακίνηση βήματος'],['[ ]','πιο σύντομο / πιο μακρύ'],['L','επανάληψη'],['E','νότες του βήματος'],['⌫','αφαίρεση βήματος'],['⌘D','διπλασιασμός'],['⌘Z · ⇧⌘Z','αναίρεση · επαναφορά'],['⌘S','αποθήκευση στη βιβλιοθήκη'],['Esc','άκυρο / κλείσιμο']];
+const KEYS=[['1 · 2 · 3','άκου την πρόταση μέσα στη φράση'],['⏎','πρόσθεσε ό,τι άκουσες'],['Space','αναπαραγωγή / στοπ'],['← →','προηγούμενο / επόμενο βήμα'],['⇧ ← →','επιλογή τμήματος'],['⌥ ← →','μετακίνηση βήματος'],['[ ]','πιο σύντομο / πιο μακρύ'],['L','επανάληψη'],['E','νότες του βήματος'],['⌫','αφαίρεση βήματος'],['⌘D','διπλασιασμός'],['⌘Z · ⇧⌘Z','αναίρεση · επαναφορά'],['⌘S','αποθήκευση στη βιβλιοθήκη'],['Esc','άκυρο / κλείσιμο']];
 
 /* ------------------------------------------------------------ input */
 function addHeardOrPreview(){
@@ -483,8 +510,39 @@ function addHeardOrPreview(){
   if(state.preview)return insert(state.preview,{sourceLabel:state.preview.source==='midi'?'Είσοδος MIDI':'Κύκλος πέμπτων',custom:state.preview.source==='midi'});
   if(!state.steps.length)return insert(startChord(),{sourceLabel:'Αφετηρία'});
 }
-function hear(i){const s=state.suggestions[i];if(!s)return;state.heard=i;state.preview=null;renderPreview();renderWheel();
-  document.querySelectorAll('.card').forEach(el=>el.classList.toggle('heard',Number(el.dataset.i)===i));transition(current().notes,s.notes);}
+function hear(i){const s=state.suggestions[i];if(!s)return;state.heard=i;state.preview=null;renderPreview();renderWheel();renderNow();
+  document.querySelectorAll('.card').forEach(el=>el.classList.toggle('heard',Number(el.dataset.i)===i));
+  const lead=inPhrase(s);status(tx('Ακούς: {0}',[...lead,s].map(x=>tp(x.label)).join(' → ')));}
+/* A step of the Analysis: the move into it, or the first chord alone. */
+function hearStep(i){
+  const s=state.steps[i];if(!s)return;const prev=state.steps[i-1];
+  if(prev){transition(prev.notes,s.notes);status(tx('Ακούς: {0}',tp(prev.label)+' → '+tp(s.label)));}
+  else{audition(s.notes);status(tx('Ακούς: {0}',tp(s.label)));}
+  document.querySelectorAll('#analysisBody tr[data-step]').forEach(r=>r.classList.toggle('on',Number(r.dataset.step)===i));
+}
+/* Cards and their numbers on the wheel point at each other. */
+function lightUp(list){
+  const on=new Set(list),slots=new Set(list.map(i=>state.suggestions[i]?slotKey(state.suggestions[i]):''));
+  document.querySelectorAll('.card').forEach(el=>el.classList.toggle('hot',on.has(Number(el.dataset.i))));
+  document.querySelectorAll('#wheel .marker').forEach(el=>el.classList.toggle('hot',on.has(Number(el.dataset.i))));
+  document.querySelectorAll('#wheel .seg').forEach(el=>el.classList.toggle('hot',slots.has(el.dataset.ring+':'+el.dataset.i)));
+}
+/* A starting phrase in the style; turn moves to the next path after each use. */
+let phraseTurn=0;
+function stylePhrase(){return N.phrase({...keyOpts(),style:state.style,start:startChord(),turn:phraseTurn});}
+function startPhrase(){
+  if(state.steps.length)return;
+  const p=stylePhrase();let chords;
+  if(p){chords=p.chords;phraseTurn++;}
+  else{chords=[startChord()];
+    // No path for this style or collection: the first proposal, three times.
+    while(chords.length<4){const c=N.suggest({current:chords[chords.length-1],history:chords,...keyOpts(),style:state.style,intent:state.intent})[0];if(!c)break;chords.push(c);}}
+  stop();remember();
+  state.steps=chords.map((c,i)=>makeStep(c,{beats:4,sourceLabel:p?p.name:i?c.originLabel:'Αφετηρία'}));
+  state.sel=state.steps.length-1;state.preview=null;state.heard=-1;state.range=null;
+  refresh();save();playRange();
+  status(p?`${tp(p.name)}: ${tx(p.why)}`:tx('Φράση από τις πρώτες προτάσεις: {0}.',state.steps.map(x=>tp(x.label)).join(' → ')));
+}
 function onKey(e){
   const t=e.target,typing=t.closest?.('input,select,textarea');
   const cmd=e.metaKey||e.ctrlKey;
@@ -492,7 +550,7 @@ function onKey(e){
     if(!$('oldOverlay').hidden){closeLab();return;}
     if(!$('settings').hidden){closeSettings();return;}
     if(state.editor>=0){closeEditor();return;}
-    if(state.preview||state.heard>=0){state.preview=null;state.heard=-1;renderPreview();renderWheelAndCards();return;}
+    if(state.preview||state.heard>=0){state.preview=null;state.heard=-1;renderPreview();renderWheelAndCards();renderNow();return;}
     if(state.range){state.range=null;renderStrip();return;}
     stop();return;
   }
@@ -613,15 +671,20 @@ function setup(){
     const a=e.target.closest('[data-act]')?.dataset.act;
     if(a==='add-preview')addHeardOrPreview();
     if(a==='center'&&state.preview)setCenter(state.preview.root,state.preview.family==='minor');
-    if(a==='dismiss'){state.preview=null;renderPreview();renderWheel();}});
-  $('intents').addEventListener('click',e=>{const b=e.target.closest('[data-intent]');if(!b)return;state.intent=b.dataset.intent;state.heard=-1;renderWheelAndCards();save();
+    if(a==='dismiss'){state.preview=null;renderPreview();renderWheel();renderNow();}});
+  $('intents').addEventListener('click',e=>{const b=e.target.closest('[data-intent]');if(!b)return;state.intent=b.dataset.intent;state.heard=-1;renderWheelAndCards();renderNow();save();
     status(tx(N.INTENTS.find(x=>x.id===state.intent).label)+': '+tx(N.INTENTS.find(x=>x.id===state.intent).hint)+'.');});
   $('cards').addEventListener('click',e=>{const li=e.target.closest('.card');if(!li)return;const i=Number(li.dataset.i);
     if(e.target.closest('[data-act="add"]')){const s=state.suggestions[i];insert(s,{sourceLabel:s.originLabel});return;}
     hear(i);});
+  $('cards').addEventListener('mouseover',e=>{const li=e.target.closest('.card');lightUp(li?[Number(li.dataset.i)]:[]);});
+  $('cards').addEventListener('mouseleave',()=>lightUp([]));
+  $('wheel').addEventListener('mouseover',e=>{const g=e.target.closest('.seg'),k=g?g.dataset.ring+':'+g.dataset.i:'';
+    lightUp(g?state.suggestions.map((c,i)=>slotKey(c)===k?i:-1).filter(i=>i>=0):[]);});
+  $('wheel').addEventListener('mouseleave',()=>lightUp([]));
   $('cards').addEventListener('dblclick',e=>{const li=e.target.closest('.card');if(!li||e.target.closest('button'))return;const s=state.suggestions[Number(li.dataset.i)];if(s)insert(s,{sourceLabel:s.originLabel});});
   const strip=$('strip');let drag=-1;
-  strip.addEventListener('click',e=>{const b=e.target.closest('.step');if(b)select(Number(b.dataset.i),{extend:e.shiftKey});});
+  strip.addEventListener('click',e=>{if(e.target.closest('[data-act="phrase"]'))return startPhrase();const b=e.target.closest('.step');if(b)select(Number(b.dataset.i),{extend:e.shiftKey});});
   strip.addEventListener('dblclick',e=>{const b=e.target.closest('.step');if(b)openEditor(Number(b.dataset.i));});
   strip.addEventListener('dragstart',e=>{const b=e.target.closest('.step');if(!b)return;drag=Number(b.dataset.i);b.classList.add('ghost');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',String(drag));}catch(_){}});
   strip.addEventListener('dragend',()=>{drag=-1;document.querySelectorAll('.step').forEach(el=>el.classList.remove('ghost','drop-before','drop-after'));});
@@ -649,6 +712,7 @@ function setup(){
   $('openLab').addEventListener('click',openLab);
   $('closeLab').addEventListener('click',closeLab);
   $('oldFrame').addEventListener('load',()=>labPost($('oldOverlay').hidden?'pause':'resume'));
+  $('analysisBody').addEventListener('click',e=>{const t=e.target.closest('[data-step]');if(t)hearStep(Number(t.dataset.step));});
   $('exportPdf').addEventListener('click',exportPdf);
   $('exportMidi').addEventListener('click',exportMidi);
   $('exportJson').addEventListener('click',exportJson);
@@ -659,5 +723,5 @@ function setup(){
   refresh();
 }
 setup();
-window.ChordStudio={state,refresh,insert,select,undo,redo,projectData,readProject,midiBytes,hear,addHeardOrPreview,previewFromWheel,setBeats,playRange,stop,onCommand,setLanguage};
+window.ChordStudio={state,refresh,insert,select,undo,redo,projectData,readProject,midiBytes,hear,hearStep,startPhrase,addHeardOrPreview,previewFromWheel,setBeats,playRange,stop,onCommand,setLanguage};
 })();

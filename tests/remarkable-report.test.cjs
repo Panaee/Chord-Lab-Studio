@@ -18,4 +18,9 @@ const injection=structuredClone(init);injection.sequence[1].label='<script>alert
 assert(!R.makeHTML(injection).includes('<script>alert(1)</script>'));
 const mess=structuredClone(init);mess.settings={...mess.settings,scaleFamily:'messiaen',messiaenMode:2,messiaenTrans:1};
 assert.match(R.makeHTML(mess),/M2 · T2/);
-console.log('PDF report: 157×210 mm, embedded Literata 420, live progression facts, optional Messiaen, escaped labels passed');
+// Listening controls belong to the studio's Analysis, not to the PDF.
+const A=require('../src/studio-analysis.js');
+assert(!/data-step|class="listen"/.test(html),'no listening controls in the PDF');
+const live=A.html(init,'el',{listen:true});
+assert.equal((live.match(/class="listen"/g)||[]).length,init.sequence.length);assert.match(live,/<tr data-step="1">/);
+console.log('PDF report: 157×210 mm, embedded Literata 420, live progression facts, optional Messiaen, escaped labels, no listening controls passed');
