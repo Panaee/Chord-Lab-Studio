@@ -1,0 +1,40 @@
+const assert=require('node:assert/strict');
+const T=require('../src/theory-map');
+const F=require('../src/fifths-engine');
+const P=require('../src/path-engine');
+const C=require('../src/core');
+assert.equal(F.at(0,false).name,'C');
+assert.equal(F.at(0,true).name,'Am');
+assert.equal(F.at(1,false).name,'G');
+assert.equal(F.at(1,false).signature,'1♯');
+assert.equal(F.at(7,false).name,'D♭');
+assert.equal(F.at(0,false).signature,'0');
+let r=F.related(F.at(0,false));
+assert.equal(r.fifth.name,'G');assert.equal(r.fourth.name,'F');assert.equal(r.relative.name,'Am');
+const scales=k=>new Set(T.MODE[k.mode].steps.map(s=>T.mod(k.root+s)));
+for(let i=0;i<12;i++)for(const minor of [false,true]){
+ const k=F.at(i,minor),rs=F.related(k);
+ assert.equal(rs.relative.signature,k.signature);
+ assert.deepEqual(scales(rs.relative),scales(k),'Relative major/minor must share pitch classes');
+ assert.equal([...scales(k)].filter(p=>scales(rs.fifth).has(p)).length,6,'Neighbor fifth keys must share 6/7 pitch classes');
+ const ds=F.degrees(k.root,k.mode);
+ assert.equal(ds.length,7);
+ for(const d of ds)for(const pitch of d.pcs)assert(scales(k).has(pitch),'Diatonic chord must stay inside the key scale');
+ const sevens=F.degrees(k.root,k.mode,true);
+ assert.equal(sevens.length,7);
+ for(const d of sevens){assert.equal(d.pcs.length,4);assert(d.notes.every(n=>n>=0&&n<=127));}
+}
+assert.deepEqual(F.degrees(0,'ionian').map(d=>d.label),['C','Dm','Em','F','G','Am','Bdim']);
+assert.deepEqual(F.degrees(0,'ionian',true).map(d=>d.label),['Cmaj7','Dm7','Em7','Fmaj7','G7','Am7','Bm7(♭5)']);
+assert.deepEqual(F.spellScale(1,'ionian'),['D♭','E♭','F','G♭','A♭','B♭','C']);
+assert.deepEqual(F.spellScale(6,'ionian'),['F♯','G♯','A♯','B','C♯','D♯','E♯']);
+assert.deepEqual(F.spellScale(4,'aeolian'),['E','F♯','G','A','B','C','D']);
+assert.equal(F.patterns('ionian')[1].name,'ii – V – I');
+assert.equal(F.patterns('aeolian')[0].degrees.length,4);
+assert.match(F.sector(0,false),/^M/);
+assert(F.point(0,177).y<210&&F.point(3,177).x>210);
+const built=[P.chord(0,'major'),P.chord(2,'m7b5',[50,53,57,60]),P.chord(7,'7')];
+const midi=C.makeMidi(built.map(c=>({midi:c.notes})),87);
+assert.equal(Buffer.from(midi.subarray(0,4)).toString('ascii'),'MThd');
+assert([...midi].includes(50));
+console.log('Circle: 24 keys, relative pairs, fifth relationships, 7 degrees, sevenths, spelling, MIDI passed');

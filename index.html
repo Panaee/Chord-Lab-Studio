@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Chord Lab Studio</title>
+<link rel="icon" href="assets/icon.png">
+<link rel="stylesheet" href="src/fonts.css">
+<link rel="stylesheet" href="src/studio.css">
+</head>
+<body data-theme="ivory">
+<div class="app" id="app">
+  <header class="bar">
+    <div class="brand" title="Chord Lab Studio 1.6"><span class="brand-mark" aria-hidden="true"></span>Chord Lab</div>
+    <div class="context" aria-label="Μουσικό πλαίσιο">
+      <label class="field"><span>Κέντρο</span><select id="tonic" aria-label="Τονικό κέντρο"></select></label>
+      <label class="field"><span>Τρόπος</span><select id="mode" aria-label="Τρόπος"></select></label>
+      <label class="field"><span>Ύφος</span><select id="style" aria-label="Συνθετικό ύφος"></select></label>
+    </div>
+    <nav class="views" aria-label="Προβολές">
+      <button type="button" id="viewCompose" class="on" aria-pressed="true">Σύνθεση</button>
+      <button type="button" id="viewAnalysis" aria-pressed="false">Ανάλυση</button>
+    </nav>
+    <button type="button" class="icon-button" id="openSettings" aria-label="Ρυθμίσεις" title="Ρυθμίσεις (,)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+    </button>
+  </header>
+
+  <main class="compose" id="compose">
+    <section class="wheel-wrap" aria-label="Κύκλος πέμπτων">
+      <div class="wheel" id="wheel"></div>
+    </section>
+    <section class="side">
+      <div class="now" id="now"></div>
+      <div class="preview" id="preview" hidden></div>
+      <section class="next" aria-labelledby="nextTitle">
+        <div class="next-head">
+          <h2 id="nextTitle">Επόμενο</h2>
+          <div class="intents" id="intents" role="radiogroup" aria-label="Πρόθεση"></div>
+        </div>
+        <ol class="cards" id="cards"></ol>
+        <p class="style-note" id="styleNote" hidden></p>
+      </section>
+    </section>
+  </main>
+
+  <main class="analysis" id="analysis" hidden>
+    <div class="analysis-head">
+      <h1>Ανάλυση</h1>
+      <div class="analysis-actions">
+        <button type="button" id="exportPdf">PDF για reMarkable</button>
+        <button type="button" id="exportMidi">MIDI</button>
+        <button type="button" id="exportJson">Έργο (JSON)</button>
+      </div>
+    </div>
+    <div class="analysis-body" id="analysisBody"></div>
+  </main>
+
+  <footer class="dock" aria-label="Η σύνθεσή σου">
+    <div class="transport">
+      <button type="button" class="play" id="play" aria-label="Αναπαραγωγή" title="Αναπαραγωγή (Space)">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="i-play"><path d="M8 5v14l11-7z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="i-stop"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>
+      </button>
+      <label class="bpm" title="Τέμπο"><input id="bpm" type="number" min="40" max="220" value="84" aria-label="BPM"><span>bpm</span></label>
+      <button type="button" class="toggle" id="loop" aria-pressed="false" title="Επανάληψη (L)" aria-label="Επανάληψη">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l3 3-3 3M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 0 1-4 4H4"/></svg>
+      </button>
+    </div>
+    <div class="strip" id="strip" role="listbox" aria-label="Βήματα της σύνθεσης" tabindex="0"></div>
+    <div class="dock-tools">
+      <button type="button" class="icon-button" id="undo" aria-label="Αναίρεση" title="Αναίρεση (⌘Z)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+      <button type="button" class="icon-button" id="redo" aria-label="Επαναφορά" title="Επαναφορά (⇧⌘Z)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+    </div>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </footer>
+</div>
+
+<aside class="sheet" id="settings" hidden aria-label="Ρυθμίσεις" tabindex="-1">
+  <header class="sheet-head"><h2>Ρυθμίσεις</h2><button type="button" class="icon-button" id="closeSettings" aria-label="Κλείσιμο"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+  <section>
+    <h3>Έργο</h3>
+    <label class="row"><span>Όνομα</span><input id="projectName" maxlength="80" autocomplete="off"></label>
+    <div class="buttons"><button type="button" id="newProject">Νέο</button><button type="button" id="saveLibrary">Αποθήκευση</button><button type="button" id="importJson">Άνοιγμα JSON</button></div>
+    <ul class="library" id="library"></ul>
+  </section>
+  <section>
+    <h3>Ήχος και MIDI</h3>
+    <div class="row"><span>Είσοδος</span><button type="button" id="midiConnect">Σύνδεση MIDI</button></div>
+    <label class="row"><span>Έξοδος</span><select id="midiOut"><option value="">Εσωτερικός ήχος</option></select></label>
+  </section>
+  <section>
+    <h3>Προβολή</h3>
+    <label class="row"><span>Όργανο</span><select id="instrument"><option value="piano">Πιάνο</option><option value="guitar">Κιθάρα</option></select></label>
+    <label class="row"><span>Θέμα</span><select id="theme"><option value="ivory">Ivory</option><option value="slate">Warm Slate</option><option value="dark">Dark</option></select></label>
+  </section>
+  <section>
+    <h3>Θεωρία</h3>
+    <button type="button" id="openLab">Εργαστήριο θεωρίας</button>
+    <p class="fine">Η προηγούμενη εφαρμογή: quiz, δάσκαλος, τοπία.</p>
+  </section>
+  <section>
+    <h3>Πλήκτρα</h3>
+    <dl class="keys" id="keysHelp"></dl>
+  </section>
+</aside>
+<div class="scrim" id="scrim" hidden></div>
+
+<div class="editor" id="editor" hidden role="dialog" aria-modal="false" aria-labelledby="editorTitle"></div>
+
+<div class="overlay" id="oldOverlay" hidden>
+  <div class="overlay-bar"><b>Εργαστήριο θεωρίας</b><button type="button" id="closeLab">Επιστροφή στη σύνθεση</button></div>
+  <iframe id="oldFrame" title="Εργαστήριο θεωρίας"></iframe>
+</div>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+
+<script src="legacy/chord_namer.js"></script>
+<script src="legacy/keyboard_view.js"></script>
+<script src="legacy/landscapes.js"></script>
+<script src="legacy/teacher.js"></script>
+<script src="src/core.js"></script>
+<script src="src/theory-map.js"></script>
+<script src="src/path-engine.js"></script>
+<script src="src/fifths-engine.js"></script>
+<script src="src/guitar-engine.js"></script>
+<script src="src/harmonic-context.js"></script>
+<script src="src/modulation-engine.js"></script>
+<script src="src/messiaen-engine.js"></script>
+<script src="src/next-engine.js"></script>
+<script src="src/studio-analysis.js"></script>
+<script src="src/report-fonts.js"></script>
+<script src="src/remarkable-report.js"></script>
+<script src="src/project-store.js"></script>
+<script src="src/studio.js"></script>
+</body>
+</html>

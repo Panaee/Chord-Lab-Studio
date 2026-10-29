@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chord Lab</title>
+  <link rel="icon" href="icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="lab-header">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>Chord Lab</div>
+    <nav class="tabs" role="tablist" aria-label="Ενότητες">
+      <button id="tab-live" class="tab active" type="button" role="tab" aria-selected="true" aria-controls="live">Δάσκαλος</button>
+      <button id="tab-theory" class="tab" type="button" role="tab" aria-selected="false" aria-controls="theory">Θεωρία</button>
+    </nav>
+    <div class="midi-area"><span id="midi-status" class="midi-status idle" role="status">MIDI: σύνδεση…</span><button id="midi-button" class="small-button" type="button">Σύνδεση MIDI</button></div>
+  </header>
+
+  <main>
+    <section id="live" class="live" role="tabpanel" aria-labelledby="tab-live">
+      <div class="lens-bar">
+        <div class="lenses" id="landscapes" role="radiogroup" aria-label="Ύφος"></div>
+        <div class="tools">
+          <label class="key-select">Τονικότητα <select id="key-tonic" aria-label="Τονική"></select><select id="key-mode" aria-label="Τρόπος"><option value="major">μείζονα</option><option value="minor">ελάσσονα</option><option value="dorian">Δώριο</option><option value="mixolydian">Μιξολύδιο</option><option value="phrygian">Φρύγιο</option><option value="lydian">Λύδιο</option></select></label>
+        </div>
+      </div>
+
+
+      <section id="board" class="board" aria-label="Πληκτρολόγιο">
+        <div class="display" aria-live="polite">
+          <span id="d-key" class="d-key"></span>
+          <div id="d-alt" class="d-alt"></div>
+          <div id="d-big" class="d-big">Πάτα μια νότα</div>
+          <div id="d-sub" class="d-sub"></div>
+          <div id="d-inv" class="d-inv" hidden><span>θεμελιώδης</span><span>1η</span><span>2η</span><span>3η</span><b>αναστροφή</b></div>
+        </div>
+        <div id="map-strip" class="map-strip" aria-hidden="true"></div>
+        <div class="keys-case"><div id="live-keys" class="keys"></div></div>
+        <div class="under-keys">
+          <div id="path" class="path" aria-label="Η διαδρομή σου"></div>
+          <div class="legend"><span><i class="dot dot-yes"></i>ταιριάζει</span><span><i class="dot dot-warn"></i>προσοχή</span><span><i class="dot dot-no"></i>όχι στο ύφος</span><button id="quiz-button" class="small-button quiz-button" type="button" title="Ερωτήσεις ανάκλησης: παίζεις, ο δάσκαλος διορθώνει">Ρώτα με</button><label class="check"><input id="map-toggle" type="checkbox" checked>Χάρτης</label><label class="check"><input id="sound-toggle" type="checkbox" checked>Ήχος</label><button id="clear-button" class="small-button" type="button" title="Esc">Καθάρισμα</button></div>
+        </div>
+      </section>
+      <section id="teacher" class="teacher">
+        <div class="teacher-top">
+          <span id="lens-line" class="eyebrow"></span>
+          <div class="meter" id="meter" title="Ένταση: πόσο τρίβεται και πόσο ζητά κίνηση ό,τι ακούγεται">
+            <span>ήρεμο</span><i class="meter-track"><b id="meter-fill"></b></i><span>τεταμένο</span>
+            <em id="meter-word"></em>
+          </div>
+        </div>
+        <h1 id="t-title" class="t-title" hidden></h1>
+        <ul id="t-lines" class="t-lines"></ul>
+        <div id="quiz-actions" class="quiz-actions" hidden><button id="quiz-show" class="small-button" type="button">Δείξε μου</button><button id="quiz-skip" class="small-button" type="button">Επόμενη</button><button id="quiz-stop" class="small-button" type="button">Τέλος ερωτήσεων</button></div>
+      </section>
+
+      <section id="next" class="next" hidden>
+        <div class="next-head">
+          <h2 id="cards-title">Πού πας από εδώ</h2>
+          <div class="buttons"><button id="prev-button" class="small-button" type="button" title="← ή pad 1">◀</button><button id="next-button" class="small-button" type="button" title="→ ή pad 2">▶</button><button id="listen-button" class="small-button primary" type="button" title="Space ή pad 3">Άκου</button></div>
+        </div>
+        <div id="cards" class="cards" role="listbox" aria-label="Επόμενα βήματα"></div>
+        <div id="routes-wrap" class="routes-wrap" hidden><span class="eyebrow">Διαδρομές του ύφους</span><div id="routes" class="routes"></div></div>
+      </section>
+    </section>
+
+    <section id="theory" class="theory" role="tabpanel" aria-labelledby="tab-theory" hidden>
+      <div id="theory-content"></div>
+    </section>
+  </main>
+
+  <footer class="lab-footer">← → κάρτες · Space άκου · Enter κράτα την κάρτα · ↑ ↓ ύφος · Esc καθάρισμα / τέλος ερωτήσεων · Pads (κανάλι 10): 1 ◀ · 2 ▶ · 3 άκου · 4 ύφος</footer>
+
+  <script src="chord_namer.js"></script>
+  <script src="keyboard_view.js"></script>
+  <script src="landscapes.js"></script>
+  <script src="teacher.js"></script>
+  <script src="studio-host.js"></script>
+  <script src="lab.js"></script>
+</body>
+</html>
