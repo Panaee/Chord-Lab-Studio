@@ -558,7 +558,7 @@
     };
     const lenses = "<article class=\"card wide\"><h2>Πώς ακούει κάθε ύφος</h2><p class=\"idea\">Η ίδια νότα αλλάζει κρίση με το ύφος. Η 5η που στην κλασική αρμονία στερεώνει, στο Takemitsu κλειδώνει την αιώρηση. Ο πίνακας δείχνει τα διαστήματα πάνω από το μπάσο.</p>" +
       "<table class=\"lens-table\"><thead><tr><th>Ύφος</th><th>Θέλει</th><th>Ναι</th><th>Προσοχή</th><th>Όχι</th></tr></thead><tbody>" + L.LANDSCAPES.map(l => ROW(l.id)).join("") + "</tbody></table>" +
-      "<p class=\"small\">Γενικεύσεις ύφους για σύνθεση, από την ύλη των τοπίων (enorchistrosi, armonia). Δεν αναλύουν συγκεκριμένα έργα. Τα βυζαντινά είναι προσεγγίσεις σε 12 ημιτόνια.</p></article>";
+      "<p class=\"small\">Γενικεύσεις ύφους για σύνθεση, από σημειώσεις σύνθεσης και αρμονίας. Δεν αναλύουν συγκεκριμένα έργα. Τα βυζαντινά είναι προσεγγίσεις σε 12 ημιτόνια.</p></article>";
     const cards = L.LANDSCAPES.map(land => "<details class=\"card lens-card\" style=\"--tone:" + land.color + "\"><summary><span class=\"swatch\"></span><b>" + escape(land.name) + "</b> <small>" + escape(land.short) + "</small></summary>" +
       "<p class=\"idea\">" + escape(land.idea) + "</p><div class=\"two\"><div><h3>Προτίμα</h3><ul>" + land.prefer.map(x => "<li>" + escape(x) + "</li>").join("") + "</ul></div>" +
       "<div><h3>Απόφυγε</h3><ul>" + land.avoid.map(x => "<li>" + escape(x) + "</li>").join("") + "</ul></div></div>" +
