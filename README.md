@@ -26,15 +26,19 @@ Projects stay on your computer: `~/Library/Application Support/Chord Lab Studio`
    - 1 · 2 · 3 plays your last two steps, then the suggestion, at your tempo.
    - The small keyboard shows the move: notes that stay, notes that leave, notes that arrive, and an arc for each voice.
 6. **The timeline**: each step is as wide as its duration. Click to select and hear, double-click to edit notes, drag to reorder, Shift-click to select a section for looping.
-7. **Analysis**: click a row or ▶ to hear the move into that step.
+7. **Melody and rule** under «Next»:
+   - Pick a note on the small octave, or play one note on MIDI. The circle keeps only the chords that hold it, and the suggestions keep it on top.
+   - «Rule» holds the three suggestions to one rule: one voice moves, no V, the bass goes down, or no common note.
+8. **Analysis**: click a row or ▶ to hear the move into that step.
+9. **Ear practice** (⌘3): moves from your own piece. Which degree came, where the bass went, where the top voice went. Answer first, then see the chords. Right answers come back after 10 minutes, then 1, 3, 7 and 21 days; wrong ones come back in the same session.
 
-Keys: 1 · 2 · 3 hear a suggestion inside the phrase · Return add it · Space play/stop · ← → previous/next step · [ ] shorter/longer · L loop · E edit notes · ⌫ delete · ⌘D duplicate · ⌘Z / ⇧⌘Z undo/redo · ⌘S save.
+Sound (Settings → Sound and MIDI): pattern (block, arpeggio, eighth-note pulse) and sound (piano, pad, strings). Left alone, they follow the style: Glass arpeggio, Takemitsu pad, Morricone strings. The note editor can be dragged by its header; a double click puts it back.
+
+Keys: 1 · 2 · 3 hear a suggestion inside the phrase · ⌘1 · ⌘2 · ⌘3 Compose · Analysis · Practice · in Practice 1–4 answer, R again, Return next · Return add it · Space play/stop · ← → previous/next step · [ ] shorter/longer · L loop · E edit notes · ⌫ delete · ⌘D duplicate · ⌘Z / ⇧⌘Z undo/redo · ⌘S save.
 
 Exports: MIDI with the exact notes and durations, a PDF analysis sized for tablets and e-readers (157×210 mm, Literata), project files as JSON. Projects from 1.4 and 1.5 open.
 
 The style suggestions are named, auditable heuristics for composing. They do not predict any composer's choices. The function colours follow a simple textbook model; iii and vi (III and VI in minor) can also be heard otherwise.
-
-Next: [ROADMAP.md](ROADMAP.md).
 
 Build: `npm ci`, `npm start`, `npm test`, `npm run test:browser`, `npm run build:mac`. The Windows installer is built without Wine; see the commands under «Ανάπτυξη» below.
 
@@ -66,13 +70,25 @@ Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
    - 1/2/3: ακούς τα δύο τελευταία βήματα και μετά την πρόταση, στο tempo σου. ⏎ την προσθέτεις.
    - Το μικρό πληκτρολόγιο δείχνει τη μετάβαση: ποιες νότες μένουν, ποιες φεύγουν, ποιες έρχονται, και ένα τόξο για κάθε φωνή που κινείται.
 6. **Η μπάρα**: κάθε βήμα έχει πλάτος ανάλογο της διάρκειάς του. Κλικ = επιλογή και ακρόαση, διπλό κλικ = νότες, σύρσιμο = σειρά, ⇧ + κλικ = τμήμα για επανάληψη.
-7. **Ανάλυση**: κλικ σε μια γραμμή του πίνακα ή στο ▶ παίζει τη μετάβαση προς εκείνο το βήμα.
+7. **Μελωδία και κανόνας**, κάτω από το «Επόμενο»:
+   - Πατάς μια νότα στη μικρή οκτάβα ή παίζεις μία νότα στο MIDI. Ο κύκλος κρατά μόνο τις συγχορδίες που την περιέχουν. Οι προτάσεις την κρατούν στην κορυφή.
+   - Ο «Κανόνας» κρατά τις τρεις προτάσεις σε έναν κανόνα: μία φωνή κινείται, χωρίς V, το μπάσο κατεβαίνει ή καμία κοινή νότα.
+8. **Ανάλυση**: κλικ σε μια γραμμή του πίνακα ή στο ▶ παίζει τη μετάβαση προς εκείνο το βήμα.
+9. **Εξάσκηση αυτιού** (⌘3), με μεταβάσεις από τη δική σου σύνθεση:
+   - Ρωτά ποια βαθμίδα ήρθε, πού πήγε το μπάσο ή πού πήγε η πάνω φωνή.
+   - Πρώτα απαντάς, μετά βλέπεις τις συγχορδίες.
+   - Η σωστή απάντηση ξαναέρχεται σε 10 λεπτά, μετά σε 1, 3, 7 και 21 μέρες. Η λάθος ξαναέρχεται στην ίδια εξάσκηση.
+
+**Ήχος** (Ρυθμίσεις → Ήχος και MIDI):
+- Μοτίβο: μπλοκ, αρπέζ ή παλμός σε όγδοα.
+- Ηχόχρωμα: πιάνο, pad ή έγχορδα.
+- Αν δεν διαλέξεις, ακολουθούν το ύφος: Glass αρπέζ, Takemitsu pad, Morricone έγχορδα.
+
+Ο επεξεργαστής νοτών μετακινείται από την κεφαλίδα του. Με διπλό κλικ γυρίζει στη θέση του.
 
 Υπάρχει πάντα μία τρέχουσα συγχορδία: το επιλεγμένο βήμα. Οι προτάσεις υπολογίζονται από αυτό και μπαίνουν ακριβώς μετά από αυτό.
 
 Τα χρώματα των λειτουργιών ακολουθούν ένα απλό σχολικό μοντέλο. Οι iii και vi (III και VI στην ελάσσονα) ακούγονται και αλλιώς, ανάλογα με τη φράση.
-
-Τα επόμενα: [ROADMAP.md](ROADMAP.md).
 
 ## Πλήκτρα
 
@@ -91,7 +107,8 @@ Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
 | ⌘D | διπλασιασμός |
 | ⌘Z · ⇧⌘Z | αναίρεση · επαναφορά |
 | ⌘S | αποθήκευση στη βιβλιοθήκη |
-| ⌘1 · ⌘2 | Σύνθεση · Ανάλυση |
+| ⌘1 · ⌘2 · ⌘3 | Σύνθεση · Ανάλυση · Εξάσκηση |
+| 1–4 · R · ⏎ | στην Εξάσκηση: απάντηση · ξανά · επόμενη |
 | Esc | άκυρο / κλείσιμο |
 
 ## MIDI
@@ -137,7 +154,8 @@ Mac installer: `node installer/make-asar.cjs app.asar` φτιάχνει το `ap
 
 Electron 39.8.10, electron-builder 26.0.12. Η σελίδα (`index.html`) δουλεύει και offline σε Chrome/Edge, με ολόκληρο τον φάκελο δίπλα της.
 
-- `src/next-engine.js`: οι τρεις προτάσεις, φωνοδήγηση, σύμβολα, βαθμίδες, κύκλος.
+- `src/next-engine.js`: οι τρεις προτάσεις, φωνοδήγηση, σύμβολα, βαθμίδες, κύκλος, φράσεις του ύφους, μελωδία, κανόνες.
+- `src/practice-engine.js`: οι ερωτήσεις της εξάσκησης και τα κουτιά Leitner.
 - `src/studio.js`, `src/studio.css`: η διεπαφή, ένα αρχείο CSS με tokens και τρία θέματα.
 - `src/i18n.js`: ελληνικά και αγγλικά, με το ελληνικό κείμενο ως κλειδί. Φτιάχνεται από το `tools/make-i18n.cjs` (μεταφράσεις στα `tools/ui-en.tsv` και `tools/landscapes-en.txt`).
 - `src/studio-analysis.js`, `src/remarkable-report.js`, `src/report-fonts.js`: Ανάλυση και PDF.

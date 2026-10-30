@@ -31,12 +31,12 @@ const MENU={
   el:{about:'Σχετικά με το Chord Lab Studio',settings:'Ρυθμίσεις…',hide:'Απόκρυψη',hideOthers:'Απόκρυψη άλλων',showAll:'Εμφάνιση όλων',quit:'Τερματισμός',exit:'Έξοδος',
     file:'Αρχείο',new:'Νέα σύνθεση',open:'Άνοιγμα JSON…',save:'Αποθήκευση στη βιβλιοθήκη',saveJson:'Αντίγραφο JSON…',midi:'Εξαγωγή MIDI…',pdf:'Εξαγωγή PDF…',
     edit:'Επεξεργασία',undo:'Αναίρεση',redo:'Επαναφορά',cut:'Αποκοπή',copy:'Αντιγραφή',paste:'Επικόλληση',selectAll:'Επιλογή όλων',duplicate:'Διπλασιασμός βήματος',notes:'Νότες του βήματος',
-    view:'Προβολή',compose:'Σύνθεση',analysis:'Ανάλυση',lab:'Εργαστήριο θεωρίας',full:'Πλήρης οθόνη',reset:'Πραγματικό μέγεθος',zoomIn:'Μεγέθυνση',zoomOut:'Σμίκρυνση',
+    view:'Προβολή',compose:'Σύνθεση',analysis:'Ανάλυση',practice:'Εξάσκηση',lab:'Εργαστήριο θεωρίας',full:'Πλήρης οθόνη',reset:'Πραγματικό μέγεθος',zoomIn:'Μεγέθυνση',zoomOut:'Σμίκρυνση',
     window:'Παράθυρο',minimize:'Ελαχιστοποίηση',zoom:'Ζουμ',front:'Όλα μπροστά',close:'Κλείσιμο',pdfTitle:'Εξαγωγή PDF'},
   en:{about:'About Chord Lab Studio',settings:'Settings…',hide:'Hide',hideOthers:'Hide Others',showAll:'Show All',quit:'Quit',exit:'Exit',
     file:'File',new:'New piece',open:'Open JSON…',save:'Save to library',saveJson:'JSON copy…',midi:'Export MIDI…',pdf:'Export PDF…',
     edit:'Edit',undo:'Undo',redo:'Redo',cut:'Cut',copy:'Copy',paste:'Paste',selectAll:'Select All',duplicate:'Duplicate step',notes:'Notes of the step',
-    view:'View',compose:'Compose',analysis:'Analysis',lab:'Theory lab',full:'Full Screen',reset:'Actual Size',zoomIn:'Zoom In',zoomOut:'Zoom Out',
+    view:'View',compose:'Compose',analysis:'Analysis',practice:'Ear practice',lab:'Theory lab',full:'Full Screen',reset:'Actual Size',zoomIn:'Zoom In',zoomOut:'Zoom Out',
     window:'Window',minimize:'Minimise',zoom:'Zoom',front:'Bring All to Front',close:'Close',pdfTitle:'Export PDF'}
 };
 // Set from the system once ready; the window then sends the language the person chose.
@@ -53,7 +53,7 @@ function buildMenu(){
     {label:m.edit,submenu:[item(m.undo,'undo','CmdOrCtrl+Z'),item(m.redo,'redo','Shift+CmdOrCtrl+Z'),{type:'separator'},
       {role:'cut',label:m.cut},{role:'copy',label:m.copy},{role:'paste',label:m.paste},{role:'selectAll',label:m.selectAll},{type:'separator'},
       item(m.duplicate,'duplicate','CmdOrCtrl+D'),item(m.notes,'edit')]},
-    {label:m.view,submenu:[item(m.compose,'view-compose','CmdOrCtrl+1'),item(m.analysis,'view-analysis','CmdOrCtrl+2'),{type:'separator'},
+    {label:m.view,submenu:[item(m.compose,'view-compose','CmdOrCtrl+1'),item(m.analysis,'view-analysis','CmdOrCtrl+2'),item(m.practice,'view-practice','CmdOrCtrl+3'),{type:'separator'},
       item(m.lab,'theory-lab','Shift+CmdOrCtrl+T'),{type:'separator'},{role:'togglefullscreen',label:m.full},
       {role:'resetZoom',label:m.reset},{role:'zoomIn',label:m.zoomIn},{role:'zoomOut',label:m.zoomOut}]},
     {label:m.window,submenu:[{role:'minimize',label:m.minimize},{role:'zoom',label:m.zoom},...(mac?[{type:'separator'},{role:'front',label:m.front}]:[{role:'close',label:m.close}])]}

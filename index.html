@@ -21,6 +21,7 @@
     <nav class="views" aria-label="Προβολές">
       <button type="button" id="viewCompose" class="on" aria-pressed="true">Σύνθεση</button>
       <button type="button" id="viewAnalysis" aria-pressed="false">Ανάλυση</button>
+      <button type="button" id="viewPractice" aria-pressed="false">Εξάσκηση</button>
     </nav>
     <button type="button" class="icon-button" id="openSettings" aria-label="Ρυθμίσεις" title="Ρυθμίσεις (,)">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
@@ -39,6 +40,10 @@
           <h2 id="nextTitle">Επόμενο</h2>
           <div class="intents" id="intents" role="radiogroup" aria-label="Πρόθεση"></div>
         </div>
+        <div class="next-tools">
+          <div class="melody" id="melody" role="group" aria-label="Νότα μελωδίας"></div>
+          <label class="rule"><span>Κανόνας</span><select id="rule" aria-label="Κανόνας για τις προτάσεις"></select></label>
+        </div>
         <ol class="cards" id="cards"></ol>
         <p class="style-note" id="styleNote" hidden></p>
       </section>
@@ -55,6 +60,10 @@
       </div>
     </div>
     <div class="analysis-body" id="analysisBody"></div>
+  </main>
+
+  <main class="practice" id="practice" hidden>
+    <div class="practice-body" id="practiceBody" aria-live="polite"></div>
   </main>
 
   <footer class="dock" aria-label="Η σύνθεσή σου">
@@ -89,6 +98,8 @@
     <h3>Ήχος και MIDI</h3>
     <div class="row"><span>Είσοδος</span><button type="button" id="midiConnect">Σύνδεση MIDI</button></div>
     <label class="row"><span>Έξοδος</span><select id="midiOut"><option value="">Εσωτερικός ήχος</option></select></label>
+    <label class="row"><span>Μοτίβο</span><select id="pattern"></select></label>
+    <label class="row"><span>Ηχόχρωμα</span><select id="timbre"></select></label>
   </section>
   <section>
     <h3>Προβολή</h3>
@@ -130,6 +141,7 @@
 <script src="src/messiaen-engine.js"></script>
 <script src="src/i18n.js"></script>
 <script src="src/next-engine.js"></script>
+<script src="src/practice-engine.js"></script>
 <script src="src/studio-analysis.js"></script>
 <script src="src/report-fonts.js"></script>
 <script src="src/remarkable-report.js"></script>

@@ -231,6 +231,35 @@ function colourise(land,ch){
   return {pcs,top,low,rule};
 }
 
+/* A melody note on top: every other tone of the chord goes below it. The note
+   moves up by octaves only when it would sit on the bass. */
+function underMelody(notes,pcs,m){
+  const list=uniq(notes),bass=list[0];let top=m;
+  while(top<=bass+4)top+=12;
+  const below=list.filter(n=>n<top);
+  for(const p of uniq(pcs.map(pc))){
+    if(p===pc(top)||below.some(n=>pc(n)===p))continue;
+    let n=top-1;while(pc(n)!==p)n--;if(n>bass)below.push(n);
+  }
+  return uniq([...below,top]);
+}
+/* The bass walks down: the nearest chord tone below the current bass. */
+function bassBelow(notes,pcs,from){
+  const set=uniq(pcs.map(pc));let bass=null;
+  for(const p of set){let n=from-1;while(pc(n)!==p)n--;if(bass===null||n>bass)bass=n;}
+  if(bass===null||bass<28)return null;
+  const upper=uniq(notes).slice(1).filter(n=>n>bass);
+  for(const p of set){if(p===pc(bass)||upper.some(n=>pc(n)===p))continue;let n=bass+1;while(pc(n)!==p)n++;upper.push(n);}
+  return uniq([bass,...upper]);
+}
+/* Rules that hold the proposals: each one is a test on the next chord. */
+const RULES={
+  'one-voice':(c,s)=>{const a=uniq(s.notes),b=uniq(c.notes);return a.length===b.length&&a.filter(n=>!b.includes(n)).length===1;},
+  'no-five':(c,s,key)=>pc(c.root-key.tonic)!==7,
+  'bass-down':(c,s)=>Math.min(...c.notes)<Math.min(...s.notes),
+  'no-common':(c,s)=>!uniq(c.notes.map(pc)).some(p=>s.pcs.includes(p))
+};
+
 function suggest(opts={}){
   const key=keyOf(opts);
   const land=L.LANDSCAPES.find(l=>l.id===opts.style)||null;
@@ -239,12 +268,15 @@ function suggest(opts={}){
   const s={...current,root:pc(current.root),pcs:uniq(current.notes.map(pc))};
   const hist=(opts.history&&opts.history.length?opts.history:[s]).map(h=>({...h,root:pc(h.root),pcs:uniq((h.pcs&&h.pcs.length?h.pcs:h.notes).map(pc))}));
   const sevenths=opts.style==='jazz'||opts.sevenths;
+  const mel=Number.isInteger(opts.melody)?opts.melody:null,rule=RULES[opts.rule]||null;
   const pool=[];
   const push=c=>{
-    if(!c||!c.pcs?.length)return;
-    if(sig(c.pcs)===sig(s.pcs)&&pc(c.bassPc??c.root)===pc(Math.min(...s.notes)))return;
+    if(!c||!c.pcs?.length)return null;
+    // With a melody note the same chord may come back, voiced under the note.
+    if(mel===null&&sig(c.pcs)===sig(s.pcs)&&pc(c.bassPc??c.root)===pc(Math.min(...s.notes)))return null;
     let notes;
-    if(c.template)notes=fromTemplate(c.template,c.root,s.notes);
+    if(c.exact)notes=uniq(c.exact);
+    else if(c.template)notes=fromTemplate(c.template,c.root,s.notes);
     else if(c.ison){const b=fromTemplate([0,12],c.root,s.notes);notes=b;}
     else {let bp=c.bassPc??c.root;const curBass=pc(Math.min(...s.notes));
       // Minimalism and suspension keep the bass when it belongs to the next chord.
@@ -254,16 +286,22 @@ function suggest(opts={}){
       if(c.low?.length){const b=Math.min(...notes);for(const o of c.low)if(b+o>=24)notes.push(b+o);}
       notes=uniq(notes);}
     if(notes.length>12)notes=notes.slice(0,12);
+    let layered=Boolean(c.lower);
+    if(opts.rule==='bass-down'){notes=bassBelow(notes,notes.map(pc),Math.min(...s.notes));if(!notes)return null;layered=false;}
+    if(mel!==null){if(!notes.some(n=>pc(n)===pc(mel)))return null;notes=underMelody(notes,notes.map(pc),mel);layered=false;}
+    if(rule&&!rule({root:c.root,notes},s,key))return null;
+    if(notes.join()===uniq(s.notes).join())return null;
     const cand={...c,notes,pcs:uniq(notes.map(pc))};
     cand.motion=motion(s.notes,notes);
     const sc=score(cand,s,key,opts,hist);
     cand.score=sc.score;cand.reason=sc.reason;
     // Two layers (Stravinsky) read as a polychord: lower + upper triad.
-    cand.label=c.lower?symbol(c.lower,c.root)+' + '+T.name(c.top[0]):symbol(notes,c.root,c.fallbackLabel);
-    cand.roman=roman(c.lower?{root:c.root,notes:c.lower}:cand,key);
+    cand.label=layered?symbol(c.lower,c.root)+' + '+T.name(c.top[0]):symbol(notes,c.root,c.fallbackLabel);
+    cand.roman=roman(layered?{root:c.root,notes:c.lower}:cand,key);
     cand.family=family(cand.pcs,c.root);
     cand.inKey=cand.pcs.every(p=>key.pcs.includes(p));
     pool.push(cand);
+    return cand;
   };
   // 1. The style's paths, continued from your history.
   for(const c of continuations(land,hist))push(c);
@@ -271,10 +309,10 @@ function suggest(opts={}){
   const kc=key.messiaen?keyChords(key):keyChords(key,sevenths);
   for(const d of kc){
     const plain={root:d.root,quality:d.quality,pcs:d.pcs,degree:d.degree,base:1.2,origin:'key',originLabel:key.messiaen?`Messiaen ${key.collection.mode}`:'Τονικότητα'};
-    push(plain);
+    const kept=push(plain);
     const col=colourise(land,d);
     if(col&&!col.same)push({root:d.root,quality:'custom',pcs:col.pcs,top:col.top,low:col.low,bassFixed:col.low.length>0,degree:d.degree,base:2.6,origin:'style',originLabel:`${land.name} · ${col.rule.name}`,why:col.rule.why});
-    else if(col&&col.same&&land)pool[pool.length-1].styleFit=col.rule;
+    else if(col&&col.same&&land&&kept)kept.styleFit=col.rule;
   }
   // 3. The style's colours on your chord's root and on the strongest degree.
   if(land)for(const color of land.colors){
@@ -287,6 +325,19 @@ function suggest(opts={}){
     for(const t of T.transformations(T.triad(s.root,sf==='major'?'major':'minor')))
       push({root:t.to.root,quality:t.to.quality,pcs:t.to.pcs,base:.9,origin:'key',originLabel:`${t.id} · ${t.short}`,why:t.detail});
   }
+  // 5. A melody note: every major and minor triad that holds it.
+  if(mel!==null)for(const q of ['major','minor'])for(const o of QUAL[q]){const r=pc(mel-o);
+    push({root:r,quality:q,pcs:QUAL[q].map(x=>pc(r+x)),base:1,origin:'melody',originLabel:'Μελωδία',why:'κρατά τη νότα της μελωδίας στην κορυφή'});}
+  // 6. Rules that need chords of their own.
+  if(opts.rule==='one-voice'){const cur=uniq(s.notes);
+    cur.forEach((n,i)=>{for(const d of [-2,-1,1,2]){const m=n+d;if((i&&m<=cur[i-1])||(i<cur.length-1&&m>=cur[i+1]))continue;
+      // Only collections with a plain name: a triad, a seventh, sus or add9.
+      const notes=cur.map((x,j)=>j===i?m:x),set=sig(notes.map(pc));let root=null,q=null;
+      for(let r=0;r<12&&root===null;r++)for(const k of Object.keys(QUAL))if(sig(QUAL[k].map(x=>pc(r+x)))===set){root=r;q=k;break;}
+      if(root===null)continue;
+      push({root,quality:q,pcs:uniq(notes.map(pc)),exact:notes,base:1,origin:'rule',originLabel:'Κανόνας',why:'μία φωνή κινείται, οι άλλες μένουν'});}});}
+  if(opts.rule==='no-common')for(let r=0;r<12;r++)for(const q of ['major','minor']){const pcs=QUAL[q].map(x=>pc(r+x));
+    if(!pcs.some(p=>s.pcs.includes(p)))push({root:r,quality:q,pcs,base:.9,origin:'rule',originLabel:'Κανόνας',why:'καμία κοινή νότα: το χρώμα αλλάζει απότομα'});}
   // Glass and Hadjidakis keep the triad: their colour lives in repetition.
   for(const c of pool)if(c.styleFit){c.origin='style';c.base+=1.2;c.score+=1.2;c.originLabel=`${land.name} · ${c.styleFit.name}`;c.why=c.styleFit.why;c.fit=true;}
   pool.sort((a,b)=>b.score-a.score);
@@ -369,5 +420,5 @@ function wheelSlot(ch){
   return {ring,index};
 }
 
-return {QUAL,INTENTS,PRIORITY,family,symbol,roman,voiceLead,fromTemplate,motion,keyOf,keyChords,suggest,phrase,chordFor,recognise,wheelSlot,pretty,sig};
+return {QUAL,INTENTS,PRIORITY,RULES,family,symbol,roman,voiceLead,underMelody,bassBelow,fromTemplate,motion,keyOf,keyChords,suggest,phrase,chordFor,recognise,wheelSlot,pretty,sig};
 });

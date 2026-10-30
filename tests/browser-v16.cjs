@@ -81,6 +81,34 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   await page.selectOption('#style','takemitsu');
   await page.screenshot({path:path.join(out,'compose.png')});
 
+  // Playback pattern and sound follow the style unless chosen.
+  assert.match(await page.locator('#pattern option').first().innerText(),/^Από το ύφος · Μπλοκ$/);
+  assert.match(await page.locator('#timbre option').first().innerText(),/^Από το ύφος · Pad$/);
+  await page.selectOption('#style','glass');assert.match(await page.locator('#pattern option').first().innerText(),/Αρπέζ/);
+  await page.selectOption('#style','takemitsu');
+  await page.evaluate(()=>{ChordStudio.state.pattern='pulse';ChordStudio.state.timbre='strings';});
+  await page.keyboard.press('Space');await page.waitForTimeout(500);assert(await page.evaluate(()=>Boolean(ChordStudio.state.play)));await page.keyboard.press('Space');
+  await page.evaluate(()=>{ChordStudio.state.pattern='auto';ChordStudio.state.timbre='auto';});
+
+  // Melody first: the circle keeps the chords that hold the note, the proposals keep it on top.
+  await page.click('#melody rect[data-pc="4"]');
+  const mel=await page.evaluate(()=>({m:ChordStudio.state.melody,tops:ChordStudio.state.suggestions.map(x=>Math.max(...x.notes)%12)}));
+  assert.equal(mel.m%12,4);assert(mel.tops.length&&mel.tops.every(t=>t===4));
+  assert(await page.locator('#wheel .seg.off').count()>0);assert.equal(await page.locator('#wheel .seg.off[data-ring="minor"][data-i="0"]').count(),0,'Am holds E');
+  await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>ChordStudio.state.melody),null);
+  // A rule holds all three proposals.
+  await page.selectOption('#rule','no-five');
+  assert(await page.evaluate(()=>ChordStudio.state.suggestions.every(x=>x.root!==7)),'no G');
+  await page.selectOption('#rule','');
+
+  // The note editor moves by its header and remembers where; a double click puts it back.
+  await page.keyboard.press('e');const ed0=await page.locator('#editor').boundingBox();const hd=await page.locator('#editor header h2').boundingBox();
+  await page.mouse.move(hd.x+10,hd.y+6);await page.mouse.down();await page.mouse.move(hd.x+10,hd.y-300,{steps:6});await page.mouse.up();
+  const ed1=await page.locator('#editor').boundingBox();assert(ed1.y<ed0.y-200,'editor moved');
+  await page.keyboard.press('Escape');await page.keyboard.press('e');assert.equal(Math.round((await page.locator('#editor').boundingBox()).y),Math.round(ed1.y));
+  await page.dblclick('#editor header h2');assert.equal(Math.round((await page.locator('#editor').boundingBox()).y),Math.round(ed0.y));
+  await page.keyboard.press('Escape');
+
   // Cards and their numbers on the wheel point at each other.
   await page.hover('.card[data-i="0"]');
   assert.deepEqual(await page.$$eval('#wheel .marker.hot',m=>m.map(x=>x.dataset.i)),['0']);
@@ -101,6 +129,16 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   const total=(await S()).steps.reduce((t,x)=>t+x.beats,0);
   assert.match(await page.locator('.analysis-summary').innerText(),new RegExp(String(total)));
   await page.screenshot({path:path.join(out,'analysis.png')});
+  await page.click('#viewCompose');
+  // Ear practice: a question from the piece, an answer, the next one; the bar waits meanwhile.
+  await page.keyboard.press('Control+3');assert(await page.locator('#practice').isVisible());
+  assert.match(await page.locator('#practiceBody h2').innerText(),/;$/);
+  assert.equal(await page.evaluate(()=>getComputedStyle(document.getElementById('strip')).visibility),'hidden');
+  await page.keyboard.press('1');assert.equal(await page.locator('#practiceBody .verdict').count(),1);
+  const stored=await page.evaluate(()=>Object.keys(JSON.parse(localStorage.getItem('cl-v16-practice')||'{}')).length);assert.equal(stored,1);
+  await page.keyboard.press('Enter');assert.equal(await page.locator('#practiceBody .verdict').count(),0);
+  const count0=(await S()).steps.length;await page.keyboard.press('Backspace');assert.equal((await S()).steps.length,count0,'practice keys do not edit the piece');
+  await page.click('#viewAnalysis');
   // Each step of the Analysis can be heard: the table rows and ▶.
   assert.equal(await page.locator('.analysis-step .listen').count(),total>0?(await S()).steps.length:0);
   await page.click('tr[data-step="1"]');assert.match(await page.locator('#status').innerText(),/^Ακούς: \S+ → \S+$/);
@@ -162,7 +200,9 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   await page.click('.seg[data-ring="major"][data-i="1"]');await page.keyboard.press('2');
   assert.deepEqual(await greekLeft(),[],'compose in English');
   await page.keyboard.press('e');assert.deepEqual(await greekLeft(),[],'editor in English');await page.keyboard.press('Escape');
-  await page.click('#viewAnalysis');assert.deepEqual(await greekLeft(),[],'analysis in English');await page.click('#viewCompose');
+  await page.click('#viewAnalysis');assert.deepEqual(await greekLeft(),[],'analysis in English');
+  await page.click('#viewPractice');assert.deepEqual(await greekLeft(),[],'practice in English');await page.keyboard.press('2');assert.deepEqual(await greekLeft(),[],'practice answer in English');
+  await page.click('#viewCompose');await page.click('#melody rect[data-pc="7"]');assert.deepEqual(await greekLeft(),[],'melody in English');await page.keyboard.press('Escape');
   await page.click('#openSettings');assert.deepEqual(await greekLeft(),[],'settings in English');
   assert.equal(await page.evaluate(()=>document.documentElement.lang),'en');
   await page.selectOption('#lang','el');await page.keyboard.press('Escape');
@@ -175,5 +215,5 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
 
   assert.deepEqual(errors,[]);
   await browser.close();
-  console.log('Browser: start, wheel preview without storing, proposals after the selected step, durations, undo/redo, editor and Drop 2, drag, playback, 10 styles, analysis, PDF with Literata, MIDI, theme, persistence, v1.5 migration, starting phrase, phrase listening, voice-leading keys, card and wheel links, functions, Analysis listening, English and back, 1024 px passed · '+out);
+  console.log('Browser: start, wheel preview without storing, proposals after the selected step, durations, undo/redo, editor and Drop 2, drag, playback, 10 styles, analysis, PDF with Literata, MIDI, theme, persistence, v1.5 migration, starting phrase, phrase listening, patterns and sounds, melody first, rules, ear practice, movable editor, voice-leading keys, card and wheel links, functions, Analysis listening, English and back, 1024 px passed · '+out);
 })().catch(e=>{console.error(e);process.exit(1);});

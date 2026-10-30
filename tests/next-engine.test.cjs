@@ -89,4 +89,22 @@ for(const l of L.LANDSCAPES)for(const [tonic,mode,start] of [[0,'ionian',startC]
   assert.equal(p.chords[0].root,tonic,'starts on the tonic');
   for(const c of p.chords)assert(Math.min(...c.notes)>=28&&Math.max(...c.notes)<=100,`${l.id}: ${c.label} in range`);
 }
-console.log(`NextChords: 9 styles × 6 intents shape ≥2 of 3 proposals (${triples.size} distinct sets), symbols and Roman case, path continuation, Glass bass, Byzantine ison, voice leading, wheel slots, starting phrases passed`);
+
+// Melody first: every proposal holds the note, with the note on top.
+for(const style of ['free',...L.LANDSCAPES.map(l=>l.id)])for(const m of [64,66,70]){
+  const r=N.suggest({current:startC,history:[startC],tonic:0,mode:'ionian',style,intent:'motion',melody:m});
+  assert(r.length>=1,`${style} harmonises ${m}`);
+  for(const c of r){assert.equal(Math.max(...c.notes)%12,m%12,`${style}: ${c.label} has ${m} on top`);assert(Math.min(...c.notes)<Math.max(...c.notes)-4);}
+}
+assert.deepEqual(N.underMelody([48,52,55,60],[0,4,7],64),[48,52,55,60,64]);
+assert.deepEqual(N.underMelody([48,52,55,60,67],[0,4,7],64),[48,52,55,60,64],'voices above the note go below it');
+// Rules: every proposal keeps the rule, in every style.
+for(const style of ['free',...L.LANDSCAPES.map(l=>l.id)])for(const rule of Object.keys(N.RULES)){
+  const r=N.suggest({current:startC,history:[startC],tonic:0,mode:'ionian',style,intent:'motion',rule});
+  assert(r.length===3,`${style}/${rule}: three proposals (${r.length})`);
+  const s={...startC,pcs:[0,4,7]},key=N.keyOf({tonic:0,mode:'ionian'});
+  for(const c of r)assert(N.RULES[rule](c,s,key),`${style}/${rule}: ${c.label}`);
+}
+const down=N.suggest({current:startC,history:[startC],tonic:0,mode:'ionian',style:'free',intent:'motion',rule:'bass-down'});
+assert(down.every(c=>Math.min(...c.notes)>=43),'the bass walks down by the nearest chord tone');
+console.log(`NextChords: 9 styles × 6 intents shape ≥2 of 3 proposals (${triples.size} distinct sets), symbols and Roman case, path continuation, Glass bass, Byzantine ison, voice leading, wheel slots, starting phrases, melody on top, rules passed`);

@@ -42,6 +42,13 @@ for(const style of ['free',...L.LANDSCAPES.map(l=>l.id)])for(const intent of N.I
     for(const t of [why,I.parts('en',s.originLabel),I.parts('en',s.label),I.inline('en',s.roman)])assert(!greek.test(t),`${style}/${intent}: ${t}`);
   }
 }
+// A melody note and every rule, in English too.
+for(const opts of [{melody:64},{melody:66},...Object.keys(N.RULES).map(rule=>({rule}))])for(const style of ['free','takemitsu','stravinsky','byzantine']){
+  for(const s of N.suggest({current:C,history:[C],tonic:0,mode:'ionian',style,intent:'motion',...opts})){
+    const why=I.L('en',s.reason&&(s.origin!=='style'||s.fit)?s.reason:(s.why||s.reason||''));
+    for(const t of [why,I.parts('en',s.originLabel),I.parts('en',s.label)])assert(!greek.test(t),`${style}/${JSON.stringify(opts)}: ${t}`);
+  }
+}
 const project=(settings)=>({format:'chord-lab-project',version:3,name:'Test',settings,sequence:[
   {root:0,quality:'major',label:'C',notes:[48,52,55,60]},{root:7,quality:'7',label:'G7',notes:[47,53,55,62]},{root:0,quality:'major',label:'C/E',notes:[52,55,60,64],beats:2},
   {root:2,quality:'custom',label:'Dm(9)(11)',notes:[50,52,55,65]},{root:1,quality:'major',label:'D♭',notes:[49,53,56]},{root:0,quality:'custom',label:'C · ίσον',notes:[48,60]}]});

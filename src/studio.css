@@ -146,6 +146,20 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 .next-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
 .next-head h2{margin:0;font-size:11.5px;font-weight:650;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .intents{display:flex;gap:4px;flex-wrap:wrap}
+.next-tools{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:2px 0 8px;font-size:12px;color:var(--muted)}
+.melody{display:flex;align-items:center;gap:8px;min-height:28px}
+.melody .octave{width:126px;height:27px}
+.melody .octave rect{cursor:pointer}
+.melody .octave rect.w{fill:var(--raise);stroke:var(--line-2);stroke-width:.8}
+.melody .octave rect.b{fill:var(--ink-2)}
+.melody .octave rect.on{fill:var(--arrive)}
+.melody .mel-name{color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums}
+.melody .clear{border:0;background:transparent;padding:2px 6px;color:var(--muted);font-size:15px;line-height:1}
+.rule{display:flex;align-items:center;gap:4px}
+.rule select{color:var(--ink);font-size:12.5px;font-weight:550;border-color:var(--line-2)}
+.card-empty{padding:14px 10px;color:var(--muted);font-size:13px}
+.wheel svg.has-mel .seg.off{opacity:.3}
+.wheel .seg.mel .n{font-weight:700}
 .cards{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .card{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:10px 10px 10px 8px;border-radius:12px;border:1px solid transparent;cursor:pointer}
 .card:hover{background:var(--panel);border-color:var(--line)}
@@ -197,7 +211,11 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 
 /* Editor */
 .editor{position:fixed;left:50%;transform:translateX(-50%);bottom:118px;width:min(940px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px 18px 16px;z-index:30}
-.editor header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
+.editor header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;cursor:grab;user-select:none;touch-action:none}
+.editor.dragging header{cursor:grabbing}
+.editor.dragging{box-shadow:0 18px 50px rgba(30,28,20,.22)}
+.editor .grip svg{width:10px;height:16px;fill:var(--faint)}
+.editor h2{flex:1}
 .editor h2{margin:0;font-size:13px;font-weight:600;color:var(--muted)}
 .editor h2 .sym{font-size:24px;color:var(--ink);margin-left:8px}
 .editor .keys{width:100%;height:96px}
@@ -242,6 +260,25 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 body.mac-desktop .overlay-bar{padding-left:84px;-webkit-app-region:drag}
 body.mac-desktop .overlay-bar button{-webkit-app-region:no-drag}
 .overlay iframe{border:0;width:100%;height:100%;background:#1b1e1b}
+
+/* Ear practice */
+.practice{overflow:auto;padding:34px 40px 48px}
+.app.practicing .dock>:not(.status){visibility:hidden}
+.practice-body{max-width:720px;margin:0 auto}
+.practice-body .overline{font-size:11.5px;letter-spacing:.09em;color:var(--muted)}
+.practice-body h2{font:500 28px Literata,Georgia,serif;margin:10px 0 4px}
+.practice-body .detail{color:var(--muted);margin:4px 0 14px;font-size:14px}
+.quiz-options{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.quiz-options .opt{min-width:120px;padding:12px 18px;font-size:17px;border-radius:12px;display:flex;align-items:center;gap:10px}
+.quiz-options .opt .kbd{margin:0;font-size:11px}
+.quiz-options .opt:disabled{opacity:1;cursor:default}
+.quiz-options .opt.right{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.quiz-options .opt.wrong{border-color:var(--warn);color:var(--warn)}
+.verdict{font-size:16px;font-weight:600;margin:6px 0 2px}
+.verdict.no{color:var(--warn)}
+.verdict span{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+.quiz-actions{display:flex;gap:8px;margin:16px 0}
+.practice-body .stats{font-size:12px;color:var(--muted);margin-top:28px}
 
 /* Analysis */
 .analysis{overflow:auto;padding:22px 40px 48px}
