@@ -325,6 +325,13 @@ function suggest(opts={}){
     for(const t of T.transformations(T.triad(s.root,sf==='major'?'major':'minor')))
       push({root:t.to.root,quality:t.to.quality,pcs:t.to.pcs,base:.9,origin:'key',originLabel:`${t.id} · ${t.short}`,why:t.detail});
   }
+  // A suspension resolves: the same root with the third of the key.
+  const rel=new Set(s.pcs.map(p=>pc(p-s.root)));
+  if(sf==='sus'&&rel.has(7)&&(rel.has(5)||rel.has(2))){
+    const q=(kc.find(d=>d.root===s.root&&['major','minor'].includes(d.quality))||{quality:'major'}).quality;
+    push({root:s.root,quality:q,pcs:QUAL[q].map(x=>pc(s.root+x)),base:3.4,origin:'key',originLabel:'Λύση της καθυστέρησης',
+      why:rel.has(5)?'η 4η πέφτει στην 3η: η καθυστέρηση λύνεται':'η 2α ανεβαίνει στην 3η'});
+  }
   // 5. A melody note: every major and minor triad that holds it.
   if(mel!==null)for(const q of ['major','minor'])for(const o of QUAL[q]){const r=pc(mel-o);
     push({root:r,quality:q,pcs:QUAL[q].map(x=>pc(r+x)),base:1,origin:'melody',originLabel:'Μελωδία',why:'κρατά τη νότα της μελωδίας στην κορυφή'});}

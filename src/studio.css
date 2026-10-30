@@ -61,7 +61,7 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 
 /* Compose */
 .compose{display:grid;grid-template-columns:minmax(330px,1fr) minmax(380px,520px);gap:40px;padding:18px 36px 14px;overflow:auto;align-items:center;justify-content:center}
-.wheel-wrap{display:flex;justify-content:center;align-items:center;min-height:0}
+.wheel-wrap{display:flex;justify-content:center;align-items:center;min-height:0;align-self:start}
 .wheel{width:min(100%,calc(100vh - 56px - 112px - 36px),640px);aspect-ratio:1}
 .wheel svg{width:100%;height:100%;overflow:visible}
 .side{display:flex;flex-direction:column;gap:16px;min-width:0;align-self:start;padding-top:max(0px,calc((100vh - 56px - 112px - 600px) / 2))}
@@ -81,6 +81,9 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 .wheel .seg .n{font:500 17px Literata,Georgia,serif}
 .wheel .ring-minor .n{font-size:14.5px}
 .wheel .ring-dim .n{font-size:10.5px}
+.wheel .seg .n.long{font-size:13.5px}
+.wheel .ring-minor .n.long{font-size:11.5px}
+.wheel .ring-dim .n.long{font-size:8.5px}
 .wheel .seg .r{font:600 9.5px Commissioner,sans-serif;letter-spacing:.04em;fill:var(--muted)}
 .wheel .cur-outline{fill:none;stroke:var(--accent);stroke-width:3;stroke-linejoin:round;pointer-events:none}
 .wheel .pre-outline{fill:none;stroke:var(--accent);stroke-width:1.6;stroke-dasharray:4 3;pointer-events:none}
@@ -142,6 +145,7 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 .preview .exts{grid-column:1;display:flex;gap:4px;flex-wrap:wrap}
 .chip{font-size:12px;padding:3px 10px;border-radius:999px;background:transparent;border:1px solid var(--line-2);color:var(--ink-2)}
 .chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.preview .hint{grid-column:1/-1;margin:6px 0 0;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
 .preview .actions{grid-row:1/4;grid-column:2;display:flex;flex-direction:column;gap:4px;align-items:stretch}
 .preview .actions .btn-ghost{font-size:12.5px;padding:4px 10px}
 

@@ -28,6 +28,15 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   await page.click('.seg[data-ring="minor"][data-i="0"]');s=await S();assert.equal(s.preview,'Am');assert.equal(s.steps.length,1);
   assert.equal(await page.locator('#preview').isVisible(),true);
   await page.click('[data-ext="7"]');s=await S();assert.equal(s.preview,'Am7');
+  // A form belongs to the chord it was chosen for: the outline stays, only that chord shows it, the next chord starts as a triad.
+  await page.click('[data-ext="sus4"]');s=await S();assert.equal(s.preview,'Asus4');
+  assert.equal(await page.$eval('.seg.pre',e=>e.dataset.ring+':'+e.dataset.i),'minor:0');
+  assert.equal(await page.locator('.seg[data-ring="minor"][data-i="0"] .n').textContent(),'Asus4');
+  assert.equal(await page.locator('.seg[data-ring="minor"][data-i="1"] .n').textContent(),'Em');
+  assert.match(await page.locator('#preview .hint').innerText(),/sus4: .*Am\./);
+  await page.click('.seg[data-ring="major"][data-i="1"]');s=await S();assert.equal(s.preview,'G');
+  assert.equal(await page.locator('.seg[data-ring="minor"][data-i="0"] .n').textContent(),'Am');
+  await page.click('[data-ext="7"]');assert.match(await page.locator('#preview .hint').innerText(),/^V7: /);
   await page.keyboard.press('Escape');s=await S();assert.equal(s.preview,null);assert.equal(s.steps.length,1);
 
   // Proposals are computed after the selected step and land right after it.

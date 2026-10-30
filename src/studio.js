@@ -181,7 +181,7 @@ function insert(ch,extra){
   stop();remember();
   const at=state.steps.length?state.sel+1:0;
   state.steps.splice(at,0,makeStep(ch,extra));
-  state.sel=at;state.preview=null;state.heard=-1;state.range=null;state.melody=null;
+  state.sel=at;state.preview=null;state.heard=-1;state.range=null;state.melody=null;state.ext='triad';
   refresh();save();scrollToSel();
   status(tx('Μπήκε {0} στο βήμα {1}.',tp(state.steps[at].label),at+1));
 }
@@ -267,16 +267,17 @@ function renderWheel(){
   const k=key(),dia=new Map(),fn=new Map(),tonal=['ionian','aeolian'].includes(state.mode);
   for(const ch of N.keyChords(k)){const s=slotKey(ch);dia.set(s,N.roman(ch,k));if(tonal)fn.set(s,FN[ch.degree]);}
   const cur=current(),curSlot=N.wheelSlot({root:cur.root,notes:cur.notes});
-  const pre=state.preview?N.wheelSlot(state.preview):null,mp=state.melody===null?null:pc(state.melody);
+  const pv=state.preview,pre=pv?(pv.source==='wheel'?{ring:pv.ring,index:pv.ring==='major'?F.ROOTS.indexOf(pv.slotRoot):F.MINOR_ROOTS.indexOf(pv.slotRoot)}:N.wheelSlot(pv)):null,mp=state.melody===null?null:pc(state.melody);
   const holds=(ring,i)=>{const r=slotRoot(ring,i);return (ring==='major'?[0,4,7]:ring==='minor'?[0,3,7]:[0,3,6]).some(x=>pc(r+x)===mp);};
   let segs='';
   for(const ring of ['major','minor','dim'])for(let i=0;i<12;i++){
     const [r0,r1]=RINGS[ring],a=i*30,id=ring+':'+i,rom=dia.get(id);
     const f=fn.get(id),cls=['seg','ring-'+ring,rom?'dia':'',f?'fn-'+f:'',pre&&pre.ring===ring&&pre.index===i?'pre':'',mp===null?'':holds(ring,i)?'mel':'off'].join(' ');
     const [nx,ny]=polar(ring==='major'?187:ring==='minor'?130:82,a),[rx,ry]=polar(ring==='major'?162:ring==='minor'?111:70,a);
-    const name=slotName(ring,i),about=[name,rom?ti(rom):'',f?tx(FN_NAME[f]):''].filter(Boolean).join(' · ');
+    const shaped=pv?.source==='wheel'&&state.ext!=='triad'&&pre.ring===ring&&pre.index===i;
+    const name=shaped?pv.label.split('/')[0]:slotName(ring,i),about=[name,rom?ti(rom):'',f?tx(FN_NAME[f]):''].filter(Boolean).join(' · ');
     segs+=`<g class="${cls}" data-ring="${ring}" data-i="${i}" role="button" tabindex="${ring==='major'&&i===0?0:-1}" aria-label="${esc(about)}"><title>${esc(about)}</title>`+
-      `<path d="${sector(r0,r1,a-15,a+15)}"/><text class="n" x="${nx.toFixed(1)}" y="${(ring==='dim'?ny-3:ny).toFixed(1)}">${esc(name)}</text>`+
+      `<path d="${sector(r0,r1,a-15,a+15)}"/><text class="n${name.length>4?' long':''}" x="${nx.toFixed(1)}" y="${(ring==='dim'?ny-3:ny).toFixed(1)}">${esc(name)}</text>`+
       (rom&&ring!=='dim'?`<text class="r" x="${rx.toFixed(1)}" y="${ry.toFixed(1)}">${esc(ti(rom))}</text>`:'')+
       (rom&&ring==='dim'?`<text class="r" x="${nx.toFixed(1)}" y="${(ny+9).toFixed(1)}">${esc(ti(rom))}</text>`:'')+`</g>`;
   }
@@ -293,17 +294,39 @@ function renderWheel(){
 }
 function onWheel(e){
   const g=e.target.closest('.seg');
-  if(g){const ring=g.dataset.ring,i=Number(g.dataset.i);previewFromWheel(slotRoot(ring,i),ring);return;}
+  if(g){const ring=g.dataset.ring,i=Number(g.dataset.i),root=slotRoot(ring,i),p=state.preview;
+    // A form (7, sus4 …) belongs to the chord it was chosen for: another chord starts as a triad.
+    if(!(p?.source==='wheel'&&p.ring===ring&&pc(p.slotRoot)===pc(root)))state.ext='triad';
+    previewFromWheel(root,ring);return;}
   if(e.target.closest('.center'))audition(startChord().notes);
 }
 function previewFromWheel(root,ring){
   const ch=N.chordFor(root,ring,{...keyOpts(),extension:state.ext,from:current().notes});
   if(state.melody!==null&&ch.pcs.includes(pc(state.melody))){ch.notes=N.underMelody(ch.notes,ch.pcs,state.melody);ch.label=N.symbol(ch.notes,ch.root);}
-  state.preview={...ch,source:'wheel',ring};state.heard=-1;
+  state.preview={...ch,source:'wheel',ring,slotRoot:pc(root)};state.heard=-1;
   renderPreview();renderWheel();renderCards();renderNow();
   audition(ch.notes);
 }
-function setExt(ext){state.ext=ext;if(state.preview?.source==='wheel')previewFromWheel(state.preview.root,state.preview.ring);}
+function setExt(ext){state.ext=ext;if(state.preview?.source==='wheel')previewFromWheel(state.preview.slotRoot,state.preview.ring);}
+/* What the chosen form does on this chord, and where sevenths go in the style. */
+const SEVENTHS={jazz:'Στην τζαζ όλες οι βαθμίδες παίρνουν 7η.',takemitsu:'Εδώ οι 7ες είναι χρώματα: μπαίνουν σε όποια βαθμίδα θέλεις, χωρίς να ζητούν λύση.',
+  electronic:'Εδώ οι 7ες είναι χρώματα: μπαίνουν σε όποια βαθμίδα θέλεις, χωρίς να ζητούν λύση.',glass:'Ο Glass μένει σε τριάδες· μια 7η ξεχωρίζει.',
+  stravinsky:'Στον Stravinsky οι 7ες ανήκουν στα μπλοκ· δεν ζητούν λύση.',byzantine:'Το βυζαντινό αποφεύγει τις 3ες· η 7η είναι ξένη στο ύφος.'};
+function formHint(p){
+  if(p?.source!=='wheel'||state.ext==='triad')return '';
+  const r=p.slotRoot,deg=pc(r-state.tonic),third=p.ring==='major'?4:3,n=x=>T.name(pc(r+x));
+  const triad=T.name(r)+(p.ring==='minor'?'m':p.ring==='dim'?'°':'');
+  if(state.ext==='sus4')return tx('sus4: η 4η ({0}) θέλει να πέσει στην 3η ({1}). Λύνεται συνήθως στην {2}.',n(5),n(third),triad);
+  if(state.ext==='sus2')return tx('sus2: η 2α ({0}) μπορεί να ανέβει στην 3η ({1}) ή να μείνει ως χρώμα.',n(2),n(third));
+  if(state.ext==='add9')return tx('add9: η 9η ({0}) είναι χρώμα πάνω από την τριάδα· δεν χρειάζεται λύση.',n(2));
+  let first;
+  if(p.quality==='7')first=deg===7?tx('V7: το τρίτονο {0}–{1} λύνεται στην I· η 3η ανεβαίνει, η 7η κατεβαίνει.',n(4),n(10)):tx('Το {0}7 ακούγεται σαν δεσπόζουσα του {1}: θέλει να πάει μία 5η κάτω.',T.name(r),T.name(pc(r+5)));
+  else if(p.quality==='maj7')first=tx('maj7: χρώμα χωρίς ένταση· στέκεται και μόνη της.');
+  else if(p.quality==='m7')first=deg===2?tx('ii7 → V7 → I: η πιο συνηθισμένη αλυσίδα με έβδομες.'):tx('m7: μαλακή· δεν ζητά λύση.');
+  else if(p.quality==='m7b5')first=deg===11?tx('viiø7: σαν V7 χωρίς ρίζα· λύνεται στην I.'):deg===2?tx('iiø7 → V7 → i: η αλυσίδα της ελάσσονας.'):tx('ø7: ασταθής· ζητά λύση.');
+  else first=tx('dim7: συμμετρική· λύνεται ημιτόνιο πάνω.');
+  return first+' '+tx(SEVENTHS[state.style]||'Στη λειτουργική αρμονία η 7η μπαίνει κυρίως στη V, και στις ii και vii°.');
+}
 
 /* ------------------------------------------------------------ panels */
 /* With a target: held notes, notes that leave, notes that arrive, and an arc
@@ -352,7 +375,7 @@ function renderPreview(){
   const after=state.steps.length?tx('Πρόσθεσε μετά το {0}',tp(current().label)):tx('Ξεκίνα με αυτή');
   box.innerHTML=`<div class="eyebrow">${esc(tx(p.source==='midi'?'Δοκιμή · από το MIDI':'Δοκιμή · από τον κύκλο'))}</div>`+
     `<div class="title"><span class="sym">${esc(tp(p.label))}</span><span class="roman">${esc(ti(p.roman||romanOf(p)))}</span></div>`+
-    (p.source==='wheel'?`<div class="exts" role="radiogroup" aria-label="${esc(tx('Μορφή'))}">${EXTS.map(([id,l])=>`<button type="button" class="chip${state.ext===id?' on':''}" data-ext="${id}" role="radio" aria-checked="${state.ext===id}">${esc(tx(l))}</button>`).join('')}</div>`:`<div class="exts"><span class="fine">${esc(p.notes.map(noteName).join(' · '))}</span></div>`)+
+    (p.source==='wheel'?`<div class="exts" role="radiogroup" aria-label="${esc(tx('Μορφή'))}">${EXTS.map(([id,l])=>`<button type="button" class="chip${state.ext===id?' on':''}" data-ext="${id}" role="radio" aria-checked="${state.ext===id}">${esc(tx(l))}</button>`).join('')}</div>`+(formHint(p)?`<p class="hint">${esc(formHint(p))}</p>`:''):`<div class="exts"><span class="fine">${esc(p.notes.map(noteName).join(' · '))}</span></div>`)+
     `<div class="actions"><button type="button" class="btn-primary" data-act="add-preview">＋ ${esc(after)}<span class="kbd">⏎</span></button>`+
     `<button type="button" class="btn-ghost" data-act="center">${esc(tx('◎ Κάνε το κέντρο'))}</button><button type="button" class="btn-ghost" data-act="dismiss">${esc(tx('Άκυρο'))} <span class="kbd">esc</span></button></div>`;
 }
@@ -681,7 +704,7 @@ function onKey(e){
     if(!$('oldOverlay').hidden){closeLab();return;}
     if(!$('settings').hidden){closeSettings();return;}
     if(state.editor>=0){closeEditor();return;}
-    if(state.preview||state.heard>=0){state.preview=null;state.heard=-1;renderPreview();renderWheelAndCards();renderNow();return;}
+    if(state.preview||state.heard>=0){state.preview=null;state.heard=-1;state.ext='triad';renderPreview();renderWheelAndCards();renderNow();return;}
     if(state.melody!==null){setMelody(null);return;}
     if(state.range){state.range=null;renderStrip();return;}
     stop();return;
@@ -831,7 +854,7 @@ function setup(){
     const a=e.target.closest('[data-act]')?.dataset.act;
     if(a==='add-preview')addHeardOrPreview();
     if(a==='center'&&state.preview)setCenter(state.preview.root,state.preview.family==='minor');
-    if(a==='dismiss'){state.preview=null;renderPreview();renderWheel();renderNow();}});
+    if(a==='dismiss'){state.preview=null;state.ext='triad';renderPreview();renderWheel();renderNow();}});
   $('intents').addEventListener('click',e=>{const b=e.target.closest('[data-intent]');if(!b)return;state.intent=b.dataset.intent;state.heard=-1;renderWheelAndCards();renderNow();save();
     status(tx(N.INTENTS.find(x=>x.id===state.intent).label)+': '+tx(N.INTENTS.find(x=>x.id===state.intent).hint)+'.');});
   $('cards').addEventListener('click',e=>{const li=e.target.closest('.card');if(!li)return;const i=Number(li.dataset.i);

@@ -107,4 +107,9 @@ for(const style of ['free',...L.LANDSCAPES.map(l=>l.id)])for(const rule of Objec
 }
 const down=N.suggest({current:startC,history:[startC],tonic:0,mode:'ionian',style:'free',intent:'motion',rule:'bass-down'});
 assert(down.every(c=>Math.min(...c.notes)>=43),'the bass walks down by the nearest chord tone');
+// A suspension: its resolution is among the proposals, named as such.
+for(const [notes,res] of [[[48,53,55,60],'C'],[[45,50,52,57],'Am']]){
+  const cur={root:notes[0]%12,notes},r=N.suggest({current:cur,history:[cur],tonic:0,mode:'ionian',style:'free',intent:'motion'});
+  const hit=r.find(x=>x.label===res);assert(hit&&hit.originLabel==='Λύση της καθυστέρησης',`sus4 → ${res}: ${r.map(x=>x.label)}`);
+}
 console.log(`NextChords: 9 styles × 6 intents shape ≥2 of 3 proposals (${triples.size} distinct sets), symbols and Roman case, path continuation, Glass bass, Byzantine ison, voice leading, wheel slots, starting phrases, melody on top, rules passed`);

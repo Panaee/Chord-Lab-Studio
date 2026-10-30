@@ -354,3 +354,24 @@ Chord Lab · Ανάλυση	Chord Lab · Analysis
 Σύνθεση · Ανάλυση · Εξάσκηση	Compose · Analysis · Practice
 Εξάσκηση: απάντηση · ξανά · επόμενη	Practice: answer · again · next
 Η διεπαφή είναι στα ελληνικά.	The interface is in English.
+Λύση της καθυστέρησης	Resolving the suspension
+η 4η πέφτει στην 3η: η καθυστέρηση λύνεται	the 4th falls to the 3rd: the suspension resolves
+η 2α ανεβαίνει στην 3η	the 2nd rises to the 3rd
+sus4: η 4η ({0}) θέλει να πέσει στην 3η ({1}). Λύνεται συνήθως στην {2}.	sus4: the 4th ({0}) wants to fall to the 3rd ({1}). It usually resolves to {2}.
+sus2: η 2α ({0}) μπορεί να ανέβει στην 3η ({1}) ή να μείνει ως χρώμα.	sus2: the 2nd ({0}) can rise to the 3rd ({1}) or stay as colour.
+add9: η 9η ({0}) είναι χρώμα πάνω από την τριάδα· δεν χρειάζεται λύση.	add9: the 9th ({0}) is colour over the triad; it needs no resolution.
+V7: το τρίτονο {0}–{1} λύνεται στην I· η 3η ανεβαίνει, η 7η κατεβαίνει.	V7: the tritone {0}–{1} resolves to I; the 3rd rises, the 7th falls.
+Το {0}7 ακούγεται σαν δεσπόζουσα του {1}: θέλει να πάει μία 5η κάτω.	{0}7 sounds like the dominant of {1}: it wants to go a 5th down.
+maj7: χρώμα χωρίς ένταση· στέκεται και μόνη της.	maj7: colour without tension; it can stand on its own.
+ii7 → V7 → I: η πιο συνηθισμένη αλυσίδα με έβδομες.	ii7 → V7 → I: the most common chain of sevenths.
+m7: μαλακή· δεν ζητά λύση.	m7: soft; it asks for no resolution.
+viiø7: σαν V7 χωρίς ρίζα· λύνεται στην I.	viiø7: like a V7 without its root; it resolves to I.
+iiø7 → V7 → i: η αλυσίδα της ελάσσονας.	iiø7 → V7 → i: the minor-key chain.
+ø7: ασταθής· ζητά λύση.	ø7: unstable; it asks for resolution.
+dim7: συμμετρική· λύνεται ημιτόνιο πάνω.	dim7: symmetrical; it resolves a semitone up.
+Στην τζαζ όλες οι βαθμίδες παίρνουν 7η.	In jazz every degree takes a 7th.
+Εδώ οι 7ες είναι χρώματα: μπαίνουν σε όποια βαθμίδα θέλεις, χωρίς να ζητούν λύση.	Here 7ths are colours: they go on any degree and ask for no resolution.
+Ο Glass μένει σε τριάδες· μια 7η ξεχωρίζει.	Glass stays with triads; a 7th stands out.
+Στον Stravinsky οι 7ες ανήκουν στα μπλοκ· δεν ζητούν λύση.	In Stravinsky 7ths belong to the blocks; they ask for no resolution.
+Το βυζαντινό αποφεύγει τις 3ες· η 7η είναι ξένη στο ύφος.	Byzantine avoids 3rds; a 7th is foreign to the style.
+Στη λειτουργική αρμονία η 7η μπαίνει κυρίως στη V, και στις ii και vii°.	In functional harmony the 7th goes mainly on V, and on ii and vii°.
