@@ -5,6 +5,7 @@
   --seg:#efede5;--seg-dia:#e3dcc7;--seg-hover:#e8e3d4;--seg-text-off:#9da093;--warn:#9a5b2b;
   --shadow:0 10px 30px rgba(40,38,30,.10),0 1px 3px rgba(40,38,30,.08);
   --fn-t:#e6dcc1;--fn-s:#d5e1d1;--fn-d:#ecd4c7;--arrive:#cf8748;
+  --key-w:#ffffff;--key-b:#3b403b;--key-text:#6c7067;
   --style:#c9c2ae;
   color-scheme:light;
 }
@@ -13,6 +14,7 @@
   --line:#41463f;--line-2:#4d534b;--accent:#9cc7ad;--accent-ink:#17211b;--accent-soft:#3d4f44;
   --seg:#343835;--seg-dia:#4a4a3f;--seg-hover:#41453f;--seg-text-off:#7f8278;--warn:#e0a26d;
   --fn-t:#4d4a3c;--fn-s:#3c4a40;--fn-d:#523f39;--arrive:#e0a26d;
+  --key-w:#d8d6cc;--key-b:#272a28;--key-text:#55584f;
   --shadow:0 10px 30px rgba(0,0,0,.35);color-scheme:dark;
 }
 [data-theme="dark"]{
@@ -20,6 +22,7 @@
   --line:#2a2e2b;--line-2:#363b37;--accent:#8fc4a4;--accent-ink:#0f1a13;--accent-soft:#25342b;
   --seg:#1c201d;--seg-dia:#35342a;--seg-hover:#262a27;--seg-text-off:#666a61;--warn:#e0a26d;
   --fn-t:#403d2d;--fn-s:#2c3e31;--fn-d:#48312b;--arrive:#e0a26d;
+  --key-w:#c9c8c0;--key-b:#161816;--key-text:#4f524b;
   --shadow:0 10px 30px rgba(0,0,0,.5);color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -107,8 +110,8 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 .now .actions{grid-row:2/4;grid-column:2;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .now .actions .row{display:flex;gap:6px}
 .mini{height:62px;width:210px}
-.mini rect.w{fill:var(--raise);stroke:var(--line-2);stroke-width:.8}
-.mini rect.b{fill:var(--ink-2)}
+.mini rect.w{fill:var(--key-w);stroke:var(--line-2);stroke-width:.8}
+.mini rect.b{fill:var(--key-b)}
 .mini rect.on{fill:var(--accent)}
 .mini rect.b.on{fill:var(--accent)}
 .mini rect.leave{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.3}
@@ -150,8 +153,8 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 .melody{display:flex;align-items:center;gap:8px;min-height:28px}
 .melody .octave{width:126px;height:27px}
 .melody .octave rect{cursor:pointer}
-.melody .octave rect.w{fill:var(--raise);stroke:var(--line-2);stroke-width:.8}
-.melody .octave rect.b{fill:var(--ink-2)}
+.melody .octave rect.w{fill:var(--key-w);stroke:var(--line-2);stroke-width:.8}
+.melody .octave rect.b{fill:var(--key-b)}
 .melody .octave rect.on{fill:var(--arrive)}
 .melody .mel-name{color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums}
 .melody .clear{border:0;background:transparent;padding:2px 6px;color:var(--muted);font-size:15px;line-height:1}
@@ -220,15 +223,15 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 .editor h2 .sym{font-size:24px;color:var(--ink);margin-left:8px}
 .editor .keys{width:100%;height:96px}
 .editor .keys rect{cursor:pointer}
-.editor .keys rect.w{fill:var(--raise);stroke:var(--line-2);stroke-width:.8}
-.editor .keys rect.b{fill:var(--ink-2)}
+.editor .keys rect.w{fill:var(--key-w);stroke:var(--line-2);stroke-width:.8}
+.editor .keys rect.b{fill:var(--key-b)}
 .editor .keys rect.on{fill:var(--accent)}
-.editor .keys text{font:600 7px Commissioner,sans-serif;fill:var(--muted);text-anchor:middle;pointer-events:none}
+.editor .keys text{font:600 7px Commissioner,sans-serif;fill:var(--key-text);text-anchor:middle;pointer-events:none}
 .editor .keys text.on{fill:var(--accent-ink)}
-.editor .tools{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;align-items:center}
+.editor .tools{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;align-items:center}
 .editor .group{display:flex;gap:4px;align-items:center}
 .editor .group>span{font-size:11.5px;color:var(--muted);margin-right:4px}
-.editor .group button{padding:5px 10px;font-size:12.5px}
+.editor .group button{padding:5px 8px;font-size:12.5px}
 .editor .group button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .editor .spacer{flex:1}
 

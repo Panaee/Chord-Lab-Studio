@@ -139,6 +139,8 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   await page.keyboard.press('Enter');assert.equal(await page.locator('#practiceBody .verdict').count(),0);
   const count0=(await S()).steps.length;await page.keyboard.press('Backspace');assert.equal((await S()).steps.length,count0,'practice keys do not edit the piece');
   await page.click('#viewAnalysis');
+  // The Analysis only reads: editing keys do nothing there.
+  const shown=(await S()).steps.length;await page.keyboard.press('Backspace');await page.keyboard.press('Enter');assert.equal((await S()).steps.length,shown,'no edits from the Analysis');
   // Each step of the Analysis can be heard: the table rows and ▶.
   assert.equal(await page.locator('.analysis-step .listen').count(),total>0?(await S()).steps.length:0);
   await page.click('tr[data-step="1"]');assert.match(await page.locator('#status').innerText(),/^Ακούς: \S+ → \S+$/);
@@ -197,6 +199,7 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
     for(const o of document.querySelectorAll('option,optgroup'))if(!o.closest('#lang')&&G.test(o.textContent+(o.label||'')))out.push('option: '+o.textContent);
     return out;});
   await page.click('#openSettings');await page.selectOption('#lang','en');await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#status').innerText(),'The interface is in English.');
   await page.click('.seg[data-ring="major"][data-i="1"]');await page.keyboard.press('2');
   assert.deepEqual(await greekLeft(),[],'compose in English');
   await page.keyboard.press('e');assert.deepEqual(await greekLeft(),[],'editor in English');await page.keyboard.press('Escape');
@@ -205,6 +208,12 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   await page.click('#viewCompose');await page.click('#melody rect[data-pc="7"]');assert.deepEqual(await greekLeft(),[],'melody in English');await page.keyboard.press('Escape');
   await page.click('#openSettings');assert.deepEqual(await greekLeft(),[],'settings in English');
   assert.equal(await page.evaluate(()=>document.documentElement.lang),'en');
+  // Piano keys keep light whites and dark blacks in every theme.
+  for(const theme of ['ivory','slate','dark']){await page.evaluate(t=>{document.body.dataset.theme=t;},theme);
+    const [w,bk]=await page.evaluate(()=>{const lum=c=>{const m=c.match(/\d+/g).map(Number);return .2126*m[0]+.7152*m[1]+.0722*m[2];};
+      return [lum(getComputedStyle(document.querySelector('#melody rect.w')).fill),lum(getComputedStyle(document.querySelector('#melody rect.b')).fill)];});
+    assert(w>bk+80,`${theme}: white keys lighter than black keys`);}
+  await page.evaluate(()=>{document.body.dataset.theme='dark';});
   await page.selectOption('#lang','el');await page.keyboard.press('Escape');
   assert.equal(await page.locator('#viewCompose').innerText(),'Σύνθεση');
 

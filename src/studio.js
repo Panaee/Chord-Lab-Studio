@@ -567,7 +567,7 @@ function setView(v){state.view=v;
   // Keys belong to the view, not to the tab that was clicked.
   if(document.activeElement?.closest?.('.views'))document.activeElement.blur();
   // The bar would show the answers: it waits while you practise.
-  $('app').classList.toggle('practicing',v==='practice');if(v==='practice')closeEditor();
+  $('app').classList.toggle('practicing',v==='practice');if(v!=='compose')closeEditor();
   for(const [id,btn] of [['compose','viewCompose'],['analysis','viewAnalysis'],['practice','viewPractice']]){
     $(id).hidden=v!==id;$(btn).classList.toggle('on',v===id);$(btn).setAttribute('aria-pressed',String(v===id));}
   if(v==='analysis')renderAnalysis();
@@ -707,6 +707,8 @@ function onKey(e){
     else return;
     e.preventDefault();return;
   }
+  // The Analysis only reads the piece: Space plays, nothing edits it unseen.
+  if(state.view==='analysis'&&e.key!==' ')return;
   if(['1','2','3'].includes(e.key)){e.preventDefault();hear(Number(e.key)-1);return;}
   if(e.key==='Enter'){e.preventDefault();addHeardOrPreview();return;}
   if(e.key===' '){e.preventDefault();togglePlay();return;}
@@ -788,6 +790,7 @@ function setLanguage(lang){
   state.lang=lang==='en'?'en':'el';
   try{localStorage.setItem('cl-lang',state.lang);}catch(_){}
   applyLanguage();refresh();if(!$('settings').hidden)renderLibrary();save();
+  status(tx('Η διεπαφή είναι στα ελληνικά.'));
 }
 
 /* ------------------------------------------------------------ setup */

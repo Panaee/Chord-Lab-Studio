@@ -529,7 +529,8 @@ const EN={"Κλασική":"Classical",
 "Κανόνας για τις προτάσεις":"Rule for the suggestions",
 "Σύρε για να το μετακινήσεις · διπλό κλικ: αρχική θέση":"Drag to move · double-click: back to its place",
 "Σύνθεση · Ανάλυση · Εξάσκηση":"Compose · Analysis · Practice",
-"Εξάσκηση: απάντηση · ξανά · επόμενη":"Practice: answer · again · next"};
+"Εξάσκηση: απάντηση · ξανά · επόμενη":"Practice: answer · again · next",
+"Η διεπαφή είναι στα ελληνικά.":"The interface is in English."};
 const fill=(s,args)=>args.length?String(s).replace(/\{(\d+)\}/g,(m,i)=>args[i]!==undefined?String(args[i]):m):s;
 /* One phrase. */
 function L(lang,s,...args){return fill(lang==='en'&&Object.prototype.hasOwnProperty.call(EN,s)?EN[s]:s,args);}
