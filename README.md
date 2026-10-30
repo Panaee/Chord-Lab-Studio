@@ -32,6 +32,8 @@ Projects stay on your computer: `~/Library/Application Support/Chord Lab Studio`
 8. **Analysis**: click a row or ▶ to hear the move into that step.
 9. **Ear practice** (⌘3): moves from your own piece. Which degree came, where the bass went, where the top voice went. Answer first, then see the chords. Right answers come back after 10 minutes, then 1, 3, 7 and 21 days; wrong ones come back in the same session.
 
+MIDI: every key sounds while held (sustain pedal too; turn «Key sound» off for instruments with their own sound). A chord stays whole in the preview when you let go of the keys, and Return adds it with the notes you played; a single key is a melody note.
+
 Sound (Settings → Sound and MIDI): pattern (block, arpeggio, eighth-note pulse) and sound (piano, pad, strings). Left alone, they follow the style: minimalism arpeggio, impressionism pad, film music strings. The note editor can be dragged by its header; a double click puts it back.
 
 Keys: 1 · 2 · 3 hear a suggestion inside the phrase · ⌘1 · ⌘2 · ⌘3 Compose · Analysis · Practice · in Practice 1–4 answer, R again, Return next · Return add it · Space play/stop · ← → previous/next step · [ ] shorter/longer · L loop · E edit notes · ⌫ delete · ⌘D duplicate · ⌘Z / ⇧⌘Z undo/redo · ⌘S save.
@@ -113,7 +115,7 @@ Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
 
 ## MIDI
 
-Στην εφαρμογή η είσοδος MIDI συνδέεται μόνη της: ό,τι παίζεις γίνεται «Δοκιμή» και το ⏎ το βάζει στη σύνθεση με τις ακριβείς νότες. Η έξοδος MIDI (Ρυθμίσεις) στέλνει την ακρόαση και την αναπαραγωγή σε DAW, π.χ. Ableton μέσω IAC Driver στο Mac.
+Στην εφαρμογή η είσοδος MIDI συνδέεται μόνη της. Κάθε πλήκτρο ακούγεται όσο το κρατάς, και με το πεντάλ. Αν το όργανο έχει δικό του ήχο, κλείσε το «Ήχος πλήκτρων» στις Ρυθμίσεις. Η συγχορδία που παίζεις γίνεται «Δοκιμή» και μένει ολόκληρη όταν αφήνεις τα πλήκτρα· το ⏎ τη βάζει στη σύνθεση με τις ακριβείς νότες. Ένα πλήκτρο μόνο του είναι νότα μελωδίας. Η έξοδος MIDI (Ρυθμίσεις) στέλνει την ακρόαση και την αναπαραγωγή σε DAW, π.χ. Ableton μέσω IAC Driver στο Mac.
 
 ## Εξαγωγές
 

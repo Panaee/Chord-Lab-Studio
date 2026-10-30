@@ -411,3 +411,9 @@ Major pentatonic / Πεντατονική μείζονα	Major pentatonic
 Πεντατονική ελάσσονα	Minor pentatonic
 Πεντατ. ελ.	Min. pentatonic
 Minor pentatonic / Πεντατονική ελάσσονα	Minor pentatonic
+Από το MIDI: {0}. ⏎ για να μπει μετά το {1}.	From MIDI: {0}. Return adds it after {1}.
+Από το MIDI: {0}. ⏎ για να ξεκινήσεις με αυτή.	From MIDI: {0}. Return starts with it.
+Ήχος πλήκτρων	Key sound
+από την εφαρμογή	from the app
+Τα πλήκτρα MIDI ακούγονται από την εφαρμογή.	MIDI keys sound from the app.
+Τα πλήκτρα MIDI δεν ακούγονται από την εφαρμογή: για όργανα με δικό τους ήχο.	MIDI keys do not sound from the app: for instruments with their own sound.

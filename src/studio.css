@@ -249,6 +249,8 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 .sheet .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0}
 .sheet .row>span{color:var(--ink-2)}
 .sheet .row select,.sheet .row input{border:1px solid var(--line-2);min-width:180px}
+.sheet .check{display:flex;align-items:center;gap:6px;min-width:180px;color:var(--ink-2)}
+.sheet .row .check input{width:16px;height:16px;min-width:0;accent-color:var(--accent)}
 .sheet .buttons{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
 .library{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
 .library li{display:flex;align-items:center;gap:6px}

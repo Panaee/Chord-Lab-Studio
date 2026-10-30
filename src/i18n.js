@@ -591,7 +591,13 @@ const EN={"Κλασική":"Classical",
 "Major pentatonic / Πεντατονική μείζονα":"Major pentatonic",
 "Πεντατονική ελάσσονα":"Minor pentatonic",
 "Πεντατ. ελ.":"Min. pentatonic",
-"Minor pentatonic / Πεντατονική ελάσσονα":"Minor pentatonic"};
+"Minor pentatonic / Πεντατονική ελάσσονα":"Minor pentatonic",
+"Από το MIDI: {0}. ⏎ για να μπει μετά το {1}.":"From MIDI: {0}. Return adds it after {1}.",
+"Από το MIDI: {0}. ⏎ για να ξεκινήσεις με αυτή.":"From MIDI: {0}. Return starts with it.",
+"Ήχος πλήκτρων":"Key sound",
+"από την εφαρμογή":"from the app",
+"Τα πλήκτρα MIDI ακούγονται από την εφαρμογή.":"MIDI keys sound from the app.",
+"Τα πλήκτρα MIDI δεν ακούγονται από την εφαρμογή: για όργανα με δικό τους ήχο.":"MIDI keys do not sound from the app: for instruments with their own sound."};
 const fill=(s,args)=>args.length?String(s).replace(/\{(\d+)\}/g,(m,i)=>args[i]!==undefined?String(args[i]):m):s;
 /* One phrase. */
 function L(lang,s,...args){return fill(lang==='en'&&Object.prototype.hasOwnProperty.call(EN,s)?EN[s]:s,args);}

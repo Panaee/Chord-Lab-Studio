@@ -56,6 +56,18 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   assert(await page.locator('#now .mini rect.arrive, #now .mini rect.leave').count()>0);
   await page.keyboard.press('Escape');assert.equal(await page.locator('#now .legend').count(),0);
 
+  // MIDI keys: each one sounds while held; a chord let go key by key stays whole for Return.
+  const key=d=>page.evaluate(d=>ChordStudio.midiMessage(d),d);
+  await key([0x90,57,90]);await page.waitForTimeout(50);await key([0x90,60,90]);await page.waitForTimeout(50);await key([0x90,64,90]);await page.waitForTimeout(60);
+  assert.equal(await page.evaluate(()=>ChordStudio.state.midi.live.size),3,'three keys sound');
+  await key([0x80,64,0]);await page.waitForTimeout(120);await key([0x80,60,0]);await page.waitForTimeout(120);await key([0x80,57,0]);
+  assert.deepEqual(await page.evaluate(()=>[ChordStudio.state.preview.label,ChordStudio.state.preview.notes,ChordStudio.state.melody,ChordStudio.state.midi.live.size]),['Am',[57,60,64],null,0]);
+  assert.match(await page.locator('#status').innerText(),/^Από το MIDI: Am\. ⏎/);
+  await page.keyboard.press('Escape');
+  await key([0xB0,64,127]);await key([0x90,48,80]);await key([0x80,48,0]);assert.equal(await page.evaluate(()=>ChordStudio.state.midi.live.size),1,'the pedal holds it');
+  await key([0xB0,64,0]);assert.equal(await page.evaluate(()=>ChordStudio.state.midi.live.size),0);
+  await page.evaluate(()=>{ChordStudio.state.melody=null;ChordStudio.refresh();});
+
   // Durations, undo and redo.
   await page.keyboard.press(']');await page.keyboard.press(']');s=await S();assert.equal(s.steps[1].beats,8);
   await page.keyboard.press('[');s=await S();assert.equal(s.steps[1].beats,6);

@@ -33,7 +33,7 @@ const uniq=xs=>[...new Set(xs)].sort((a,b)=>a-b);
 const state={lang:'el',tonic:0,mode:'ionian',style:'takemitsu',intent:'motion',bpm:84,loop:false,
   steps:[],sel:-1,range:null,preview:null,ext:'triad',suggestions:[],heard:-1,view:'compose',
   projectName:'Χωρίς τίτλο',instrument:'piano',theme:'ivory',editor:-1,pattern:'auto',timbre:'auto',melody:null,rule:'',
-  midi:{access:null,outId:'',held:new Set(),timer:0},play:null};
+  midi:{access:null,outId:'',held:new Set(),timer:0,live:new Map(),gesture:new Set(),sustained:new Set(),pedal:false,sound:true},play:null};
 
 /* ------------------------------------------------------------ helpers */
 function status(text){$('status').textContent=text||'';}
@@ -92,7 +92,8 @@ const Sound={ctx:null,bus:null,voices:new Set(),
     lp.connect(g);g.connect(this.bus);
     let release=.12;
     if(kind==='piano'){lp.Q.value=.4;lp.frequency.setValueAtTime(Math.min(9000,f*7+900),at);lp.frequency.setTargetAtTime(Math.max(500,f*2.4),at+.02,.5);
-      g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vel,at+.012);g.gain.setTargetAtTime(vel*.5,at+.02,.35);}
+      g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vel,at+.012);g.gain.setTargetAtTime(vel*.5,at+.02,.35);
+      if(dur>2)g.gain.setTargetAtTime(vel*.12,at+1.5,2.2);}
     else{const attack=Math.min(kind==='pad'?.35:.14,dur*.4),level=vel*.62;release=kind==='pad'?.25:.12;
       lp.Q.value=kind==='pad'?.3:.6;lp.frequency.value=kind==='pad'?Math.min(2600,f*3+300):Math.min(4200,f*4+600);
       g.gain.setValueAtTime(.0001,at);g.gain.linearRampToValueAtTime(level,at+attack);
@@ -101,6 +102,17 @@ const Sound={ctx:null,bus:null,voices:new Set(),
     g.gain.setTargetAtTime(.0001,end,release);
     const voice={g,oscs};this.voices.add(voice);
     oscs.forEach(o=>{o.start(at);o.stop(end+release*7);});oscs[0].onended=()=>this.voices.delete(voice);
+    return voice;
+  },
+  /* A key held on the MIDI keyboard: it sounds until released. */
+  hold(n,velocity){
+    const ctx=this.init();if(!ctx)return null;this.release(n);this.timbre=soundTimbre();
+    const voice=this.note(n,ctx.currentTime+.004,600,.16*(.4+.6*Math.min(127,velocity)/127));
+    state.midi.live.set(n,voice);return voice;
+  },
+  release(n){
+    const v=state.midi.live.get(n);if(!v||!this.ctx)return;state.midi.live.delete(n);const now=this.ctx.currentTime;
+    try{v.g.gain.cancelScheduledValues(now);v.g.gain.setValueAtTime(Math.max(.0001,v.g.gain.value),now);v.g.gain.setTargetAtTime(.0001,now,.09);v.oscs.forEach(o=>o.stop(now+.7));}catch(_){}
   },
   chord(notes,at=0,dur=1.2,strum=.008,gain=1){
     const ctx=this.init();if(!ctx||!notes?.length)return;
@@ -111,7 +123,7 @@ const Sound={ctx:null,bus:null,voices:new Set(),
   },
   stopAll(){const ctx=this.ctx;if(!ctx)return;const now=ctx.currentTime;
     for(const v of this.voices){try{v.g.gain.cancelScheduledValues(now);v.g.gain.setTargetAtTime(.0001,now,.03);v.oscs.forEach(o=>o.stop(now+.2));}catch(_){}}
-    this.voices.clear();midiPanic();}
+    this.voices.clear();state.midi.live.clear();midiPanic();}
 };
 /* Playback pattern and sound: chosen in Settings, or taken from the style. */
 const PATTERNS=[['block','Μπλοκ'],['arpeggio','Αρπέζ'],['pulse','Παλμός']],TIMBRES=[['piano','Πιάνο'],['pad','Pad'],['strings','Έγχορδα']];
@@ -164,18 +176,33 @@ async function connectMidi(silent=false){
   state.midi.access.onstatechange=bind;bind();
   if(!silent)status(tx('MIDI συνδέθηκε. Παίξε μια συγχορδία και πάτα ⏎ για να μπει στη σύνθεση.'));
 }
+/* MIDI input. Every key sounds while it is held (and while the sustain pedal
+   is down). The keys of one gesture, from the first key down to the last key
+   up, make the chord offered for ⏎; letting go of the keys does not shrink it.
+   A gesture of a single key is a melody note. */
 function onMidi(e){
-  const [op,n,v=0]=e.data||[];const type=op&0xF0;
+  const [op,n,v=0]=e.data||[],type=op&0xF0,m=state.midi;
   if((op&0x0F)===9)return;
-  if(type===0x90&&v>0)state.midi.held.add(n);else if(type===0x80||(type===0x90&&v===0))state.midi.held.delete(n);else return;
-  clearTimeout(state.midi.timer);
-  state.midi.timer=setTimeout(()=>{
-    const notes=[...state.midi.held].sort((a,b)=>a-b);
-    if(notes.length===1)return setMelody(notes[0]);
-    if(notes.length<2||notes.length>MAX_NOTES)return;
-    const ch=N.recognise(notes,keyOpts());
-    state.preview={...ch,source:'midi'};state.heard=-1;renderPreview();renderWheel();renderNow();
-  },70);
+  if(type===0xB0&&n===64){m.pedal=v>=64;if(!m.pedal){for(const k of m.sustained)if(!m.held.has(k))Sound.release(k);m.sustained.clear();}return;}
+  if(type===0x90&&v>0){
+    m.held.add(n);m.gesture.add(n);m.sustained.delete(n);
+    if(m.sound)Sound.hold(n,v);
+    clearTimeout(m.timer);m.timer=setTimeout(()=>showGesture(false),40);
+  }else if(type===0x80||(type===0x90&&v===0)){
+    m.held.delete(n);
+    if(m.pedal)m.sustained.add(n);else Sound.release(n);
+    if(!m.held.size){clearTimeout(m.timer);showGesture(true);}
+  }
+}
+function showGesture(done){
+  const m=state.midi,notes=[...m.gesture].sort((a,b)=>a-b);
+  if(done)m.gesture.clear();
+  if(notes.length===1){if(done)setMelody(notes[0],{quiet:true});return;}
+  if(notes.length<2||notes.length>MAX_NOTES)return;
+  const ch=N.recognise(notes,keyOpts());
+  state.preview={...ch,source:'midi'};state.heard=-1;state.ext='triad';state.melody=null;
+  renderPreview();renderWheelAndCards();renderNow();
+  if(done)status(state.steps.length?tx('Από το MIDI: {0}. ⏎ για να μπει μετά το {1}.',tp(ch.label),tp(current().label)):tx('Από το MIDI: {0}. ⏎ για να ξεκινήσεις με αυτή.',tp(ch.label)));
 }
 
 /* ------------------------------------------------------------ edits */
@@ -453,11 +480,11 @@ function renderMelody(){
     `<svg class="octave" viewBox="0 0 126 27" role="group" aria-label="${esc(tx('Νότα μελωδίας'))}">${keys}</svg>`+
     (on===null?'':`<b class="mel-name">${esc(noteName(state.melody))}</b><button type="button" class="clear" data-act="no-melody" aria-label="${esc(tx('Χωρίς μελωδία'))}" title="${esc(tx('Χωρίς μελωδία'))} (esc)">×</button>`);
 }
-function setMelody(m){
+function setMelody(m,{quiet=false}={}){
   state.melody=Number.isInteger(m)?m:null;state.heard=-1;state.preview=null;
   renderPreview();renderWheelAndCards();renderNow();
   if(state.melody===null){status(tx('Χωρίς μελωδία.'));return;}
-  audition([state.melody],.8);status(tx('Μελωδία {0}: οι προτάσεις την κρατούν στην κορυφή.',noteName(state.melody)));
+  if(!quiet)audition([state.melody],.8);status(tx('Μελωδία {0}: οι προτάσεις την κρατούν στην κορυφή.',noteName(state.melody)));
 }
 function melodyNear(p){const top=Math.max(...current().notes);return top-5+pc(p-(top-5));}
 
@@ -843,6 +870,7 @@ function setLanguage(lang){
 
 /* ------------------------------------------------------------ setup */
 function setup(){
+  try{state.midi.sound=localStorage.getItem('cl-midi-sound')!=='off';}catch(_){}
   try{state.theme=localStorage.getItem('cl-theme')||'ivory';state.instrument=localStorage.getItem('cl-instrument')||'piano';
     state.pattern=localStorage.getItem('cl-pattern')||'auto';state.timbre=localStorage.getItem('cl-timbre')||'auto';}catch(_){}
   if(!['auto',...PATTERNS.map(x=>x[0])].includes(state.pattern))state.pattern='auto';
@@ -922,6 +950,10 @@ function setup(){
   $('library').addEventListener('click',e=>{const o=e.target.closest('[data-lib]');if(o){openFromLibrary(Number(o.dataset.lib));closeSettings();return;}
     const d=e.target.closest('[data-libdel]');if(d){const rows=library();const [gone]=rows.splice(Number(d.dataset.libdel),1);writeLibrary(rows);renderLibrary();status(tx('Διαγράφηκε «{0}» από τη βιβλιοθήκη.',gone?.name));}});
   $('midiConnect').addEventListener('click',()=>connectMidi(false));
+  $('midiSound').checked=state.midi.sound;
+  $('midiSound').addEventListener('change',e=>{state.midi.sound=e.target.checked;try{localStorage.setItem('cl-midi-sound',state.midi.sound?'on':'off');}catch(_){}
+    if(!state.midi.sound)for(const k of [...state.midi.live.keys()])Sound.release(k);
+    status(state.midi.sound?tx('Τα πλήκτρα MIDI ακούγονται από την εφαρμογή.'):tx('Τα πλήκτρα MIDI δεν ακούγονται από την εφαρμογή: για όργανα με δικό τους ήχο.'));});
   $('midiOut').addEventListener('change',e=>{midiPanic();state.midi.outId=e.target.value;status(state.midi.outId?tx('Ο ήχος πηγαίνει και στην έξοδο MIDI.'):tx('Μόνο εσωτερικός ήχος.'));});
   for(const id of ['pattern','timbre'])$(id).addEventListener('change',e=>{state[id]=e.target.value;try{localStorage.setItem('cl-'+id,state[id]);}catch(_){}
     // One bar of the current chord in the new pattern and sound.
@@ -943,5 +975,5 @@ function setup(){
   refresh();
 }
 setup();
-window.ChordStudio={state,refresh,insert,select,undo,redo,projectData,readProject,midiBytes,hear,hearStep,startPhrase,addHeardOrPreview,previewFromWheel,setBeats,playRange,stop,onCommand,setLanguage};
+window.ChordStudio={midiMessage:data=>onMidi({data}),state,refresh,insert,select,undo,redo,projectData,readProject,midiBytes,hear,hearStep,startPhrase,addHeardOrPreview,previewFromWheel,setBeats,playRange,stop,onCommand,setLanguage};
 })();
