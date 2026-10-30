@@ -383,9 +383,10 @@ function degreeOf(n,k=key()){
   if(ix<0)return r===6&&k.scale?.id==='blues'?'♭5':FROM_TONIC[r];
   const alt=steps[ix]-[0,2,4,5,7,9,11][ix];return (alt<0?'♭'.repeat(-alt):'♯'.repeat(alt))+(ix+1);
 }
-/* The scale on the keys, each with its degree, and the chord on top. With a
-   target: the notes that stay, leave and arrive, and an arc for each voice
-   that moves (the same matching as the Analysis). */
+/* The scale on the keys and the chord on top; only the played keys carry
+   their degree, and black keys of the scale a dot. With a target: the notes
+   that stay, leave and arrive, and an arc for each voice that moves (the same
+   matching as the Analysis). */
 function scaleKeys(notes,to=null){
   const k=key(),inScale=n=>k.pcs.includes(pc(n)),all=to?[...notes,...to]:notes;
   const lo=Math.min(48,Math.floor(Math.min(...all)/12)*12),hi=Math.max(lo+24,Math.ceil((Math.max(...all)+1)/12)*12);
@@ -395,7 +396,8 @@ function scaleKeys(notes,to=null){
   const state_=n=>{if(!to)return notes.includes(n)?' on':inScale(n)?'':' off';
     const a=notes.includes(n),b=to.includes(n);return a&&b?' on':a?' leave':b?' arrive':inScale(n)?'':' off';};
   const key_=(n,black,kx,kw,h)=>{const st=state_(n);keys+=`<rect class="${black?'b':'w'}${st}" x="${kx.toFixed(2)}" y="0" width="${kw.toFixed(2)}" height="${h}" rx="${black?1.5:2.5}"/>`;
-    if(st!==' off')labels+=`<text class="${black?'b':'w'}${st}" x="${(kx+kw/2).toFixed(2)}" y="${black?h-5:h-7}">${esc(degreeOf(n,k))}</text>`;};
+    if(st&&st!==' off')labels+=`<text class="${black?'b':'w'}${st}" x="${(kx+kw/2).toFixed(2)}" y="${black?h-5:h-7}">${esc(degreeOf(n,k))}</text>`;
+    else if(!st&&black)labels+=`<circle class="dot" cx="${(kx+kw/2).toFixed(2)}" cy="${h-7}" r="2.4"/>`;};
   whites.forEach((n,i)=>{x[n]=i*w+w/2;key_(n,false,i*w,w-1,58);});
   whites.forEach((n,i)=>{if([0,2,5,7,9].includes(pc(n))&&n+1<=hi){x[n+1]=i*w+w;key_(n+1,true,i*w+w*.66,w*.68,35);}});
   let arcs='';
@@ -405,8 +407,8 @@ function scaleKeys(notes,to=null){
   }
   return `<svg class="scale-keys" viewBox="0 -16 ${W} 75" role="img" aria-label="${esc(tx('Κλίμακα και συγχορδία στο πιάνο'))}">${keys}${labels}${arcs}</svg>`;
 }
-/* The guitar: the scale in the position of the chord shape, five frets, each
-   note with its degree; the shape itself filled. */
+/* The guitar: the scale in the position of the chord shape, five frets; the
+   shape filled, with its degrees. */
 function scaleFrets(notes,root){
   const k=key(),g=G.suggest(notes,root),open=[40,45,50,55,59,64];
   // Five frets around the shape; open strings left of the nut when the shape or the position uses them.
@@ -421,7 +423,7 @@ function scaleFrets(notes,root){
   for(let si=0;si<6;si++){const y=top+(5-si)*sy;
     for(const f of frets){const n=open[si]+f,shape=g&&g.frets[si]===f,inS=k.pcs.includes(pc(n));
       if(!shape&&!inS)continue;const cx=fx(f).toFixed(1);
-      s+=`<circle class="${shape?'on':'sc'}" cx="${cx}" cy="${y}" r="${shape?7.2:6.4}"/><text class="${shape?'on':'sc'}" x="${cx}" y="${y+.5}">${esc(degreeOf(n,k))}</text>`;}}
+      s+=shape?`<circle class="on" cx="${cx}" cy="${y}" r="7.2"/><text class="on" x="${cx}" y="${y+.5}">${esc(degreeOf(n,k))}</text>`:`<circle class="sc" cx="${cx}" cy="${y}" r="3.6"/>`;}}
   const marks=[];for(let f=start;f<start+cols;f++)if([3,5,7,9,12,15].includes(f)||(f===start&&start>1))marks.push(`<text class="num" x="${fx(f).toFixed(1)}" y="${top+5*sy+14}">${f}</text>`);
   return `<svg class="scale-frets" viewBox="0 0 ${W} ${top+5*sy+18}" role="img" aria-label="${esc(tx('Κλίμακα και συγχορδία στην κιθάρα'))}">${s}${marks.join('')}</svg>`;
 }
@@ -434,7 +436,7 @@ function renderNow(){
   const label=tp(c.label);
   // The guitar shows the chord you are about to hear; the piano shows the move to it.
   const board=held.length?scaleKeys(held):guitar?scaleFrets(shown.notes,shown.root):scaleKeys(c.notes,to?.notes);
-  const legend=(held.length?[['on','πατάς']]:to&&!guitar?[['on','μένει'],['leave','φεύγει'],['arrive','έρχεται']]:[['on','συγχορδία']]).concat([['sc','κλίμακα']]);
+  const legend=(held.length?[['on','πατάς']]:to&&!guitar?[['on','μένει'],['leave','φεύγει'],['arrive','έρχεται']]:[['on','συγχορδία']]).concat([[guitar&&!held.length?'scdot':'sc','κλίμακα']]);
   $('now').innerHTML=`<div class="eyebrow">${has?tx('Τώρα · <b>βήμα {0}</b> από {1}',state.sel+1,state.steps.length):esc(tx('Αφετηρία · το κέντρο σου'))}${to?` <span class="to">→ ${esc(tp(to.label))}</span>`:''}</div>`+
     `<div class="title"><span class="sym${label.length>9?' long':''}" title="${esc(label)}">${esc(label)}</span><span class="roman">${esc(ti(romanOf(c)))}</span></div>`+
     `<div class="actions"><div class="row">`+

@@ -122,12 +122,13 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 .scale-keys text.b{fill:var(--key-w);font-size:9px}
 .scale-keys text.on,.scale-keys text.arrive{fill:var(--accent-ink)}
 .scale-keys text.leave{fill:var(--accent)}
+.scale-keys .dot{fill:var(--key-w);opacity:.75}
 .scale-keys .arc{fill:none;stroke:var(--ink-2);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
 .scale-frets{width:100%;height:auto;display:block}
 .scale-frets .string{stroke:var(--line-2);stroke-width:1}
 .scale-frets .fret{stroke:var(--line-2);stroke-width:1.2}
 .scale-frets .nut{stroke:var(--ink-2);stroke-width:3.5}
-.scale-frets circle.sc{fill:var(--panel);stroke:var(--muted);stroke-width:1}
+.scale-frets circle.sc{fill:var(--muted)}
 .scale-frets circle.on{fill:var(--accent)}
 .scale-frets text{font:650 8.5px Commissioner,sans-serif;text-anchor:middle;dominant-baseline:central;fill:var(--muted);pointer-events:none}
 .scale-frets text.on{fill:var(--accent-ink)}
@@ -141,6 +142,7 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 .now .legend i.leave{background:var(--accent-soft);box-shadow:inset 0 0 0 1.3px var(--accent)}
 .now .legend i.arrive{background:var(--arrive)}
 .now .legend i.sc{background:var(--key-w);box-shadow:inset 0 0 0 1px var(--line-2)}
+.now .legend i.scdot{background:var(--muted);border-radius:50%;width:7px;height:7px}
 .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 .btn-primary:hover{filter:brightness(1.06);border-color:var(--accent)}
 .btn-ghost{background:transparent;border-color:transparent;color:var(--ink-2)}
