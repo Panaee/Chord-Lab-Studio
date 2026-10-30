@@ -1,5 +1,5 @@
 /* Sets the icon and version info of the Windows exe without Wine (resedit, pure JS).
-   Usage: node installer/windows/set-icon.mjs "dist/win-unpacked/Chord Lab Studio.exe" assets/icon.ico 1.6.0 */
+   Usage: node installer/windows/set-icon.mjs "dist/win-unpacked/Chord Lab Studio.exe" assets/icon.ico 1.7.0 */
 import fs from 'node:fs';
 import * as ResEdit from 'resedit';
 import * as PELibrary from 'pe-library';

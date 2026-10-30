@@ -76,9 +76,9 @@ const e7=N.voiceLead([62,65,69,74],[4,8,11,2],4);assert.equal(Math.min(...e7)%12
 // Starting phrases: the style's paths on the tonic, four chords first, voice count kept.
 const startAm={root:9,notes:[57,60,64,69]};
 const mor=N.phrase({tonic:9,mode:'aeolian',style:'morricone',start:startAm});
-assert.equal(mor.name,'Morricone · i–♭VII–♭VI–V');assert.deepEqual(mor.chords.map(c=>c.label),['Am','G','F','E']);
+assert.equal(mor.name,'Κινηματογραφική μουσική · i–♭VII–♭VI–V');assert.deepEqual(mor.chords.map(c=>c.label),['Am','G','F','E']);
 assert(mor.chords.every(c=>c.notes.length===4));
-assert.equal(N.phrase({tonic:9,mode:'aeolian',style:'morricone',start:startAm,turn:1}).name,'Morricone · i–♭II–V7–i (ναπολιτάνικη)');
+assert.equal(N.phrase({tonic:9,mode:'aeolian',style:'morricone',start:startAm,turn:1}).name,'Κινηματογραφική μουσική · i–♭II–V7–i (ναπολιτάνικη)');
 const startC={root:0,notes:[48,52,55,60]};
 assert.deepEqual(N.phrase({tonic:0,mode:'ionian',style:'jazz',start:startC}).chords.map(c=>c.label),['Cmaj7','Am7','Dm7','G7']);
 assert.deepEqual(N.phrase({tonic:0,mode:'ionian',style:'byzantine',start:startC}).chords.map(c=>c.notes.length),[2,2,2],'ison');

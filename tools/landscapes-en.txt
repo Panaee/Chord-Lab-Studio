@@ -19,6 +19,7 @@ maj7: light/nostalgia
 The chord's first “grown-up” note.
 m7: round, soft
 Changes the atmosphere without changing the chord.
+Impressionism
 colour, silence, suspension
 Each sound stands like an object in a garden, with silence (ma) between as material. Chords are colours left unresolved. Roots: Debussy, Messiaen, Japanese aesthetics.
 Lydian light: maj7(♯11) without the 5th
@@ -41,6 +42,7 @@ The 5th leaves so it doesn't anchor; the 7th and ♯11 float.
 The minor opens into a stack of 4ths/2nds; no 5th.
 + ♭9 + ♯11 (octatonic)
 The dominant stops asking for resolution and becomes colour.
+Film music
 melody, layers, drama
 One unforgettable melody with the whole orchestra serving it. Clear floors: bass, motion, melody. Drama builds as layers enter one by one.
 Epic foundation (major)
@@ -61,6 +63,7 @@ i–♭II–V7–i (Neapolitan)
 Dark nobility before the V; keep it for one moment in the piece.
 Octave + 5th foundation in the bass
 An open 5th and octave below the chord: an epic foundation, no 3rd down low.
+Modernism
 rhythm, blocks, dry brilliance
 Energy comes from rhythm and the clash of clean blocks. Everything dry and clipped; harmony stands inside the block, and “progress” is the cut.
 Petrushka: two majors a tritone apart
@@ -89,7 +92,7 @@ Ison shift at a phrase joint
 The ison moves rarely and slowly, at the end of a phrase; if the bass walks, the rock is gone.
 Remove the 3rd: keep 1–5–8
 3rds and 6ths dissolve the idiom instantly.
-Hadjidakis
+Modern Greek art music
 lyrical song, minor
 A lyrical melody over simple harmony. The key dilemma of the minor: v or V — soft/modal or dramatic/classical. The descending bass line as archetypal melancholy.
 Open minor
@@ -106,7 +109,8 @@ Bass 1–7–♭7–6–♭6–5 in semitones (in A: A–G♯–G–F♯–F–E
 The borrowed iv: one note darkens (the 3rd of IV falls) before home.
 Keep the triad
 The colour comes from the next chord (v or V).
-ostinato, minimalism
+Minimalism
+ostinato, repetition
 Few chords, endless arpeggio. Repetition shifts attention to the small differences; development comes from the pattern while the harmony stays almost still.
 Minor for arpeggio
 Three notes are enough; they're played in a steady arpeggio (eighths) and change rarely.

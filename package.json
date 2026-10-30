@@ -1,6 +1,6 @@
 {
   "name": "chord-lab-studio",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "description": "Chord Lab Studio: κύκλος πέμπτων, τρεις προτάσεις από το ύφος σου, μπάρα σύνθεσης με διάρκειες. Offline.",
   "main": "desktop/main.js",

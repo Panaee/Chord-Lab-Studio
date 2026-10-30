@@ -14,7 +14,7 @@ function normalize(raw){
  if(cleaned.bpm!==undefined&&(cleaned.bpm<40||cleaned.bpm>220))fail('Το BPM πρέπει να είναι μεταξύ 40 και 220.');
  if(cleaned.messiaenMode!==undefined&&(!Number.isInteger(cleaned.messiaenMode)||cleaned.messiaenMode<1||cleaned.messiaenMode>7))fail('Μη έγκυρος τρόπος Messiaen.');
  if(cleaned.messiaenTrans!==undefined&&(!Number.isInteger(cleaned.messiaenTrans)||cleaned.messiaenTrans<0||cleaned.messiaenTrans>5))fail('Μη έγκυρη μετάθεση.');
- for(const key of ['quality','mode','style','goal','scaleFamily','intent'])if(settings[key]!==undefined)cleaned[key]=text(settings[key],80);
+ for(const key of ['quality','mode','style','goal','scaleFamily','scale','intent'])if(settings[key]!==undefined)cleaned[key]=text(settings[key],80);
  for(const key of ['sevenths','keyLocked'])if(settings[key]!==undefined){if(typeof settings[key]!=='boolean')fail('Μη έγκυρη επιλογή έργου.');cleaned[key]=settings[key];}
  const sequence=raw.sequence.map(row=>{
   if(!row||typeof row!=='object'||Array.isArray(row)||!Number.isInteger(row.root)||row.root<0||row.root>11)fail('Μη έγκυρη συγχορδία.');

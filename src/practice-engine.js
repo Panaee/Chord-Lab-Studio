@@ -25,7 +25,8 @@ function itemId(kind,a,b,keyOpts){return [kind,uniq(a.notes).join('.'),uniq(b.no
 
 /* Every question the piece can ask. Messiaen collections have no plain degrees. */
 function items(steps,keyOpts){
-  const key=N.keyOf(keyOpts),kinds=key.messiaen?['bass','top']:KINDS,out=[];
+  // Degrees need seven of them: not in Messiaen collections, pentatonics, blues or the whole-tone scale.
+  const key=N.keyOf(keyOpts),kinds=key.messiaen||key.steps.length!==7?['bass','top']:KINDS,out=[];
   for(let i=1;i<steps.length;i++)for(const kind of kinds)out.push({id:itemId(kind,steps[i-1],steps[i],keyOpts),kind,i});
   return out;
 }

@@ -11,7 +11,7 @@ assert.match(html,/font-weight:420;src:url\(data:font\/woff2/,'a static 420 inst
 assert(!/text-align:justify/.test(html));
 assert.match(html,/Δικές μου σημειώσεις/);
 assert.match(html,/Σύνδεση με το προηγούμενο βήμα/);
-assert.match(html,/Takemitsu/);
+assert.match(html,/Ιμπρεσιονιστικό \(Debussy, Takemitsu\)/,'genre with its sources');
 assert.match(html,/Αποθήκευση PDF/);
 assert.throws(()=>R.makeHTML({settings:{},sequence:[]}),/άδεια/);
 const injection=structuredClone(init);injection.sequence[1].label='<script>alert(1)</script>';

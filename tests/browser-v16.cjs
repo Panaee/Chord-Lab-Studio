@@ -21,7 +21,7 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   let s=await S();assert.equal(s.steps.length,0);assert.equal(s.sugg.length,3);
   // The empty bar names the three gestures and offers a phrase in the style.
   assert.match(await page.locator('#strip').innerText(),/1 2 3/);
-  assert.match(await page.locator('[data-act="phrase"]').innerText(),/Takemitsu/);
+  assert.match(await page.locator('[data-act="phrase"]').innerText(),/Ιμπρεσιονιστικό/);
   await page.keyboard.press('Enter');s=await S();assert.deepEqual(s.steps.map(x=>x.label),['C']);assert.equal(s.sel,0);
 
   // The wheel only auditions: a preview, no new step.
@@ -89,6 +89,16 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   assert(sets.size>=8,`styles change the proposals (${sets.size})`);
   await page.selectOption('#style','takemitsu');
   await page.screenshot({path:path.join(out,'compose.png')});
+
+  // Scales: the genre's own come first; harmonic minor lights V, the centre names it, the project keeps it.
+  await page.selectOption('#style','classical');
+  assert.equal(await page.$eval('#mode optgroup',g=>g.label),'Για το ύφος: Κλασική');
+  await page.selectOption('#mode','harmonic-minor');
+  assert.equal(await page.locator('#wheel .center .m').textContent(),'Αρμονική ελ.');
+  assert.match(await page.getAttribute('.seg[data-ring="major"][data-i="1"]','class'),/dia/);
+  assert.equal(await page.evaluate(()=>ChordStudio.projectData().settings.scale),'harmonic-minor');
+  await page.selectOption('#mode','hijaz');assert.match(await page.locator('#status').innerText(),/μπουζούκι/);
+  await page.selectOption('#mode','ionian');await page.selectOption('#style','takemitsu');
 
   // Playback pattern and sound follow the style unless chosen.
   assert.match(await page.locator('#pattern option').first().innerText(),/^Από το ύφος · Μπλοκ$/);
@@ -190,7 +200,7 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   await pp.click('[data-act="phrase"]');
   assert.deepEqual(await pp.evaluate(()=>ChordStudio.state.steps.map(s=>s.label)),['Am','G','F','E']);
   assert(await pp.evaluate(()=>Boolean(ChordStudio.state.play)),'the phrase plays');
-  assert.match(await pp.locator('#status').innerText(),/^Morricone · i–♭VII–♭VI–V: /);
+  assert.match(await pp.locator('#status').innerText(),/^Κινηματογραφική μουσική · i–♭VII–♭VI–V: /);
   await pp.keyboard.press('Space');await pp.keyboard.press('Control+z');
   assert.equal(await pp.evaluate(()=>ChordStudio.state.steps.length),0);
   assert.match(await pp.locator('[data-act="phrase"]').innerText(),/ναπολιτάνικη/);

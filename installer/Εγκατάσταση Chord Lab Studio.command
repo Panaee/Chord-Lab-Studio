@@ -1,10 +1,10 @@
 #!/bin/bash
-# Chord Lab Studio 1.6 · εγκατάσταση σε macOS.
+# Chord Lab Studio 1.7 · εγκατάσταση σε macOS.
 #
 # Τι κάνει:
 #  1. Διαλέγει φάκελο: αυτόν που δίνεις ως όρισμα, αλλιώς τον φάκελο όπου είναι ήδη
 #     εγκατεστημένο το Chord Lab Studio, αλλιώς το /Applications (ή ~/Applications).
-#  2. Φτιάχνει το «Chord Lab Studio.app» 1.6:
+#  2. Φτιάχνει το «Chord Lab Studio.app» 1.7:
 #     α) με τον μηχανισμό Electron του Chord Lab Studio που ήδη έχεις, ή
 #     β) με το επίσημο Electron, που κατεβαίνει από το GitHub με έλεγχο SHA256, ή
 #     γ) με npm (electron-builder), ή
@@ -21,7 +21,7 @@ SRC="$HERE/app"
 ASAR="$HERE/app.asar"
 ASAR_HASH="$(cat "$HERE/app.asar.sha256" 2>/dev/null | tr -d '[:space:]')"
 NAME="Chord Lab Studio"
-VERSION="1.6.0"
+VERSION="1.7.0"
 BUNDLE_ID="com.chordlab.harmonicuniverse"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/chordlab.XXXXXX")" || { echo "Δεν δημιουργήθηκε προσωρινός φάκελος."; exit 1; }
 [ -d "$WORK" ] || { echo "Δεν δημιουργήθηκε προσωρινός φάκελος."; exit 1; }
@@ -125,7 +125,7 @@ if [ -n "$RUNTIME" ]; then
       /usr/libexec/PlistBuddy -c "Set :ElectronAsarIntegrity:Resources/app.asar:hash $ASAR_HASH" "$NEW/Contents/Info.plist" >/dev/null 2>&1 || fail "$(t 'δεν ενημερώθηκε το hash ακεραιότητας' 'could not update the integrity hash')"
     fi
   else
-    copy_source "$RES/app" || fail "$(t 'δεν αντιγράφηκαν τα αρχεία της 1.6' 'could not copy the 1.6 files')"
+    copy_source "$RES/app" || fail "$(t 'δεν αντιγράφηκαν τα αρχεία της 1.7' 'could not copy the 1.7 files')"
   fi
   /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" -c "Set :CFBundleVersion $VERSION" "$NEW/Contents/Info.plist" >/dev/null 2>&1 || true
   METHOD="Electron ($(t 'ο μηχανισμός της προηγούμενης εγκατάστασης' 'the runtime of the earlier installation'))"
@@ -142,7 +142,7 @@ elif command -v npm >/dev/null 2>&1; then
   ditto "$BUILT" "$NEW" || fail "$(t 'δεν αντιγράφηκε η εφαρμογή' 'could not copy the app')"
   METHOD="Electron ($(t 'κατασκευή με npm' 'built with npm'))"
 elif [ -d "/Applications/Google Chrome.app" ] || [ -d "$HOME/Applications/Google Chrome.app" ]; then
-  say "$(t 'Δεν βρέθηκε ούτε Chord Lab Studio ούτε npm. Η 1.6 θα ανοίγει σε παράθυρο Google Chrome.' 'Neither Chord Lab Studio nor npm was found. Version 1.6 will open in a Google Chrome window.')"
+  say "$(t 'Δεν βρέθηκε ούτε Chord Lab Studio ούτε npm. Η 1.7 θα ανοίγει σε παράθυρο Google Chrome.' 'Neither Chord Lab Studio nor npm was found. Version 1.7 will open in a Google Chrome window.')"
   mkdir -p "$NEW/Contents/MacOS" "$NEW/Contents/Resources"
   copy_source "$NEW/Contents/Resources/app" || fail "$(t 'δεν αντιγράφηκαν τα αρχεία' 'could not copy the files')"
   cp "$SRC/assets/icon.icns" "$NEW/Contents/Resources/icon.icns"
@@ -171,7 +171,7 @@ fi
 xattr -cr "$NEW" 2>/dev/null || true
 codesign --force --deep --sign - "$NEW" >/dev/null 2>&1 || fail "$(t 'η τοπική υπογραφή (codesign) απέτυχε' 'local signing (codesign) failed')"
 codesign --verify --deep "$NEW" >/dev/null 2>&1 || fail "$(t 'η τοπική υπογραφή δεν επαληθεύτηκε' 'the local signature did not verify')"
-[ -f "$NEW/Contents/Resources/app.asar" ] || [ -f "$NEW/Contents/Resources/app/index.html" ] || fail "$(t 'η νέα εφαρμογή δεν περιέχει τα αρχεία της 1.6' 'the new app does not contain the 1.6 files')"
+[ -f "$NEW/Contents/Resources/app.asar" ] || [ -f "$NEW/Contents/Resources/app/index.html" ] || fail "$(t 'η νέα εφαρμογή δεν περιέχει τα αρχεία της 1.7' 'the new app does not contain the 1.7 files')"
 
 # 4. Παλιές εκδόσεις --------------------------------------------------------
 OLD=()
@@ -213,6 +213,6 @@ ditto "$NEW" "$TARGET/$NAME.app" || fail "$(t 'δεν αντιγράφηκε σ�
 xattr -cr "$TARGET/$NAME.app" 2>/dev/null || true
 say ""
 say "$(t 'Έτοιμο' 'Done'): $TARGET/$NAME.app ($VERSION · $METHOD)"
-say "$(t 'Τα έργα σου μένουν εκεί που ήταν· η 1.6 ανοίγει αυτόματα το τελευταίο έργο της 1.5.' 'Your projects stay where they were; 1.6 opens the last project of 1.5 by itself.')"
+say "$(t 'Τα έργα σου μένουν εκεί που ήταν· η εφαρμογή ανοίγει αυτόματα το τελευταίο σου έργο.' 'Your projects stay where they were; the app opens your last project by itself.')"
 open "$TARGET/$NAME.app"
 sleep 1

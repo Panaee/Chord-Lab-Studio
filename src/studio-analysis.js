@@ -11,9 +11,10 @@
   node?require('../legacy/chord_namer.js'):root.ChordNamer,
   node?require('../legacy/teacher.js'):root.Teacher,
   node?require('../legacy/landscapes.js'):root.Landscapes,
-  node?require('./i18n.js'):root.I18N);
+  node?require('./i18n.js'):root.I18N,
+  node?require('./scales.js'):root.Scales);
  if(node)module.exports=api;else root.StudioAnalysis=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(T,P,H,M,F,Mod,CN,Teacher,L,I){
+})(typeof globalThis!=='undefined'?globalThis:this,function(T,P,H,M,F,Mod,CN,Teacher,L,I,S){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const pc=T.mod,unique=xs=>[...new Set(xs)].sort((a,b)=>a-b);
@@ -55,11 +56,12 @@
   const tonic=Number.isInteger(settings.tonic)?settings.tonic:0,mode=T.MODE[settings.mode]?settings.mode:'ionian';
   const mess=settings.scaleFamily==='messiaen';
   const col=mess?M.collection(Number(settings.messiaenMode)||2,tonic,Number(settings.messiaenTrans)||0):null;
-  const harmonic=mess?M.context(theoryChord,col):H.context(theoryChord,tonic,mode);
+  const sc=settings.scaleFamily==='scale'?S.byId(settings.scale):null;
+  const harmonic=mess?M.context(theoryChord,col):sc?S.context(theoryChord,tonic,sc.id):H.context(theoryChord,tonic,mode);
   const teacher=Teacher.analyze(chord.notes);
   const labelQuality={major:'Μείζων τριάδα',minor:'Ελάσσων τριάδα',maj7:'Μείζων έβδομη',m7:'Ελάσσων έβδομη','7':'Έβδομη δεσπόζουσας',dim:'Ελαττωμένη τριάδα',dim7:'Ελαττωμένη έβδομη',m7b5:'Μισοελαττωμένη έβδομη',aug:'Αυξημένη τριάδα',sus2:'Sus2',sus4:'Sus4',quartal:'Τεταρτογενής συλλογή',custom:'Ελεύθερη συλλογή'};
   const modePcs=id=>T.MODE[id].steps.map(n=>pc(tonic+n));
-  const modalRelations=!mess&&!harmonic.inScale?Object.keys(T.MODE).filter(id=>id!==mode&&stored.pcs.every(p=>modePcs(id).includes(p))).map(id=>T.MODE[id].label):[];
+  const modalRelations=!mess&&!sc&&!harmonic.inScale?Object.keys(T.MODE).filter(id=>id!==mode&&stored.pcs.every(p=>modePcs(id).includes(p))).map(id=>T.MODE[id].label):[];
   return {chord,theoryChord,name,recognized,reading,harmonic,modalRelations,inversion:inversion(theoryChord),quality:labelQuality[theoryChord.quality]||theoryChord.quality,
    notesText:chord.notes.map(pitchName).join(' · '),pcsText:chord.pcs.map(T.name).join(' · '),
    tension:teacher.tension,tensionText:Teacher.tensionWord(teacher.tension),collection:col};
@@ -94,7 +96,7 @@
    bassDelta:B[0]-A[0]};
  }
  function pivotsFor(chord,settings){
-  if(settings.scaleFamily==='messiaen'||!['ionian','aeolian'].includes(settings.mode||'ionian'))return [];
+  if(['messiaen','scale'].includes(settings.scaleFamily)||!['ionian','aeolian'].includes(settings.mode||'ionian'))return [];
   const from=F.keyFrom(settings.tonic||0,settings.mode||'ionian');
   return Mod.destinations(from).flatMap(destination=>destination.pivots
    .filter(p=>T.samePcs(p.pcs,chord.pcs))
@@ -115,8 +117,9 @@
    return {...analyzed,index:i,comparison,pivots:pivotsFor(analyzed.chord,settings),heuristic,idea:land?land.idea:null,goal:goal.label};
   });
   const col=settings.scaleFamily==='messiaen'?M.collection(Number(settings.messiaenMode)||2,settings.tonic,Number(settings.messiaenTrans)||0):null;
-  return {chords,settings,keyName:col?col.notation:T.name(settings.tonic)+' · '+T.MODE[settings.mode].label,
-   modeName:col?col.name:T.MODE[settings.mode].label,style:land?.name||'Ελεύθερη αρμονία',goal:goal.label,goalIntro:goal.intro,mess:!!col,col,
+  const sc=settings.scaleFamily==='scale'?S.byId(settings.scale):null;
+  return {chords,settings,keyName:col?col.notation:T.name(settings.tonic)+' · '+(sc?sc.label:T.MODE[settings.mode].label),
+   modeName:col?col.name:sc?sc.label:T.MODE[settings.mode].label,style:land?.name||'Ελεύθερη αρμονία',sources:land?.sources||[],goal:goal.label,goalIntro:goal.intro,mess:!!col,col,
    bpm:Number(settings.bpm)||84,totalBeats:(project.sequence||[]).reduce((t,ch)=>t+(Number(ch.beats)||4),0),
    chromaticCount:chords.filter(x=>!x.harmonic.inScale).length};
  }
@@ -159,7 +162,7 @@
  function html(project,lang='el',{listen=false}={}){
   const m=model(project),W=(x,...a)=>esc(I.L(lang,x,...a));
   if(!m.chords.length)return `<div class="analysis-empty"><span>${W('ΑΝΑΛΥΣΗ')}</span><h2>${W('Η θεωρία ξεκινά από τη μουσική σου.')}</h2><p>${W('Πρόσθεσε συγχορδίες στη Σύνθεση. Εδώ θα εμφανιστούν οι πραγματικές νότες, οι βαθμίδες και η κίνηση κάθε φωνής.')}</p></div>`;
-  return `<div class="analysis-intro"><span>${W('ΑΝΑΛΥΣΗ')} · ${esc(I.inline(lang,m.keyName))}</span><h2>${W('Η αρμονία που έγραψες.')}</h2><p>${W(m.style)} · ${W(m.goal)}. ${W('Οι εξηγήσεις ακολουθούν τα αποθηκευμένα βήματα και τις οκτάβες τους.')}</p></div><div class="analysis-summary"><article><strong>${m.chords.length}</strong><span>${W('συγχορδίες')}</span></article><article><strong>${m.totalBeats}</strong><span>${W('χτύποι · {0} BPM',m.bpm)}</span></article><article><strong>${m.chromaticCount}</strong><span>${W('εκτός αναφοράς')}</span></article></div>${summaryTable(m,lang,listen)}${m.chords.map(x=>stepHTML(x,lang,listen)).join('')}`;
+  return `<div class="analysis-intro"><span>${W('ΑΝΑΛΥΣΗ')} · ${esc(I.inline(lang,m.keyName))}</span><h2>${W('Η αρμονία που έγραψες.')}</h2><p>${W(m.style)}${m.sources.length?` (${m.sources.map(x=>esc(I.L(lang,x))).join(', ')})`:''} · ${W(m.goal)}. ${W('Οι εξηγήσεις ακολουθούν τα αποθηκευμένα βήματα και τις οκτάβες τους.')}</p></div><div class="analysis-summary"><article><strong>${m.chords.length}</strong><span>${W('συγχορδίες')}</span></article><article><strong>${m.totalBeats}</strong><span>${W('χτύποι · {0} BPM',m.bpm)}</span></article><article><strong>${m.chromaticCount}</strong><span>${W('εκτός αναφοράς')}</span></article></div>${summaryTable(m,lang,listen)}${m.chords.map(x=>stepHTML(x,lang,listen)).join('')}`;
  }
  return {model,html,analyzeChord,transition,voicePairs,pitchName,summaryTable,stepHTML,transitionHTML,voicesHTML,esc};
 });

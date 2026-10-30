@@ -1,4 +1,4 @@
-/* Chord Lab 1.6 · NextChords: what can follow the chord you are on.
+/* Chord Lab 1.7 · NextChords: what can follow the chord you are on.
    Three proposals per step. With a style selected, two come from the style's
    own vocabulary (its paths, continued from your history, and its colours on
    the key's chords); the third is a plain move in the key, marked as such.
@@ -9,9 +9,10 @@
     node?require('./fifths-engine.js'):root.FifthsLab,
     node?require('./messiaen-engine.js'):root.MessiaenModes,
     node?require('../legacy/landscapes.js'):root.Landscapes,
-    node?require('../legacy/chord_namer.js'):root.ChordNamer);
+    node?require('../legacy/chord_namer.js'):root.ChordNamer,
+    node?require('./scales.js'):root.Scales);
   if(node)module.exports=api;else root.NextChords=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(T,F,M,L,CN){
+})(typeof globalThis!=='undefined'?globalThis:this,function(T,F,M,L,CN,S){
 'use strict';
 const pc=T.mod;
 const uniq=xs=>[...new Set(xs)].sort((a,b)=>a-b);
@@ -51,7 +52,7 @@ const NUM=['I','II','III','IV','V','VI','VII'],CHROM=['I','♭II','II','♭III',
 function roman(ch,key){
   const pcs=ch.pcs||uniq(ch.notes.map(pc)),r=pc(ch.root);
   if(key.messiaen){const col=key.collection;const ix=col.offsets.indexOf(pc(r-col.tonic-col.transposition));return ix>=0?`M${col.mode}·${ix+1}`:`M${col.mode}·χρ.`;}
-  const steps=(T.MODE[key.mode]||T.MODE.ionian).steps,ix=steps.map(s=>pc(key.tonic+s)).indexOf(r);
+  const steps=key.steps||(T.MODE[key.mode]||T.MODE.ionian).steps,ix=steps.length===7?steps.map(s=>pc(key.tonic+s)).indexOf(r):-1;
   let deg=ix>=0?(steps[ix]-[0,2,4,5,7,9,11][ix]<0?'♭':steps[ix]-[0,2,4,5,7,9,11][ix]>0?'♯':'')+NUM[ix]:CHROM[pc(r-key.tonic)];
   const fam=family(pcs,r),s=new Set(pcs.map(p=>pc(p-r)));
   if(LOWER.has(fam))deg=deg.replace(/[IV]+$/,x=>x.toLowerCase());
@@ -119,16 +120,26 @@ function motion(from,to){
 function keyOf(opts){
   const mode=opts.mode||'ionian';
   if(/^messiaen/.test(mode)){const m=Number(mode.split('-')[1])||2;const collection=M.collection(m,opts.tonic||0,opts.transposition||0);return {tonic:opts.tonic||0,mode,messiaen:true,collection,pcs:collection.pitchClasses};}
+  const sc=S.byId(mode);
+  if(sc)return {tonic:opts.tonic||0,mode,messiaen:false,scale:sc,steps:sc.steps,pcs:sc.steps.map(s=>pc((opts.tonic||0)+s))};
   const steps=(T.MODE[mode]||T.MODE.ionian).steps;
-  return {tonic:opts.tonic||0,mode:T.MODE[mode]?mode:'ionian',messiaen:false,pcs:steps.map(s=>pc((opts.tonic||0)+s))};
+  return {tonic:opts.tonic||0,mode:T.MODE[mode]?mode:'ionian',messiaen:false,steps,pcs:steps.map(s=>pc((opts.tonic||0)+s))};
 }
 
 /* The key's own triads (or sevenths), for the wheel and for plain moves. */
 function keyChords(key,sevenths=false){
-  if(key.messiaen){
-    const out=[];for(let r=0;r<12;r++)for(const q of ['major','minor','dim']){const pcs=QUAL[q].map(x=>pc(r+x));if(pcs.every(p=>key.pcs.includes(p)))out.push({root:r,quality:q,pcs});}
+  // Collections without seven degrees: every plain triad that fits (augmented too, for the whole-tone scale).
+  if(key.messiaen||key.steps.length!==7){
+    const out=[];for(let r=0;r<12;r++)for(const q of key.messiaen?['major','minor','dim']:['major','minor','dim','aug']){const pcs=QUAL[q].map(x=>pc(r+x));if(pcs.every(p=>key.pcs.includes(p)))out.push({root:r,quality:q,pcs});}
     return out;
   }
+  // Other seven-note scales: thirds stacked on each degree.
+  if(key.scale)return key.steps.map((_,i)=>{
+    const at=k=>pc(key.tonic+key.steps[(i+k)%7]),root=at(0),tri=[0,2,4].map(at),sev=[0,2,4,6].map(at);
+    const find=pcs=>Object.keys(QUAL).find(q=>QUAL[q].length===pcs.length&&sig(QUAL[q].map(x=>pc(root+x)))===sig(pcs));
+    const q7=sevenths?find(sev):null,q3=find(tri)||'major';
+    return {root,quality:q7||q3,pcs:uniq(q7?sev:tri),degree:i};
+  });
   return F.degrees(key.tonic,key.mode,sevenths).map((d,i)=>({root:d.root,quality:d.quality==='custom'?'major':d.quality,pcs:uniq(d.pcs),degree:i}));
 }
 
@@ -371,7 +382,7 @@ function suggest(opts={}){
    path for this style or for a Messiaen collection, null. */
 function phrase(opts={}){
   const land=L.LANDSCAPES.find(l=>l.id===opts.style)||null,key=keyOf(opts),start=opts.start;
-  if(!land||key.messiaen||!start?.notes?.length)return null;
+  if(!land||key.messiaen||(key.scale&&!key.scale.tonal)||!start?.notes?.length)return null;
   const t=pc(start.root),fam=family(uniq(start.notes.map(pc)),t)==='minor'?'minor':'major';
   const paths=land.progressions.filter(p=>p.steps.length>=3&&(p.applies.includes('any')||p.applies.includes(fam)))
     .sort((a,b)=>(b.steps.length===4)-(a.steps.length===4)||b.steps.length-a.steps.length);
@@ -391,13 +402,21 @@ function phrase(opts={}){
   return {name:`${land.name} · ${p.name}`,why:p.why,chords,count:paths.length};
 }
 
+/* The triad on the tonic of a key: which ring of the wheel starts the piece. */
+function tonicRing(opts){
+  const key=keyOf(opts),s=new Set(key.pcs.map(p=>pc(p-key.tonic)));
+  // Seven degrees: the triad in thirds (Saba is minor although its ♭4 sounds as a major 3rd).
+  if(!key.messiaen&&key.steps.length===7){const q=keyChords(key)[0].quality;return q==='aug'?'aug':LOWER.has(q)?q:'major';}
+  return s.has(4)&&s.has(7)?'major':s.has(3)&&s.has(7)?'minor':s.has(3)&&s.has(6)?'dim':s.has(4)&&s.has(8)?'aug':'major';
+}
+
 /* A chord on the wheel: root plus ring (major outer, minor middle, dim inner). */
 function chordFor(root,ring,opts={}){
   const key=keyOf(opts);let q=ring==='minor'?'minor':ring==='dim'?'dim':'major';
   const ext=opts.extension||'triad';
   if(ext==='7'){
-    const deg=!key.messiaen&&F.degrees(key.tonic,key.mode,true).find(d=>d.root===pc(root));
-    const qq=deg&&family(QUAL[q].map(x=>pc(root+x)),root)===family(deg.pcs,root)?deg.quality:null;
+    const deg=!key.messiaen&&key.steps.length===7&&keyChords(key,true).find(d=>d.root===pc(root));
+    const qq=deg&&QUAL[deg.quality]?.length===4&&family(QUAL[q].map(x=>pc(root+x)),root)===family(deg.pcs,root)?deg.quality:null;
     q=qq&&QUAL[qq]?qq:q==='minor'?'m7':q==='dim'?'m7b5':'7';
   }else if(ext==='add9')q=q==='minor'?'madd9':q==='dim'?q:'add9';
   else if(ext==='sus2'||ext==='sus4')q=ext;
@@ -427,5 +446,5 @@ function wheelSlot(ch){
   return {ring,index};
 }
 
-return {QUAL,INTENTS,PRIORITY,RULES,family,symbol,roman,voiceLead,underMelody,bassBelow,fromTemplate,motion,keyOf,keyChords,suggest,phrase,chordFor,recognise,wheelSlot,pretty,sig};
+return {tonicRing,QUAL,INTENTS,PRIORITY,RULES,family,symbol,roman,voiceLead,underMelody,bassBelow,fromTemplate,motion,keyOf,keyChords,suggest,phrase,chordFor,recognise,wheelSlot,pretty,sig};
 });

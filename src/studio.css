@@ -54,7 +54,7 @@ body.mac-desktop .bar :is(button,select,label,input){-webkit-app-region:no-drag}
 .context{display:flex;gap:6px;align-items:center;flex:1;min-width:0}
 .field{display:flex;align-items:center;gap:2px;color:var(--muted);font-size:12.5px;white-space:nowrap}
 .field select{color:var(--ink);font-size:14px;font-weight:550;text-overflow:ellipsis}
-#tonic{width:58px}#mode{width:132px}#style{width:196px}
+#tonic{width:58px}#mode{width:150px}#style{width:226px}
 .views{display:flex;background:var(--seg);border-radius:9px;padding:3px}
 .views button{border:0;background:transparent;padding:5px 14px;border-radius:7px;color:var(--muted)}
 .views button.on{background:var(--raise);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}

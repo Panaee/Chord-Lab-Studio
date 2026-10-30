@@ -30,7 +30,7 @@ for(const m of studio.matchAll(/tx\('([^'\n]+)'/g))if(greek.test(m[1]))assert(ha
 // Placeholders, labels joined by « · », inline names.
 assert.equal(I.L('en','Μπήκε {0} στο βήμα {1}.','Am7',3),'Added Am7 at step 3.');
 assert.equal(I.L('el','Μπήκε {0} στο βήμα {1}.','Am7',3),'Μπήκε Am7 στο βήμα 3.');
-assert.equal(I.parts('en','Glass · Κάν\' το αρπέζ'),'Glass · Make it an arpeggio');
+assert.equal(I.parts('en','Μινιμαλισμός · Κάν\' το αρπέζ'),'Minimalism · Make it an arpeggio');
 assert.equal(I.inline('en','D Dorian / Δώριος'),'D Dorian');
 assert.equal(I.detect(null,['en-GB']),'en');assert.equal(I.detect(null,['el-GR']),'el');assert.equal(I.detect('en',['el']),'en');
 
@@ -53,7 +53,8 @@ const project=(settings)=>({format:'chord-lab-project',version:3,name:'Test',set
   {root:0,quality:'major',label:'C',notes:[48,52,55,60]},{root:7,quality:'7',label:'G7',notes:[47,53,55,62]},{root:0,quality:'major',label:'C/E',notes:[52,55,60,64],beats:2},
   {root:2,quality:'custom',label:'Dm(9)(11)',notes:[50,52,55,65]},{root:1,quality:'major',label:'D♭',notes:[49,53,56]},{root:0,quality:'custom',label:'C · ίσον',notes:[48,60]}]});
 for(const settings of [{tonic:0,mode:'ionian',style:'takemitsu',goal:'motion',bpm:84},{tonic:9,mode:'aeolian',style:'free',goal:'release',bpm:70},
-  {tonic:2,mode:'dorian',style:'jazz',goal:'tension',bpm:120},{tonic:0,mode:'ionian',scaleFamily:'messiaen',messiaenMode:2,messiaenTrans:0,style:'stravinsky',goal:'mystery',bpm:90}]){
+  {tonic:2,mode:'dorian',style:'jazz',goal:'tension',bpm:120},{tonic:2,mode:'phrygian',scaleFamily:'scale',scale:'hijaz',style:'hadjidakis',goal:'nostalgia',bpm:76},
+  {tonic:9,mode:'aeolian',scaleFamily:'scale',scale:'harmonic-minor',style:'classical',goal:'release',bpm:70},{tonic:0,mode:'ionian',scaleFamily:'messiaen',messiaenMode:2,messiaenTrans:0,style:'stravinsky',goal:'mystery',bpm:90}]){
   const p=project(settings);
   const a=A.html(p,'en').replace(/<[^>]+>/g,' ');assert(!greek.test(a),'analysis: '+(a.match(/\S*[α-ωΑ-Ωά-ώ]\S*/)||[])[0]);
   const r=R.makeHTML(p,'en').replace(/<style>[\s\S]*?<\/style>/,'').replace(/<[^>]+>/g,' ');assert(!greek.test(r),'report: '+(r.match(/\S*[α-ωΑ-Ωά-ώ]\S*/)||[])[0]);

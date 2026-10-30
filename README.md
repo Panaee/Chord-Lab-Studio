@@ -1,4 +1,4 @@
-# Chord Lab Studio 1.6
+# Chord Lab Studio 1.7
 
 [English](#english) · [Ελληνικά](#ελληνικά)
 
@@ -10,18 +10,18 @@ An offline studio for composing with chords. The circle of fifths shows where yo
 
 Ready-made packages are in [Releases](../../releases).
 
-- **Mac (Apple Silicon or Intel)**: `Chord-Lab-Studio-1.6-mac.zip`. Unzip it, open Terminal, type `bash ` (with a space), drag «Εγκατάσταση Chord Lab Studio.command» (Install Chord Lab Studio) into the window and press Return. The app goes into Applications, or into the folder where an earlier Chord Lab Studio is installed; to choose another folder, add its path after the file name. If Chord Lab Studio 1.5 is installed, its Electron runtime is reused. Otherwise the installer downloads the official Electron runtime from GitHub and checks it against its published SHA256; without internet it falls back to npm or a Google Chrome window. Old versions go to the Trash only if you answer «ν» (yes). See `Read me.txt`.
-- **Windows 10/11 (64-bit)**: `Chord-Lab-Studio-1.6.0-Setup.exe`. Installs for the current user, without administrator rights, into `%LOCALAPPDATA%\Programs\Chord Lab Studio`, with shortcuts in Start and on the Desktop. The file is not signed: on the SmartScreen warning click «More info» → «Run anyway». Uninstall from Settings → Apps.
+- **Mac (Apple Silicon or Intel)**: `Chord-Lab-Studio-1.7-mac.zip`. Unzip it, open Terminal, type `bash ` (with a space), drag «Εγκατάσταση Chord Lab Studio.command» (Install Chord Lab Studio) into the window and press Return. The app goes into Applications, or into the folder where an earlier Chord Lab Studio is installed; to choose another folder, add its path after the file name. If Chord Lab Studio 1.5 is installed, its Electron runtime is reused. Otherwise the installer downloads the official Electron runtime from GitHub and checks it against its published SHA256; without internet it falls back to npm or a Google Chrome window. Old versions go to the Trash only if you answer «ν» (yes). See `Read me.txt`.
+- **Windows 10/11 (64-bit)**: `Chord-Lab-Studio-1.7.0-Setup.exe`. Installs for the current user, without administrator rights, into `%LOCALAPPDATA%\Programs\Chord Lab Studio`, with shortcuts in Start and on the Desktop. The file is not signed: on the SmartScreen warning click «More info» → «Run anyway». Uninstall from Settings → Apps.
 - **Browser**: open `index.html` in Chrome or Edge, with the whole folder next to it.
 
 Projects stay on your computer: `~/Library/Application Support/Chord Lab Studio` on Mac, `%APPDATA%\Chord Lab Studio` on Windows.
 
 ### How it works
 
-1. **Centre, mode, style** at the top. The style (Takemitsu, Morricone, Stravinsky, Byzantine, Hadjidakis, Glass, jazz, ambient) shapes two of the three suggestions. The third is a plain move in the key, marked as such.
-2. **Empty start**: «Start with a phrase» loads one of the style's paths on your centre (Morricone in A minor: Am–G–F–E) and plays it. ⌘Z, and the next path is offered.
+1. **Centre, mode, style** at the top. The style is a genre (classical, impressionism, modernism, minimalism, film music, modern Greek art music, Byzantine, jazz, ambient) and shapes two of the three suggestions. Each genre names its sources, e.g. impressionism: Debussy, Takemitsu. Modes: church modes, harmonic and melodic minor, jazz scales, Greek dromoi (tempered, as on the bouzouki), pentatonics, whole-tone and Messiaen; each genre shows its own first. The third is a plain move in the key, marked as such.
+2. **Empty start**: «Start with a phrase» loads one of the style's paths on your centre (film music in A minor: Am–G–F–E) and plays it. ⌘Z, and the next path is offered.
 3. **The circle** has three rings: major outside, relative minor in the middle, diminished inside. The seven chords of the key are lit, with their Roman numerals. In major and minor the colour shows the function: tonic (I, iii, vi), subdominant (ii, IV), dominant (V, vii°).
-4. **Click a chord on the circle to hear it.** It appears as a preview (triad, 7th, add9, sus2, sus4). Nothing is stored until you press Return.
+4. **Click a chord on the circle to hear it.** It appears as a preview (triad, 7th, add9, sus2, sus4). The form applies to that chord only, with a line on where it resolves and, for the 7th, which degrees take one in your genre. Nothing is stored until you press Return.
 5. **Next**: three suggestions after the selected step. The intent (motion, suspension, shadow, tension, release, mystery) reorders them. Each card shows the chord symbol, the degree, why it works, which voice moves and whether it leaves the scale. Hovering a card lights its number on the circle, and the other way round.
    - 1 · 2 · 3 plays your last two steps, then the suggestion, at your tempo.
    - The small keyboard shows the move: notes that stay, notes that leave, notes that arrive, and an arc for each voice.
@@ -32,7 +32,7 @@ Projects stay on your computer: `~/Library/Application Support/Chord Lab Studio`
 8. **Analysis**: click a row or ▶ to hear the move into that step.
 9. **Ear practice** (⌘3): moves from your own piece. Which degree came, where the bass went, where the top voice went. Answer first, then see the chords. Right answers come back after 10 minutes, then 1, 3, 7 and 21 days; wrong ones come back in the same session.
 
-Sound (Settings → Sound and MIDI): pattern (block, arpeggio, eighth-note pulse) and sound (piano, pad, strings). Left alone, they follow the style: Glass arpeggio, Takemitsu pad, Morricone strings. The note editor can be dragged by its header; a double click puts it back.
+Sound (Settings → Sound and MIDI): pattern (block, arpeggio, eighth-note pulse) and sound (piano, pad, strings). Left alone, they follow the style: minimalism arpeggio, impressionism pad, film music strings. The note editor can be dragged by its header; a double click puts it back.
 
 Keys: 1 · 2 · 3 hear a suggestion inside the phrase · ⌘1 · ⌘2 · ⌘3 Compose · Analysis · Practice · in Practice 1–4 answer, R again, Return next · Return add it · Space play/stop · ← → previous/next step · [ ] shorter/longer · L loop · E edit notes · ⌫ delete · ⌘D duplicate · ⌘Z / ⇧⌘Z undo/redo · ⌘S save.
 
@@ -52,8 +52,8 @@ Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
 
 Τα έτοιμα πακέτα είναι στα [Releases](../../releases).
 
-- **Mac (Apple Silicon ή Intel)**: `Chord-Lab-Studio-1.6-mac.zip`. Αποσυμπίεσε και στο Terminal γράψε `bash ` και σύρε μέσα το «Εγκατάσταση Chord Lab Studio.command». Η εφαρμογή μπαίνει στο Applications ή στον φάκελο όπου είναι ήδη εγκατεστημένη προηγούμενη έκδοση. Για άλλο φάκελο, γράψε τη διαδρομή του μετά το όνομα του αρχείου. Οδηγίες στο «Διάβασέ με.txt».
-- **Windows 10/11 (64-bit)**: `Chord-Lab-Studio-1.6.0-Setup.exe`. Εγκαθίσταται για τον χρήστη, χωρίς δικαιώματα διαχειριστή, στο `%LOCALAPPDATA%\Programs\Chord Lab Studio`, με συντόμευση στο Start και στην Επιφάνεια Εργασίας. Δεν έχει υπογραφή: στο μήνυμα του SmartScreen πάτα «Περισσότερες πληροφορίες» → «Εκτέλεση οπωσδήποτε». Κατάργηση από Ρυθμίσεις → Εφαρμογές.
+- **Mac (Apple Silicon ή Intel)**: `Chord-Lab-Studio-1.7-mac.zip`. Αποσυμπίεσε και στο Terminal γράψε `bash ` και σύρε μέσα το «Εγκατάσταση Chord Lab Studio.command». Η εφαρμογή μπαίνει στο Applications ή στον φάκελο όπου είναι ήδη εγκατεστημένη προηγούμενη έκδοση. Για άλλο φάκελο, γράψε τη διαδρομή του μετά το όνομα του αρχείου. Οδηγίες στο «Διάβασέ με.txt».
+- **Windows 10/11 (64-bit)**: `Chord-Lab-Studio-1.7.0-Setup.exe`. Εγκαθίσταται για τον χρήστη, χωρίς δικαιώματα διαχειριστή, στο `%LOCALAPPDATA%\Programs\Chord Lab Studio`, με συντόμευση στο Start και στην Επιφάνεια Εργασίας. Δεν έχει υπογραφή: στο μήνυμα του SmartScreen πάτα «Περισσότερες πληροφορίες» → «Εκτέλεση οπωσδήποτε». Κατάργηση από Ρυθμίσεις → Εφαρμογές.
 - **Browser**: άνοιξε το `index.html` σε Chrome ή Edge, με ολόκληρο τον φάκελο δίπλα του.
 
 Η διεπαφή είναι στα ελληνικά και στα αγγλικά: ακολουθεί τη γλώσσα του υπολογιστή και αλλάζει από Ρυθμίσεις → Γλώσσα. Το Εργαστήριο θεωρίας είναι μόνο στα ελληνικά.
@@ -62,10 +62,10 @@ Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
 
 ## Η ροή
 
-1. **Κέντρο, τρόπος, ύφος** πάνω. Το ύφος (Takemitsu, Morricone, Glass, Τζαζ …) διαμορφώνει τις δύο από τις τρεις προτάσεις. Η τρίτη είναι μια βασική κίνηση στην τονικότητα, σημειωμένη ως τέτοια.
-2. **Άδεια αρχή**: το «Ξεκίνα με μια φράση» φορτώνει μία από τις διαδρομές του ύφους πάνω στο κέντρο σου (Morricone σε Λα ελάσσονα: Am–G–F–E) και την παίζει. Με ⌘Z προτείνεται η επόμενη.
+1. **Κέντρο, τρόπος, ύφος** πάνω. Το ύφος είναι είδος (κλασική, ιμπρεσιονιστικό, μοντερνισμός, μινιμαλισμός, κινηματογραφική, νεοελληνική λόγια μουσική, βυζαντινό, τζαζ, ambient) και διαμορφώνει τις δύο από τις τρεις προτάσεις. Κάθε είδος γράφει τις πηγές του, π.χ. ιμπρεσιονιστικό: Debussy, Takemitsu. Τρόποι: εκκλησιαστικοί, αρμονική και μελωδική ελάσσονα, κλίμακες της τζαζ, ελληνικοί δρόμοι (συγκερασμένοι, όπως στο μπουζούκι), πεντατονικές, ολοτονική και Messiaen· κάθε είδος δείχνει πρώτους τους δικούς του. Η τρίτη είναι μια βασική κίνηση στην τονικότητα, σημειωμένη ως τέτοια.
+2. **Άδεια αρχή**: το «Ξεκίνα με μια φράση» φορτώνει μία από τις διαδρομές του ύφους πάνω στο κέντρο σου (κινηματογραφική σε Λα ελάσσονα: Am–G–F–E) και την παίζει. Με ⌘Z προτείνεται η επόμενη.
 3. **Κύκλος**: τρία δαχτυλίδια, μείζονες έξω, σχετικές ελάσσονες στη μέση, ελαττωμένες μέσα. Οι επτά συγχορδίες της τονικότητας είναι φωτισμένες, με τις βαθμίδες τους. Το περίγραμμα δείχνει την τρέχουσα συγχορδία, οι αριθμοί 1–3 τις προτάσεις. Σε μείζονα και ελάσσονα το χρώμα δείχνει τη λειτουργία: τονική (I, iii, vi), υποδεσπόζουσα (ii, IV), δεσπόζουσα (V, vii°).
-4. **Κλικ στον κύκλο = ακρόαση.** Η συγχορδία εμφανίζεται ως «Δοκιμή» (τριάδα, 7η, add9, sus2, sus4). Τίποτα δεν αποθηκεύεται μέχρι να πατήσεις ⏎ ή «Πρόσθεσε».
+4. **Κλικ στον κύκλο = ακρόαση.** Η συγχορδία εμφανίζεται ως «Δοκιμή» (τριάδα, 7η, add9, sus2, sus4). Η μορφή ισχύει μόνο για αυτή τη συγχορδία, με μια γραμμή για το πού λύνεται και, για την 7η, σε ποιες βαθμίδες τη βάζει το είδος σου. Τίποτα δεν αποθηκεύεται μέχρι να πατήσεις ⏎ ή «Πρόσθεσε».
 5. **Επόμενο**: τρεις προτάσεις μετά το επιλεγμένο βήμα. Η πρόθεση (Κίνηση, Αιώρηση, Σκιά, Ένταση, Λύση, Μυστήριο) αλλάζει τη σειρά τους. Κάθε κάρτα δείχνει σύμβολο, βαθμίδα, γιατί, από πού έρχεται, ποια φωνή κινείται και αν βγαίνει από την κλίμακα. Όταν περνάς πάνω από μια κάρτα, φωτίζεται ο αριθμός της στον κύκλο, και αντίστροφα.
    - 1/2/3: ακούς τα δύο τελευταία βήματα και μετά την πρόταση, στο tempo σου. ⏎ την προσθέτεις.
    - Το μικρό πληκτρολόγιο δείχνει τη μετάβαση: ποιες νότες μένουν, ποιες φεύγουν, ποιες έρχονται, και ένα τόξο για κάθε φωνή που κινείται.
@@ -82,7 +82,7 @@ Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
 **Ήχος** (Ρυθμίσεις → Ήχος και MIDI):
 - Μοτίβο: μπλοκ, αρπέζ ή παλμός σε όγδοα.
 - Ηχόχρωμα: πιάνο, pad ή έγχορδα.
-- Αν δεν διαλέξεις, ακολουθούν το ύφος: Glass αρπέζ, Takemitsu pad, Morricone έγχορδα.
+- Αν δεν διαλέξεις, ακολουθούν το ύφος: μινιμαλισμός αρπέζ, ιμπρεσιονιστικό pad, κινηματογραφική έγχορδα.
 
 Ο επεξεργαστής νοτών μετακινείται από την κεφαλίδα του. Με διπλό κλικ γυρίζει στη θέση του.
 
@@ -123,7 +123,7 @@ Fonts: Commissioner and Literata, SIL Open Font License 1.1 (`assets/fonts/`).
 
 ## Δεδομένα
 
-Αυτόματη αποθήκευση και βιβλιοθήκη έως 64 έργων στο profile της εφαρμογής. Στην πρώτη εκκίνηση η 1.6 ανοίγει το έργο και τη βιβλιοθήκη της 1.5. Κράτα και αντίγραφα JSON.
+Αυτόματη αποθήκευση και βιβλιοθήκη έως 64 έργων στο profile της εφαρμογής. Ανοίγει το έργο και τη βιβλιοθήκη των προηγούμενων εκδόσεων. Κράτα και αντίγραφα JSON.
 
 ## Εργαστήριο θεωρίας
 
@@ -144,8 +144,8 @@ Windows installer χωρίς Wine (από Mac ή Linux):
 ```
 npx electron-builder --win dir --x64 -c.win.signAndEditExecutable=false
 npm i --no-save resedit@2.0.3
-node installer/windows/set-icon.mjs "dist/win-unpacked/Chord Lab Studio.exe" assets/icon.ico 1.6.0
-python3 installer/windows/make-nsis.py dist/win-unpacked assets/icon.ico 1.6.0 dist/Chord-Lab-Studio-1.6.0-Setup.exe <makensis> <NSISDIR>
+node installer/windows/set-icon.mjs "dist/win-unpacked/Chord Lab Studio.exe" assets/icon.ico 1.7.0
+python3 installer/windows/make-nsis.py dist/win-unpacked assets/icon.ico 1.7.0 dist/Chord-Lab-Studio-1.7.0-Setup.exe <makensis> <NSISDIR>
 ```
 
 Το `makensis` και το `NSISDIR` είναι στο cache του electron-builder (`~/.cache/electron-builder/nsis/`). Ο uninstaller γράφεται από τον installer στα Windows και σβήνει μόνο τα αρχεία που εγκατέστησε.

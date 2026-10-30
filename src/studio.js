@@ -1,4 +1,4 @@
-/* Chord Lab Studio 1.6 · composition UI.
+/* Chord Lab Studio 1.7 · composition UI.
    One current chord: the selected step. The wheel and MIDI only audition
    (a dashed preview); proposals are always computed after the selected step
    and are inserted right after it. Engines stay offline and dependency-free. */
@@ -6,7 +6,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const T=window.TheoryMap,F=window.FifthsLab,N=window.NextChords,L=window.Landscapes,M=window.MessiaenModes,
-  G=window.GuitarShapes,PS=window.ProjectStore,A=window.StudioAnalysis,R=window.RemarkableReport,I=window.I18N,E=window.EarPractice;
+  G=window.GuitarShapes,PS=window.ProjectStore,A=window.StudioAnalysis,R=window.RemarkableReport,I=window.I18N,E=window.EarPractice,S=window.Scales;
 const pc=T.mod;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const desktop=window.chordDesktop||null;
@@ -20,8 +20,14 @@ const noteName=n=>T.name(n)+(Math.floor(n/12)-1);
 /* Language: Greek text is the key (src/i18n.js). */
 const tx=(s,...a)=>I.L(state.lang,s,...a),tp=s=>I.parts(state.lang,s),ti=s=>I.inline(state.lang,s);
 const GREEK=/[α-ωΑ-Ωά-ώ]/;
-function modeLabel(id){const m=/^messiaen-(\d)$/.exec(id);return m?`Messiaen ${m[1]} · ${tx(M.PATTERNS[m[1]].name)}`:tx(MODES.find(x=>x[0]===id)[1]);}
-function modeShort(id){return /^messiaen/.test(id)?'Messiaen '+id.split('-')[1]:tx(MODES.find(m=>m[0]===id)[1]);}
+function modeLabel(id){const m=/^messiaen-(\d)$/.exec(id),sc=S.byId(id);return m?`Messiaen ${m[1]} · ${tx(M.PATTERNS[m[1]].name)}`:sc?tx(sc.name):tx(MODES.find(x=>x[0]===id)[1]);}
+function modeShort(id){const sc=S.byId(id);return /^messiaen/.test(id)?'Messiaen '+id.split('-')[1]:sc?tx(sc.short):tx(MODES.find(m=>m[0]===id)[1]);}
+const validMode=id=>MODES.some(x=>x[0]===id)||Boolean(S.byId(id));
+/* Scales each genre uses most; shown first in the menu, never imposed. */
+const STYLE_MODES={classical:['ionian','aeolian','harmonic-minor','melodic-minor'],takemitsu:['lydian','whole-tone','messiaen-2','pentatonic-major'],
+  stravinsky:['messiaen-2','lydian-dominant','phrygian'],glass:['aeolian','ionian','dorian','pentatonic-minor'],morricone:['aeolian','dorian','mixolydian','harmonic-minor'],
+  hadjidakis:['aeolian','harmonic-minor','hijaz','dorian'],byzantine:['dorian','phrygian','hijaz','hijazkar'],
+  jazz:['dorian','mixolydian','melodic-minor','lydian-dominant','altered','blues'],electronic:['aeolian','dorian','lydian','pentatonic-minor']};
 const uniq=xs=>[...new Set(xs)].sort((a,b)=>a-b);
 
 const state={lang:'el',tonic:0,mode:'ionian',style:'takemitsu',intent:'motion',bpm:84,loop:false,
@@ -35,8 +41,9 @@ function keyOpts(){return {tonic:state.tonic,mode:state.mode,transposition:0};}
 function key(){return N.keyOf(keyOpts());}
 function land(){return L.LANDSCAPES.find(l=>l.id===state.style)||null;}
 function startChord(){
-  const ring=['dorian','phrygian','aeolian'].includes(state.mode)?'minor':state.mode==='locrian'?'dim':'major';
-  const ch=N.chordFor(state.tonic,ring,keyOpts());
+  const ring=N.tonicRing(keyOpts());
+  // The whole-tone scale has no major or minor triad: it starts on the augmented one.
+  const ch=ring==='aug'?{root:pc(state.tonic),quality:'aug',pcs:[0,4,8].map(x=>pc(state.tonic+x))}:N.chordFor(state.tonic,ring,keyOpts());
   const b=48+pc(state.tonic);ch.notes=N.voiceLead([b,b+4,b+7,b+12],ch.pcs,state.tonic);ch.label=N.symbol(ch.notes,ch.root);return ch;
 }
 function current(){return state.steps[state.sel]||startChord();}
@@ -264,8 +271,9 @@ function slotRoot(ring,i){return ring==='major'?F.ROOTS[i]:F.MINOR_ROOTS[i];}
 const FN=['t','s','t','s','d','t','d'],FN_NAME={t:'Τονική',s:'Υποδεσπόζουσα',d:'Δεσπόζουσα'};
 const slotKey=ch=>{const s=N.wheelSlot(ch);return s.ring+':'+s.index;};
 function renderWheel(){
-  const k=key(),dia=new Map(),fn=new Map(),tonal=['ionian','aeolian'].includes(state.mode);
-  for(const ch of N.keyChords(k)){const s=slotKey(ch);dia.set(s,N.roman(ch,k));if(tonal)fn.set(s,FN[ch.degree]);}
+  const k=key(),dia=new Map(),fn=new Map(),tonal=['ionian','aeolian','harmonic-minor','melodic-minor'].includes(state.mode);
+  // The wheel has rings for major, minor and diminished: augmented chords stay in the cards.
+  for(const ch of N.keyChords(k)){if(N.family(ch.pcs,ch.root)==='aug')continue;const s=slotKey(ch);dia.set(s,N.roman(ch,k));if(tonal)fn.set(s,FN[ch.degree]);}
   const cur=current(),curSlot=N.wheelSlot({root:cur.root,notes:cur.notes});
   const pv=state.preview,pre=pv?(pv.source==='wheel'?{ring:pv.ring,index:pv.ring==='major'?F.ROOTS.indexOf(pv.slotRoot):F.MINOR_ROOTS.indexOf(pv.slotRoot)}:N.wheelSlot(pv)):null,mp=state.melody===null?null:pc(state.melody);
   const holds=(ring,i)=>{const r=slotRoot(ring,i);return (ring==='major'?[0,4,7]:ring==='minor'?[0,3,7]:[0,3,6]).some(x=>pc(r+x)===mp);};
@@ -273,13 +281,15 @@ function renderWheel(){
   for(const ring of ['major','minor','dim'])for(let i=0;i<12;i++){
     const [r0,r1]=RINGS[ring],a=i*30,id=ring+':'+i,rom=dia.get(id);
     const f=fn.get(id),cls=['seg','ring-'+ring,rom?'dia':'',f?'fn-'+f:'',pre&&pre.ring===ring&&pre.index===i?'pre':'',mp===null?'':holds(ring,i)?'mel':'off'].join(' ');
-    const [nx,ny]=polar(ring==='major'?187:ring==='minor'?130:82,a),[rx,ry]=polar(ring==='major'?162:ring==='minor'?111:70,a);
+    const [nx,ny]=polar(ring==='major'?187:ring==='minor'?126:82,a),[rx,ry]=polar(ring==='major'?162:ring==='minor'?111:70,a);
+    // Inner rings: the degree sits under the name, so long degrees (♭vii, ♭III+) never overlap it.
+    const stacked=ring!=='major';
     const shaped=pv?.source==='wheel'&&state.ext!=='triad'&&pre.ring===ring&&pre.index===i;
     const name=shaped?pv.label.split('/')[0]:slotName(ring,i),about=[name,rom?ti(rom):'',f?tx(FN_NAME[f]):''].filter(Boolean).join(' · ');
     segs+=`<g class="${cls}" data-ring="${ring}" data-i="${i}" role="button" tabindex="${ring==='major'&&i===0?0:-1}" aria-label="${esc(about)}"><title>${esc(about)}</title>`+
-      `<path d="${sector(r0,r1,a-15,a+15)}"/><text class="n${name.length>4?' long':''}" x="${nx.toFixed(1)}" y="${(ring==='dim'?ny-3:ny).toFixed(1)}">${esc(name)}</text>`+
-      (rom&&ring!=='dim'?`<text class="r" x="${rx.toFixed(1)}" y="${ry.toFixed(1)}">${esc(ti(rom))}</text>`:'')+
-      (rom&&ring==='dim'?`<text class="r" x="${nx.toFixed(1)}" y="${(ny+9).toFixed(1)}">${esc(ti(rom))}</text>`:'')+`</g>`;
+      `<path d="${sector(r0,r1,a-15,a+15)}"/><text class="n${name.length>4?' long':''}" x="${nx.toFixed(1)}" y="${(ring==='dim'?ny-3:ring==='minor'&&rom?ny-5:ny).toFixed(1)}">${esc(name)}</text>`+
+      (rom&&!stacked?`<text class="r" x="${rx.toFixed(1)}" y="${ry.toFixed(1)}">${esc(ti(rom))}</text>`:'')+
+      (rom&&stacked?`<text class="r" x="${nx.toFixed(1)}" y="${(ny+(ring==='dim'?9:11)).toFixed(1)}">${esc(ti(rom))}</text>`:'')+`</g>`;
   }
   const outline=(s,cls)=>{const [r0,r1]=RINGS[s.ring];return `<path class="${cls}" d="${sector(r0+1.5,r1-1.5,s.index*30-13.5,s.index*30+13.5)}"/>`;};
   let marks='';
@@ -310,8 +320,8 @@ function previewFromWheel(root,ring){
 function setExt(ext){state.ext=ext;if(state.preview?.source==='wheel')previewFromWheel(state.preview.slotRoot,state.preview.ring);}
 /* What the chosen form does on this chord, and where sevenths go in the style. */
 const SEVENTHS={jazz:'Στην τζαζ όλες οι βαθμίδες παίρνουν 7η.',takemitsu:'Εδώ οι 7ες είναι χρώματα: μπαίνουν σε όποια βαθμίδα θέλεις, χωρίς να ζητούν λύση.',
-  electronic:'Εδώ οι 7ες είναι χρώματα: μπαίνουν σε όποια βαθμίδα θέλεις, χωρίς να ζητούν λύση.',glass:'Ο Glass μένει σε τριάδες· μια 7η ξεχωρίζει.',
-  stravinsky:'Στον Stravinsky οι 7ες ανήκουν στα μπλοκ· δεν ζητούν λύση.',byzantine:'Το βυζαντινό αποφεύγει τις 3ες· η 7η είναι ξένη στο ύφος.'};
+  electronic:'Εδώ οι 7ες είναι χρώματα: μπαίνουν σε όποια βαθμίδα θέλεις, χωρίς να ζητούν λύση.',glass:'Ο μινιμαλισμός μένει σε τριάδες· μια 7η ξεχωρίζει.',
+  stravinsky:'Στον μοντερνισμό οι 7ες ανήκουν στα μπλοκ· δεν ζητούν λύση.',byzantine:'Το βυζαντινό αποφεύγει τις 3ες· η 7η είναι ξένη στο ύφος.'};
 function formHint(p){
   if(p?.source!=='wheel'||state.ext==='triad')return '';
   const r=p.slotRoot,deg=pc(r-state.tonic),third=p.ring==='major'?4:3,n=x=>T.name(pc(r+x));
@@ -422,6 +432,7 @@ function syncControls(){
   $('tonic').value=String(state.tonic);$('mode').value=state.mode;$('style').value=state.style;
   $('projectName').value=state.projectName;$('instrument').value=state.instrument;$('theme').value=state.theme;
   const l=land();document.documentElement.style.setProperty('--style',l?.color||'#c9c2ae');
+  $('style').title=l?.sources?.length?tx('Πηγές: {0}',l.sources.map(x=>tx(x)).join(', ')):'';
 }
 function renderAnalysis(){
   if(state.view!=='analysis')return;
@@ -517,9 +528,11 @@ function onEditor(e){
 
 /* ------------------------------------------------------------ project */
 function projectData(){
-  const mess=/^messiaen/.test(state.mode);
-  const settings={tonic:state.tonic,mode:mess?'ionian':state.mode,scaleFamily:mess?'messiaen':'diatonic',style:state.style,goal:state.intent,intent:state.intent,bpm:state.bpm};
+  const mess=/^messiaen/.test(state.mode),sc=S.byId(state.mode);
+  // A scale also names its nearest church mode, which earlier versions read instead.
+  const settings={tonic:state.tonic,mode:mess?'ionian':sc?sc.near:state.mode,scaleFamily:mess?'messiaen':sc?'scale':'diatonic',style:state.style,goal:state.intent,intent:state.intent,bpm:state.bpm};
   if(mess){settings.messiaenMode=Number(state.mode.split('-')[1]);settings.messiaenTrans=0;}
+  if(sc)settings.scale=sc.id;
   return {format:'chord-lab-project',version:3,name:state.projectName,settings,
     sequence:state.steps.map(s=>{const row={root:s.root,quality:s.quality||'custom',label:s.label,notes:s.notes,beats:s.beats||4,custom:Boolean(s.custom)};if(s.sourceLabel)row.sourceLabel=String(s.sourceLabel).slice(0,179);return row;})};
 }
@@ -528,7 +541,7 @@ function readProject(raw){
   const intents=N.INTENTS.map(x=>x.id);
   state.projectName=p.name||tx('Χωρίς τίτλο');
   state.tonic=Number.isInteger(st.tonic)?st.tonic:0;
-  state.mode=st.scaleFamily==='messiaen'&&M.PATTERNS[st.messiaenMode]&&st.messiaenMode>1?'messiaen-'+st.messiaenMode:(T.MODE[st.mode]?st.mode:'ionian');
+  state.mode=st.scaleFamily==='messiaen'&&M.PATTERNS[st.messiaenMode]&&st.messiaenMode>1?'messiaen-'+st.messiaenMode:st.scaleFamily==='scale'&&S.byId(st.scale)?st.scale:(T.MODE[st.mode]?st.mode:'ionian');
   state.style=st.style==='free'||L.LANDSCAPES.some(l=>l.id===st.style)?st.style:'free';
   state.intent=intents.includes(st.intent)?st.intent:intents.includes(st.goal)?st.goal:'motion';
   state.bpm=Math.max(40,Math.min(220,Number(st.bpm)||84));
@@ -690,7 +703,8 @@ function startPhrase(){
   if(p){chords=p.chords;phraseTurn++;}
   else{chords=[startChord()];
     // No path for this style or collection: the first proposal, three times.
-    while(chords.length<4){const c=N.suggest({current:chords[chords.length-1],history:chords,...keyOpts(),style:state.style,intent:state.intent})[0];if(!c)break;chords.push(c);}}
+    // In-scale proposals first, so the phrase stays in the chosen scale.
+    while(chords.length<4){const list=N.suggest({current:chords[chords.length-1],history:chords,...keyOpts(),style:state.style,intent:state.intent}),c=list.find(x=>x.inKey)||list[0];if(!c)break;chords.push(c);}}
   stop();remember();
   state.steps=chords.map((c,i)=>makeStep(c,{beats:4,sourceLabel:p?p.name:i?c.originLabel:'Αφετηρία'}));
   state.sel=state.steps.length-1;state.preview=null;state.heard=-1;state.range=null;
@@ -795,9 +809,20 @@ function buildSoundSelects(){
   $('timbre').innerHTML=`<option value="auto">${esc(tx('Από το ύφος · {0}',name(TIMBRES,t)))}</option>`+TIMBRES.map(([v,l])=>`<option value="${v}">${esc(tx(l))}</option>`).join('');
   $('pattern').value=state.pattern;$('timbre').value=state.timbre;
 }
+function buildModeSelect(){
+  const opt=v=>`<option value="${v}">${esc(modeLabel(v))}</option>`,group=(label,ids)=>`<optgroup label="${esc(label)}">${ids.map(opt).join('')}</optgroup>`;
+  const of=g=>S.SCALES.filter(s=>s.group===g).map(s=>s.id),l=land(),top=STYLE_MODES[state.style];
+  $('mode').innerHTML=(top&&l?group(tx('Για το ύφος: {0}',tx(l.name)),top):'')+
+    group(tx('Διατονικοί'),MODES.slice(0,7).map(x=>x[0]))+group(tx('Ελάσσονες'),of('minor'))+group(tx('Τζαζ'),of('jazz'))+
+    group(tx('Ελληνικοί δρόμοι · συγκερασμένοι'),of('greek'))+group(tx('Πεντατονικές και ολοτονική'),of('colour'))+
+    group(tx('Messiaen · συμμετρικοί'),MODES.slice(7).map(x=>x[0]));
+  $('mode').value=state.mode;
+}
 function buildSelects(){
-  $('mode').innerHTML=`<optgroup label="${esc(tx('Διατονικοί'))}">${MODES.slice(0,7).map(([v])=>`<option value="${v}">${esc(modeLabel(v))}</option>`).join('')}</optgroup><optgroup label="${esc(tx('Messiaen · συμμετρικοί'))}">${MODES.slice(7).map(([v])=>`<option value="${v}">${esc(modeLabel(v))}</option>`).join('')}</optgroup>`;
-  $('style').innerHTML=`<option value="free">${esc(tx('Ελεύθερο'))}</option>`+L.LANDSCAPES.map(l=>`<option value="${l.id}">${esc(tx(l.name))}</option>`).join('');
+  buildModeSelect();
+  // Genres in a listening order: from functional harmony to colour, then traditions.
+  const ORDER=['classical','takemitsu','stravinsky','glass','morricone','hadjidakis','byzantine','jazz','electronic'];
+  $('style').innerHTML=`<option value="free">${esc(tx('Ελεύθερο'))}</option>`+ORDER.map(id=>L.LANDSCAPES.find(l=>l.id===id)).filter(Boolean).map(l=>`<option value="${l.id}">${esc(tx(l.name))}</option>`).join('');
   $('keysHelp').innerHTML=KEYS.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(tx(v))}</dd>`).join('');
   buildSoundSelects();
   $('rule').innerHTML=RULE_LIST.map(([v,l])=>`<option value="${v}">${esc(tx(l))}</option>`).join('');$('rule').value=state.rule;
@@ -831,9 +856,10 @@ function setup(){
   load();
   applyLanguage();
   $('tonic').addEventListener('change',e=>{setContext('tonic',Number(e.target.value));status(tx('Κέντρο {0}.',T.name(state.tonic)));});
-  $('mode').addEventListener('change',e=>setContext('mode',e.target.value));
-  $('style').addEventListener('change',e=>{setContext('style',e.target.value);buildSoundSelects();const l=land();
-    status((l?`${tx(l.name)}: ${tx(l.short)}.`:tx('Ελεύθερο: προτάσεις μόνο από την τονικότητα.'))+' '+tx('Ήχος: {0}, {1}.',tx(PATTERNS.find(x=>x[0]===soundPattern())[1]).toLowerCase(),tx(TIMBRES.find(x=>x[0]===soundTimbre())[1]).toLowerCase()));});
+  $('mode').addEventListener('change',e=>{setContext('mode',e.target.value);const sc=S.byId(state.mode);
+    status(sc?.group==='greek'?tx('{0}: συγκερασμένη απόδοση, όπως στο μπουζούκι. Στη βυζαντινή ψαλτική και στα μακάμ τα διαστήματα διαφέρουν.',tx(sc.name)):tx('Τρόπος: {0}.',modeLabel(state.mode)));});
+  $('style').addEventListener('change',e=>{setContext('style',e.target.value);buildSoundSelects();buildModeSelect();const l=land();
+    status((l?`${tx(l.name)}: ${tx(l.short)}.${l.sources?.length?' '+tx('Πηγές: {0}.',l.sources.map(x=>tx(x)).join(', ')):''}`:tx('Ελεύθερο: προτάσεις μόνο από την τονικότητα.'))+' '+tx('Ήχος: {0}, {1}.',tx(PATTERNS.find(x=>x[0]===soundPattern())[1]).toLowerCase(),tx(TIMBRES.find(x=>x[0]===soundTimbre())[1]).toLowerCase()));});
   $('viewCompose').addEventListener('click',()=>setView('compose'));
   $('viewAnalysis').addEventListener('click',()=>setView('analysis'));
   $('viewPractice').addEventListener('click',()=>setView('practice'));
