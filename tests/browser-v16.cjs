@@ -52,9 +52,12 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   await page.keyboard.press('1');
   assert.match(await page.locator('#status').innerText(),/^Ακούς: \S+ → \S+ → \S+$/);
   assert.match(await page.locator('#now .eyebrow').innerText(),/→/);
-  assert.equal(await page.locator('#now .legend').count(),1);
-  assert(await page.locator('#now .mini rect.arrive, #now .mini rect.leave').count()>0);
-  await page.keyboard.press('Escape');assert.equal(await page.locator('#now .legend').count(),0);
+  assert.match(await page.locator('#now .legend').innerText(),/μένει/);
+  assert(await page.locator('#now .scale-keys rect.arrive, #now .scale-keys rect.leave').count()>0);
+  await page.keyboard.press('Escape');assert.doesNotMatch(await page.locator('#now .legend').innerText(),/μένει/);
+  // Under the chord: the scale on the keys with its degrees, the chord on top.
+  assert.deepEqual(await page.$$eval('#now .scale-keys text.w',t=>[...new Set(t.map(x=>x.textContent))].sort()),['1','2','3','4','5','6','7']);
+  assert(await page.locator('#now .scale-keys rect.on').count()>=3);
 
   // MIDI keys: each one sounds while held; a chord let go key by key stays whole for Return.
   const key=d=>page.evaluate(d=>ChordStudio.midiMessage(d),d);
@@ -110,6 +113,11 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   assert.match(await page.getAttribute('.seg[data-ring="major"][data-i="1"]','class'),/dia/);
   assert.equal(await page.evaluate(()=>ChordStudio.projectData().settings.scale),'harmonic-minor');
   await page.selectOption('#mode','hijaz');assert.match(await page.locator('#status').innerText(),/μπουζούκι/);
+  assert((await page.$$eval('#now .scale-keys text',t=>t.map(x=>x.textContent))).includes('♭2'),'Hijaz has a ♭2');
+  // The guitar shows the scale in the position of the chord shape.
+  await page.click('#openSettings');await page.selectOption('#instrument','guitar');await page.keyboard.press('Escape');
+  assert(await page.locator('#now .scale-frets circle.on, #now .scale-frets circle.out').count()>=3,'the chord shape');assert(await page.locator('#now .scale-frets circle.sc').count()>=6);
+  await page.click('#openSettings');await page.selectOption('#instrument','piano');await page.keyboard.press('Escape');
   await page.selectOption('#mode','ionian');await page.selectOption('#style','takemitsu');
 
   // Playback pattern and sound follow the style unless chosen.

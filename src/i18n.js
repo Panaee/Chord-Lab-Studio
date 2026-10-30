@@ -597,7 +597,12 @@ const EN={"Κλασική":"Classical",
 "Ήχος πλήκτρων":"Key sound",
 "από την εφαρμογή":"from the app",
 "Τα πλήκτρα MIDI ακούγονται από την εφαρμογή.":"MIDI keys sound from the app.",
-"Τα πλήκτρα MIDI δεν ακούγονται από την εφαρμογή: για όργανα με δικό τους ήχο.":"MIDI keys do not sound from the app: for instruments with their own sound."};
+"Τα πλήκτρα MIDI δεν ακούγονται από την εφαρμογή: για όργανα με δικό τους ήχο.":"MIDI keys do not sound from the app: for instruments with their own sound.",
+"Κλίμακα και συγχορδία στο πιάνο":"Scale and chord on the piano",
+"Κλίμακα και συγχορδία στην κιθάρα":"Scale and chord on the guitar",
+"συγχορδία":"chord",
+"κλίμακα":"scale",
+"Βαθμίδες: {0}":"Degrees: {0}"};
 const fill=(s,args)=>args.length?String(s).replace(/\{(\d+)\}/g,(m,i)=>args[i]!==undefined?String(args[i]):m):s;
 /* One phrase. */
 function L(lang,s,...args){return fill(lang==='en'&&Object.prototype.hasOwnProperty.call(EN,s)?EN[s]:s,args);}
