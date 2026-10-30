@@ -191,11 +191,16 @@ function onMidi(e){
   }else if(type===0x80||(type===0x90&&v===0)){
     m.held.delete(n);
     if(m.pedal)m.sustained.add(n);else Sound.release(n);
-    if(!m.held.size){clearTimeout(m.timer);showGesture(true);}
+    clearTimeout(m.timer);
+    if(!m.held.size)showGesture(true);else m.timer=setTimeout(()=>showGesture(false),40);
   }
+  // The keys on the screen follow the hands at once.
+  if(!m.frame)m.frame=requestAnimationFrame(()=>{m.frame=0;renderNow();});
 }
+/* While keys are held: the name of what is held now. When all are up: the
+   whole gesture, offered for Return. */
 function showGesture(done){
-  const m=state.midi,notes=[...m.gesture].sort((a,b)=>a-b);
+  const m=state.midi,notes=[...(done?m.gesture:m.held)].sort((a,b)=>a-b);
   if(done)m.gesture.clear();
   if(notes.length===1){if(done)setMelody(notes[0],{quiet:true});return;}
   if(notes.length<2||notes.length>MAX_NOTES)return;
@@ -386,7 +391,8 @@ function scaleKeys(notes,to=null){
   const lo=Math.min(48,Math.floor(Math.min(...all)/12)*12),hi=Math.max(lo+24,Math.ceil((Math.max(...all)+1)/12)*12);
   const whites=[];for(let n=lo;n<=hi;n++)if(![1,3,6,8,10].includes(pc(n)))whites.push(n);
   const W=520,w=W/whites.length,x={};let keys='',labels='';
-  const state_=n=>{if(!to)return notes.includes(n)?(inScale(n)?' on':' out'):inScale(n)?'':' off';
+  // Orange only for a move to another chord; a chord's notes outside the scale show it by their degree.
+  const state_=n=>{if(!to)return notes.includes(n)?' on':inScale(n)?'':' off';
     const a=notes.includes(n),b=to.includes(n);return a&&b?' on':a?' leave':b?' arrive':inScale(n)?'':' off';};
   const key_=(n,black,kx,kw,h)=>{const st=state_(n);keys+=`<rect class="${black?'b':'w'}${st}" x="${kx.toFixed(2)}" y="0" width="${kw.toFixed(2)}" height="${h}" rx="${black?1.5:2.5}"/>`;
     if(st!==' off')labels+=`<text class="${black?'b':'w'}${st}" x="${(kx+kw/2).toFixed(2)}" y="${black?h-5:h-7}">${esc(degreeOf(n,k))}</text>`;};
@@ -415,25 +421,26 @@ function scaleFrets(notes,root){
   for(let si=0;si<6;si++){const y=top+(5-si)*sy;
     for(const f of frets){const n=open[si]+f,shape=g&&g.frets[si]===f,inS=k.pcs.includes(pc(n));
       if(!shape&&!inS)continue;const cx=fx(f).toFixed(1);
-      s+=`<circle class="${shape?(inS?'on':'out'):'sc'}" cx="${cx}" cy="${y}" r="${shape?7.2:6.4}"/><text class="${shape?'on':'sc'}" x="${cx}" y="${y+.5}">${esc(degreeOf(n,k))}</text>`;}}
+      s+=`<circle class="${shape?'on':'sc'}" cx="${cx}" cy="${y}" r="${shape?7.2:6.4}"/><text class="${shape?'on':'sc'}" x="${cx}" y="${y+.5}">${esc(degreeOf(n,k))}</text>`;}}
   const marks=[];for(let f=start;f<start+cols;f++)if([3,5,7,9,12,15].includes(f)||(f===start&&start>1))marks.push(`<text class="num" x="${fx(f).toFixed(1)}" y="${top+5*sy+14}">${f}</text>`);
   return `<svg class="scale-frets" viewBox="0 0 ${W} ${top+5*sy+18}" role="img" aria-label="${esc(tx('Κλίμακα και συγχορδία στην κιθάρα'))}">${s}${marks.join('')}</svg>`;
 }
 /* What you are listening to next: a proposal you heard or a preview. */
-function target(){return state.heard>=0?state.suggestions[state.heard]||null:state.preview;}
+function target(){return state.heard>=0?state.suggestions[state.heard]||null:state.preview?.source==='midi'?null:state.preview;}
 function renderNow(){
   const c=current(),has=state.steps.length>0;
-  const label=tp(c.label),to=target(),guitar=state.instrument==='guitar',shown=to||c,k=key();
+  // Keys held on the MIDI keyboard come first: exactly those, while they are held.
+  const held=[...state.midi.held].sort((a,b)=>a-b),to=held.length?null:target(),guitar=state.instrument==='guitar',shown=to||c;
+  const label=tp(c.label);
   // The guitar shows the chord you are about to hear; the piano shows the move to it.
-  const board=guitar?scaleFrets(shown.notes,shown.root):scaleKeys(c.notes,to?.notes);
-  const out=(guitar?shown.notes:to?to.notes:c.notes).some(n=>!k.pcs.includes(pc(n)));
-  const legend=(to&&!guitar?[['on','μένει'],['leave','φεύγει'],['arrive','έρχεται']]:[['on','συγχορδία']]).concat(out?[['out','εκτός κλίμακας']]:[],[['sc','κλίμακα']]);
+  const board=held.length?scaleKeys(held):guitar?scaleFrets(shown.notes,shown.root):scaleKeys(c.notes,to?.notes);
+  const legend=(held.length?[['on','πατάς']]:to&&!guitar?[['on','μένει'],['leave','φεύγει'],['arrive','έρχεται']]:[['on','συγχορδία']]).concat([['sc','κλίμακα']]);
   $('now').innerHTML=`<div class="eyebrow">${has?tx('Τώρα · <b>βήμα {0}</b> από {1}',state.sel+1,state.steps.length):esc(tx('Αφετηρία · το κέντρο σου'))}${to?` <span class="to">→ ${esc(tp(to.label))}</span>`:''}</div>`+
     `<div class="title"><span class="sym${label.length>9?' long':''}" title="${esc(label)}">${esc(label)}</span><span class="roman">${esc(ti(romanOf(c)))}</span></div>`+
     `<div class="actions"><div class="row">`+
     `<button type="button" class="btn-ghost" data-act="hear-now">${esc(tx('▶ Άκου'))}</button>`+
     (has?`<button type="button" class="btn-ghost" data-act="edit">${esc(tx('✎ Νότες'))}</button>`:`<button type="button" class="btn-primary" data-act="start">${esc(tx('＋ Ξεκίνα εδώ'))}<span class="kbd">⏎</span></button>`)+
-    `</div></div><div class="board" title="${esc(shown.notes.map(noteName).join(' · '))}">${board}</div>`+
+    `</div></div><div class="board" title="${esc((held.length?held:shown.notes).map(noteName).join(' · '))}">${board}</div>`+
     `<div class="legend">${legend.map(([c,l])=>`<span><i class="${c}"></i>${esc(tx(l))}</span>`).join('')}<span class="key-name">${esc(modeLabel(state.mode))} · ${esc(T.name(state.tonic))}</span></div>`;
 }
 function renderPreview(){
@@ -443,7 +450,7 @@ function renderPreview(){
   const after=state.steps.length?tx('Πρόσθεσε μετά το {0}',tp(current().label)):tx('Ξεκίνα με αυτή');
   box.innerHTML=`<div class="eyebrow">${esc(tx(p.source==='midi'?'Δοκιμή · από το MIDI':'Δοκιμή · από τον κύκλο'))}</div>`+
     `<div class="title"><span class="sym">${esc(tp(p.label))}</span><span class="roman">${esc(ti(p.roman||romanOf(p)))}</span></div>`+
-    (p.source==='wheel'?`<div class="exts" role="radiogroup" aria-label="${esc(tx('Μορφή'))}">${EXTS.map(([id,l])=>`<button type="button" class="chip${state.ext===id?' on':''}" data-ext="${id}" role="radio" aria-checked="${state.ext===id}">${esc(tx(l))}</button>`).join('')}</div>`+(formHint(p)?`<p class="hint">${esc(formHint(p))}</p>`:''):`<div class="exts"><span class="fine">${esc(tx('Βαθμίδες: {0}',uniq(p.notes.map(n=>pc(n))).map(x=>degreeOf(x)).join(' · ')))}</span></div>`)+
+    (p.source==='wheel'?`<div class="exts" role="radiogroup" aria-label="${esc(tx('Μορφή'))}">${EXTS.map(([id,l])=>`<button type="button" class="chip${state.ext===id?' on':''}" data-ext="${id}" role="radio" aria-checked="${state.ext===id}">${esc(tx(l))}</button>`).join('')}</div>`+(formHint(p)?`<p class="hint">${esc(formHint(p))}</p>`:''):'')+
     `<div class="actions"><button type="button" class="btn-primary" data-act="add-preview">＋ ${esc(after)}<span class="kbd">⏎</span></button>`+
     `<button type="button" class="btn-ghost" data-act="center">${esc(tx('◎ Κάνε το κέντρο'))}</button><button type="button" class="btn-ghost" data-act="dismiss">${esc(tx('Άκυρο'))} <span class="kbd">esc</span></button></div>`;
 }

@@ -63,9 +63,15 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   const key=d=>page.evaluate(d=>ChordStudio.midiMessage(d),d);
   await key([0x90,57,90]);await page.waitForTimeout(50);await key([0x90,60,90]);await page.waitForTimeout(50);await key([0x90,64,90]);await page.waitForTimeout(60);
   assert.equal(await page.evaluate(()=>ChordStudio.state.midi.live.size),3,'three keys sound');
+  // While held: exactly the held keys, each with its degree from the tonic, and only the chord's name; no orange.
+  await page.waitForTimeout(40);
+  assert.deepEqual(await page.$$eval('#now .scale-keys text.on',t=>t.map(x=>x.textContent)),['6','1','3']);
+  assert.equal(await page.locator('#now .scale-keys rect.arrive, #now .scale-keys rect.leave').count(),0);
+  assert.equal(await page.locator('#preview .sym').innerText(),'Am');assert.equal(await page.locator('#preview .fine').count(),0);
   await key([0x80,64,0]);await page.waitForTimeout(120);await key([0x80,60,0]);await page.waitForTimeout(120);await key([0x80,57,0]);
   assert.deepEqual(await page.evaluate(()=>[ChordStudio.state.preview.label,ChordStudio.state.preview.notes,ChordStudio.state.melody,ChordStudio.state.midi.live.size]),['Am',[57,60,64],null,0]);
   assert.match(await page.locator('#status').innerText(),/^Από το MIDI: Am\. ⏎/);
+  assert.equal(await page.locator('#now .scale-keys rect.arrive').count(),0,'a MIDI chord is offered, not drawn as a move');
   await page.keyboard.press('Escape');
   await key([0xB0,64,127]);await key([0x90,48,80]);await key([0x80,48,0]);assert.equal(await page.evaluate(()=>ChordStudio.state.midi.live.size),1,'the pedal holds it');
   await key([0xB0,64,0]);assert.equal(await page.evaluate(()=>ChordStudio.state.midi.live.size),0);
@@ -247,7 +253,8 @@ const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
   await page.click('#viewCompose');await page.click('#melody rect[data-pc="7"]');assert.deepEqual(await greekLeft(),[],'melody in English');await page.keyboard.press('Escape');
   await page.click('#openSettings');assert.deepEqual(await greekLeft(),[],'settings in English');
   assert.equal(await page.evaluate(()=>document.documentElement.lang),'en');
-  // Piano keys keep light whites and dark blacks in every theme.
+  // Piano keys keep light whites and solid dark blacks in every theme, in or out of the scale.
+  assert.equal(await page.$$eval('#now .scale-keys rect.b',r=>r.filter(x=>getComputedStyle(x).opacity!=='1').length),0);
   for(const theme of ['ivory','slate','dark']){await page.evaluate(t=>{document.body.dataset.theme=t;},theme);
     const [w,bk]=await page.evaluate(()=>{const lum=c=>{const m=c.match(/\d+/g).map(Number);return .2126*m[0]+.7152*m[1]+.0722*m[2];};
       return [lum(getComputedStyle(document.querySelector('#melody rect.w')).fill),lum(getComputedStyle(document.querySelector('#melody rect.b')).fill)];});

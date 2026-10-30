@@ -602,7 +602,8 @@ const EN={"Κλασική":"Classical",
 "Κλίμακα και συγχορδία στην κιθάρα":"Scale and chord on the guitar",
 "συγχορδία":"chord",
 "κλίμακα":"scale",
-"Βαθμίδες: {0}":"Degrees: {0}"};
+"Βαθμίδες: {0}":"Degrees: {0}",
+"πατάς":"you hold"};
 const fill=(s,args)=>args.length?String(s).replace(/\{(\d+)\}/g,(m,i)=>args[i]!==undefined?String(args[i]):m):s;
 /* One phrase. */
 function L(lang,s,...args){return fill(lang==='en'&&Object.prototype.hasOwnProperty.call(EN,s)?EN[s]:s,args);}
